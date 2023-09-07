@@ -31,21 +31,40 @@ const RoomSchema = new mongoose.Schema({
         required: true,
         min: 1
     },
+    maxCapacity: {
+        type: Number,
+        min: 1
+    },
     price: {
         type: Number,
         required: true
+    },
+    msp: {
+        type: Number
+    },
+    additionalGuestPrice: {
+        type: Number
     },
     description: {
         type: String,
         trim: true
     },
     features: [String],
+    amenities: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Amenity'
+    }],
+    accessibilityFeatures: [String],
+    view: String,
+    size: Number,
+    bedType: String,
+    petPolicy: String,
+    restrictions: [String],
     images: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Image'
     }],
     reservations: [RoomReservationSchema],
-    // bookedDates: [Date],
     hostel: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Hostel',

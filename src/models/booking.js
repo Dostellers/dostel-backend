@@ -1,6 +1,23 @@
 const mongoose = require('mongoose');
 
+
+// Define Source Detail Schema
+const SourceDetailSchema = new mongoose.Schema({
+    sourceName: String,  // Name of the booking source e.g., "Booking.com", "Airbnb", "Direct", etc.
+    referenceId: String, // A reference or booking ID provided by the source.
+    additionalInfo: {    // A flexible structure to capture any unique details provided by the source.
+        type: Map,
+        of: String
+    }
+});
+
+
 const bookingSchema = new mongoose.Schema({
+    bookingReference: {
+        type: String,
+        unique: true,
+        required: true
+    },
     customer: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Customer',
@@ -42,9 +59,7 @@ const bookingSchema = new mongoose.Schema({
     },
     transactionId: String,
     specialRequests: String,
-    bookingSources: [{
-        type: String
-    }],
+    bookingSource: SourceDetailSchema,
     loyaltyPointsRedeemed: {
         type: Number,
         default: 0

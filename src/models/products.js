@@ -19,6 +19,10 @@ const ProductSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    applicableTaxes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TaxRate'
+    }],
     availableQuantity: {
         type: Number,
         default: 0

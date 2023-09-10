@@ -28,7 +28,8 @@ const bookingSchema = new mongoose.Schema({
         amount: { type: Number, default: 0 },
         percentage: { type: Number, default: 0 },
         applied: { type: Number, default: 0 }
-    }
+    },
+    status: { type: String, enum: ['Draft', 'Confirmed', 'Completed', 'Abandoned'], default: 'Draft' }
 }, {
     timestamps: true
 });

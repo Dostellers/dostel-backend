@@ -1,4 +1,4 @@
-const FAQ = require('../models/FAQ');
+const FAQ = require('../models/faqs');
 
 const faqResolvers = {
     Query: {

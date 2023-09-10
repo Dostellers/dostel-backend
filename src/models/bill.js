@@ -27,7 +27,7 @@ const BillSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Booking'
     },
-    billItems: [BillItemReferenceSchema],
+    billItems: [BillProductReferenceSchema],
     subtotal: {
         type: Number,
         required: true

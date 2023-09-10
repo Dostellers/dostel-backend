@@ -1,5 +1,3 @@
 const typeDefs = require('./typeDefs');
 
-module.exports = {
-    typeDefs,
-};
+module.exports = { typeDefs }

@@ -1,6 +1,6 @@
-const Bill = require('../models/Bill');
+const Bill = require('../models/bill');
 
-const billingResolvers = {
+const billResolvers = {
     Query: {
         // Get all bills
         bills: async () => {
@@ -40,4 +40,4 @@ const billingResolvers = {
     }
 };
 
-module.exports = billingResolvers;
+module.exports = billResolvers;

@@ -15,6 +15,7 @@ const roomResolver = require('./roomResolver');
 const taxRateResolver = require('./taxRateResolver');
 const transactionResolver = require('./transactionResolver');
 const userResolver = require('./userResolver');
+const roleResolver = require('./roleResolver');
 
 module.exports = {
     Query: {
@@ -34,7 +35,8 @@ module.exports = {
         ...roomResolver.Query,
         ...taxRateResolver.Query,
         ...transactionResolver.Query,
-        ...userResolver.Query
+        ...userResolver.Query,
+        ...roleResolver.Query
     },
     Mutation: {
         ...amenityResolver.Mutation,
@@ -53,6 +55,7 @@ module.exports = {
         ...roomResolver.Mutation,
         ...taxRateResolver.Mutation,
         ...transactionResolver.Mutation,
-        ...userResolver.Mutation
+        ...userResolver.Mutation,
+        ...roleResolver.Mutation
     }
 };

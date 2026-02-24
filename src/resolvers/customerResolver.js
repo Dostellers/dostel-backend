@@ -44,3 +44,6 @@ const customerResolvers = {
         // ... and so on for other mutations like adding wishlist items, badges, etc.
     }
 };
+
+
+module.exports = customerResolvers

@@ -6,9 +6,9 @@ const permissionSchema = new mongoose.Schema({
     level: { type: String, enum: ['Read', 'Write', 'Delete', 'Execute'] },
     description: String,
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    lastUpdatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    createdAt: { type: Date, default: Date.now },
-    updatedAt: Date
+    lastUpdatedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+}, {
+    timestamps: true // Add this option to enable automatic timestamps
 });
 
 module.exports = mongoose.model('Permission', permissionSchema);

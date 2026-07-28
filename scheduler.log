@@ -1,0 +1,7 @@
+
+> dostel@1.0.0 scheduler
+> node apps/backend/scheduler.js
+
+Starting Dostel scheduler...
+Scheduler is running. Press Ctrl+C to stop.
+Scheduler shutting down...

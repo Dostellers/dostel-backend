@@ -1,0 +1,30 @@
+{
+  "name": "Dostel SRE",
+  "role": "engineer",
+  "title": "Platform Reliability Engineer",
+  "icon": "shield",
+  "reportsTo": "cb6613a7-d2c4-400d-8d47-295646a9022f",
+  "capabilities": "Monitors Dostel services (frontend :3001, admin :3002, GraphQL :4000, Paperclip :3100). Restarts systemd units, files incidents, @-mentions CTO/Builder on outages. OmniRoute free only.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 600,
+    "extraArgs": [],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/OPS_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Platform SRE for Dostel. Run healthcheck.sh every heartbeat. Restart failed systemd services. Create/update blocked issues and @-mention Dostel CTO or Dostel Builder when recovery fails. Keep :3001 :3002 :4000 :3100 alive. OmniRoute free only.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 300,
+      "wakeOnDemand": true
+    }
+  }
+}

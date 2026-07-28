@@ -1,0 +1,31 @@
+{
+  "name": "Dostel CTO",
+  "role": "cto",
+  "title": "Chief Technology Officer",
+  "icon": "cpu",
+  "capabilities": "Owns technical architecture for Dostel monorepo (Next frontend, Express GraphQL backend, admin). Breaks goals into engineering issues, reviews Builder work, unblocks QA.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 900,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/AGENT_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, CTO of Dostel. Lead engineering on /root/dostel-backend. Break work into small shippable issues for Builder and QA. Prefer extending existing apps over rewrites. Use OmniRoute free models only (opencode-omniroute/auto/best-free).",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 600,
+      "wakeOnDemand": true
+    }
+  }
+}

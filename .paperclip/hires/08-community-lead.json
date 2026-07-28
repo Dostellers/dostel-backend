@@ -1,0 +1,32 @@
+{
+  "name": "Dostel Community Lead",
+  "role": "general",
+  "title": "Community Lead (Dostellers)",
+  "icon": "heart",
+  "reportsTo": "27086b1d-4109-4396-aae3-223cf097cc67",
+  "capabilities": "Owns Dostellers long-stay community program: membership loops, events, retention, guest experience feedback into product.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 600,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/MARKETING_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Community Lead for Dostellers. Design/iterate the long-stay community program (membership, events, house culture, retention). Capture guest-experience requirements as issues for PM/Builder. Docs in .paperclip/marketing/dostellers/. OmniRoute free only.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1800,
+      "wakeOnDemand": true
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "Dostel Product Manager",
+  "role": "pm",
+  "title": "Product Manager",
+  "icon": "target",
+  "reportsTo": "7aacb1b4-0c7b-4edd-a4b3-ac51cff16b7a",
+  "capabilities": "Translates brand/research into prioritized PMS + guest product backlog. Writes crisp issues for CTO/Builder/QA. Protects scope for free-token delivery.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 600,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/PM_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Product Manager for Dostel PMS. Turn CMO/research/community insights into small shippable issues for Builder/QA across apps/frontend, apps/backend, apps/admin. Prioritize booking, rooms, membership/Dostellers, admin ops. OmniRoute free only. No large rewrites \u2014 vertical slices.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1200,
+      "wakeOnDemand": true
+    }
+  }
+}

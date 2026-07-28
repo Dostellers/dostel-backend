@@ -1,27 +1,26 @@
 {
-    "name": "dostel-hostel-booking",
-    "version": "1.0.0",
-    "description": "Backend for Dostel Hostel Booking System",
-    "main": "app.js",
-    "scripts": {
-        "start": "node app.js",
-        "dev": "nodemon app.js"
-    },
-    "author": "Sushil Singh",
-    "license": "ISC",
-    "dependencies": {
-        "apollo-server-express": "^3.12.1",
-        "body-parser": "^1.19.0",
-        "dotenv": "^10.0.0",
-        "express": "^4.18.2",
-        "graphql-scalars": "^1.22.2",
-        "graphql-type-json": "^0.3.2",
-        "merge-graphql-schemas": "^1.7.8",
-        "mongoose": "^5.13.20",
-        "winston": "^3.10.0",
-        "winston-daily-rotate-file": "^4.7.1"
-    },
-    "devDependencies": {
-        "nodemon": "^2.0.22"
-    }
+  "name": "dostel",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/frontend",
+    "apps/backend",
+    "apps/admin"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm run dev --workspace=apps/frontend",
+    "dev:backend": "npm run dev --workspace=apps/backend",
+    "build": "npm run build --workspace=apps/frontend",
+    "start:frontend": "npm run start --workspace=apps/frontend",
+    "start:backend": "npm run start --workspace=apps/backend",
+    "scheduler": "node apps/backend/scheduler.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@apollo/client": "^4.2.8",
+    "graphql": "^15.8.0"
+  }
 }

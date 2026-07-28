@@ -1,0 +1,32 @@
+{
+  "name": "Dostel CMO",
+  "role": "cmo",
+  "title": "Chief Marketing Officer",
+  "icon": "sparkles",
+  "reportsTo": "7aacb1b4-0c7b-4edd-a4b3-ac51cff16b7a",
+  "capabilities": "Owns Dostel brand, Dostellers growth narrative, acquisition channels (OTA, SEO, social), campaign briefs. Creates marketing issues; does not ship large code.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 600,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/MARKETING_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, CMO of Dostel. Brand is a Vattakanal/Kodaikanal community hostel; Dostellers are long-stay members. Prioritize marketing/research issues, brief Content/Community/Researcher, feed Product with growth requirements. OmniRoute free only. Write briefs under .paperclip/marketing/. Keep comments short.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1500,
+      "wakeOnDemand": true
+    }
+  }
+}

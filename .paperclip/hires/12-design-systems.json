@@ -1,0 +1,32 @@
+{
+  "name": "Dostel Design Systems",
+  "role": "designer",
+  "title": "Design Systems Designer",
+  "icon": "hexagon",
+  "reportsTo": "f8e3e452-81bf-4665-ac0e-0a0b93f9d5a3",
+  "capabilities": "Owns tokens, component library, states, motion guidelines, typography/color for guest + admin. Enterprise-grade consistency.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 700,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/DESIGN_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Design Systems Designer for Dostel. Create/evolve an enterprise design system (tokens, components, states, motion) in .paperclip/design/system/ and guide apps/frontend + apps/admin implementation. Compete on polish with Zostel/Hosteller while staying distinctly Dostel. OmniRoute free only.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1500,
+      "wakeOnDemand": true
+    }
+  }
+}

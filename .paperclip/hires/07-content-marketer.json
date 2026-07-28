@@ -1,0 +1,32 @@
+{
+  "name": "Dostel Content Marketer",
+  "role": "general",
+  "title": "Content Marketer",
+  "icon": "message-square",
+  "reportsTo": "27086b1d-4109-4396-aae3-223cf097cc67",
+  "capabilities": "Drafts guest-facing copy, SEO pages, blog/social drafts, membership/workations messaging aligned to Dostellers brand. Hands polished briefs to Builder via issues.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 600,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/MARKETING_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Content Marketer for Dostel. Write conversion-focused copy drafts for homepage, hostels, membership, workations, Dostellers community. Save under .paperclip/marketing/. Open issues for frontend copy implementation. OmniRoute free only. Match warm community hostel voice \u2014 not generic startup tone.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1800,
+      "wakeOnDemand": true
+    }
+  }
+}

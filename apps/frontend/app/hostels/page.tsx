@@ -1,9 +1,37 @@
 "use client";
 
-import { useState, useMemo, useCallback, Suspense } from "react";
+import { Suspense, useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import HostelCard from "@/components/HostelCard";
-import { hostels, categories } from "@/lib/data";
+import { useQuery } from "@apollo/client";
+import { GET_HOSTELS } from "@/lib/queries";
+
+type HostelSummary = {
+  id: string;
+  name?: string | null;
+  tagline?: string | null;
+  basePrice?: number | null;
+  location?: { address?: { city?: string | null } | null } | null;
+  images?: { thumbnail?: { url?: string | null } | null } | null;
+};
+
+type HostelCardData = {
+  id: string;
+  slug: string;
+  name: string;
+  location: string;
+  tagline: string;
+  price: number;
+  rating: number;
+  reviewCount: number;
+  image: string;
+  tags: string[];
+  isNew: boolean;
+  isTrending: boolean;
+  soldOut: boolean;
+  bookedThisWeek: number;
+  dostellerPrice?: number;
+};
 
 function HostelsContent() {
   const router = useRouter();
@@ -14,6 +42,8 @@ function HostelsContent() {
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "popular");
   const [view, setView] = useState<"grid" | "list">("grid");
 
+  const { data, loading, error } = useQuery<{ hostels: HostelSummary[] }>(GET_HOSTELS);
+
   const syncURL = useCallback((cat: string, q: string, sort: string) => {
     const params = new URLSearchParams();
     if (q) params.set("destination", q);
@@ -22,34 +52,58 @@ function HostelsContent() {
     router.replace(`/hostels?${params.toString()}`, { scroll: false });
   }, [router]);
 
+  const hostels = useMemo<HostelCardData[]>(() => data?.hostels?.map((hostel) => ({
+    id: hostel.id,
+    slug: hostel.id,
+    name: hostel.name || "Dostel Hostel",
+    location: hostel.location?.address?.city || "",
+    tagline: hostel.tagline || "",
+    price: hostel.basePrice || 0,
+    rating: 0,
+    reviewCount: 0,
+    image: hostel.images?.thumbnail?.url || "/images/hostel-exterior.jpg",
+    tags: [],
+    isNew: false,
+    isTrending: false,
+    soldOut: false,
+    bookedThisWeek: 0,
+  })) || [], [data]);
+
   const filtered = useMemo(() => {
     return hostels
-      .filter((h) => {
-        const matchCat = selected === "all" || h.category === selected || h.tags.some(t => t.toLowerCase() === selected);
-        const matchQ = query === "" || h.name.toLowerCase().includes(query.toLowerCase()) || h.location.toLowerCase().includes(query.toLowerCase());
+      .filter((hostel) => {
+        const matchCat = selected === "all" || hostel.tags.some((tag) => tag.toLowerCase() === selected);
+        const matchQ = query === "" || hostel.name.toLowerCase().includes(query.toLowerCase()) || hostel.location.toLowerCase().includes(query.toLowerCase());
         return matchCat && matchQ;
       })
       .sort((a, b) => {
         if (sortBy === "price-asc") return a.price - b.price;
         if (sortBy === "price-desc") return b.price - a.price;
         if (sortBy === "rating") return b.rating - a.rating;
-        return b.reviews - a.reviews;
+        return b.reviewCount - a.reviewCount;
       });
-  }, [selected, query, sortBy]);
+  }, [selected, query, sortBy, hostels]);
+
+  if (loading) return <div className="py-12">Loading hostels...</div>;
+  if (error) return <div className="py-12">Error loading hostels</div>;
 
   return (
     <div className="min-h-screen pb-16 lg:pb-0">
-      <div className="bg-forest-900 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl p-4 shadow-xl">
-            <div className="flex flex-col sm:flex-row gap-3 items-center">
+      <div className="bg-forest-900 py-12 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h1 className="font-heading text-4xl font-bold text-white md:text-5xl">One hostel. Three ways to stay.</h1>
+          <p className="mx-auto mt-4 max-w-3xl text-white/80">
+            Dorms for solo wanderers. Couple rooms for quiet mornings. Suites for when you need space. All under one roof in Vattakanal.
+          </p>
+          <div className="mt-8 bg-white rounded-2xl p-4 shadow-xl">
+            <div className="flex flex-col sm:flex-row gap-3 items-center text-left">
               <div className="flex-1">
-                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1">Select your hostel</p>
+                <p className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1">Pick your room type</p>
                 <input
                   type="text"
                   value={query}
                   onChange={(e) => { setQuery(e.target.value); syncURL(selected, e.target.value, sortBy); }}
-                  placeholder="Eg: Kasol, Goa, Jaipur..."
+                  placeholder="Dorm, couple room, or suite..."
                   className="w-full text-sm text-forest-900 outline-none placeholder-stone-400"
                 />
               </div>
@@ -64,7 +118,7 @@ function HostelsContent() {
                 <input type="date" className="w-full text-sm text-stone-400 outline-none" />
               </div>
               <button className="px-6 py-3 bg-sunset text-white text-sm font-bold rounded-xl hover:brightness-95 whitespace-nowrap">
-                Book now
+                Check availability
               </button>
             </div>
           </div>
@@ -73,7 +127,12 @@ function HostelsContent() {
 
       <div className="overflow-x-auto scrollbar-hide border-b border-stone-200 bg-white">
         <div className="flex gap-2 px-4 py-3 max-w-7xl mx-auto">
-              {categories.map((cat) => (
+          {[
+            { id: "all", label: "All", icon: "🏔️" },
+            { id: "hostel", label: "Hostel", icon: "🏨" },
+            { id: "coliving", label: "Co-living", icon: "🏢" },
+            { id: "workation", label: "Workation", icon: "💻" },
+          ].map((cat) => (
             <button
               key={cat.id}
               onClick={() => { setSelected(cat.id); syncURL(cat.id, query, sortBy); }}
@@ -91,82 +150,59 @@ function HostelsContent() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-stone-400 text-sm">
-            <span className="font-bold text-forest-900">{filtered.length}</span> hostels found
-          </p>
+        <div className="mb-6 flex justify-between items-center">
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold text-forest-900">Explore {filtered.length} hostels</h2>
+            <p className="mt-1 text-sm text-stone-500">Filtered by {selected === "all" ? "all categories" : selected}</p>
+          </div>
           <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-stone-600">Sort by:</label>
             <select
               value={sortBy}
               onChange={(e) => { setSortBy(e.target.value); syncURL(selected, query, e.target.value); }}
-              className="px-3 py-2 border border-stone-200 rounded-xl text-sm outline-none bg-white"
+              className="border border-stone-200 rounded-md px-3 py-2 text-sm bg-white"
             >
-              <option value="popular">Most popular</option>
-              <option value="rating">Highest rated</option>
-              <option value="price-asc">Price: Low to high</option>
-              <option value="price-desc">Price: High to low</option>
+              <option value="popular">Popular</option>
+              <option value="price-asc">Price: low to high</option>
+              <option value="price-desc">Price: high to low</option>
+              <option value="rating">Rating: high to low</option>
             </select>
-            <div className="hidden sm:flex border border-stone-200 rounded-xl overflow-hidden">
-              <button
-                onClick={() => setView("grid")}
-                className={`p-2 ${view === "grid" ? "bg-forest-900 text-white" : "hover:bg-stone-200/30"}`}
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2zM1 7a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V7zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V7zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V7z"/>
-                </svg>
-              </button>
-              <button
-                onClick={() => setView("list")}
-                className={`p-2 ${view === "list" ? "bg-forest-900 text-white" : "hover:bg-stone-200/30"}`}
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16">
-                  <path fillRule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
-                </svg>
-              </button>
-            </div>
+            <button
+              onClick={() => setView(view === "grid" ? "list" : "grid")}
+              className={`p-2 rounded-hover bg-stone-50 hover:bg-stone-100 ${view === "grid" ? "text-forest-600" : "text-stone-500"}`}
+              aria-label={`${view === "grid" ? "List view" : "Grid view"}`}
+            >
+              {view === "grid" ? (
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 4h12M5 21h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              ) : (
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7H3m8 4H3m-9 4h10M5 21h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+              )}
+            </button>
           </div>
         </div>
 
-        {filtered.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-5xl mb-4">🔍</p>
-            <p className="text-xl font-bold text-forest-900">No hostels found</p>
-            <p className="text-stone-400 mt-2 mb-4">Try a different search or category</p>
-            <button onClick={() => { setQuery(""); setSelected("all"); syncURL("all", "", sortBy); }} className="px-5 py-2.5 text-sm font-bold text-white bg-sunset rounded-xl">
-              Clear filters
-            </button>
-          </div>
-        ) : view === "grid" ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map((h) => <HostelCard key={h.slug} {...h} reviewCount={h.reviews} />)}
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {filtered.map((h) => (
-              <a key={h.slug} href={`/hostels/${h.slug}`} className="flex gap-4 border border-stone-200 rounded-2xl p-4 hover:shadow-md transition-shadow group">
-                <div className="relative w-40 h-32 shrink-0 rounded-xl overflow-hidden bg-stone-200/30">
-                  <img src={h.image} alt={h.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-xs text-stone-400 mb-0.5">{h.tagline}</p>
-                  <h3 className="font-bold text-lg text-forest-900">{h.name}</h3>
-                  <p className="text-sm text-stone-400">{h.location}</p>
-                  <div className="flex items-center gap-2 mt-2">
-                    {h.tags.map(t => <span key={t} className="px-2 py-0.5 text-xs bg-stone-200/30 text-stone-600 rounded-full">{t}</span>)}
-                  </div>
-                </div>
-                <div className="text-right shrink-0">
-                  <p className="text-xl font-extrabold text-forest-900">₹{h.price}</p>
-                  <p className="text-xs text-stone-400">/night</p>
-                  <div className="flex items-center gap-1 mt-1 justify-end">
-                    <svg className="w-3.5 h-3.5 fill-sunset" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
-                    <span className="text-sm font-bold">{h.rating}</span>
-                  </div>
-                </div>
-              </a>
-            ))}
-          </div>
-        )}
+        <div className="grid gap-6">
+          {view === "grid" ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filtered.map((hostel) => (
+                <HostelCard
+                  key={hostel.id}
+                  {...hostel}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {filtered.map((hostel) => (
+                <HostelCard
+                  key={hostel.id}
+                  {...hostel}
+                  variant="list"
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -174,8 +210,10 @@ function HostelsContent() {
 
 export default function HostelsPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-snow flex items-center justify-center"><div className="h-8 w-8 rounded-full border-2 border-forest-500 border-t-transparent animate-spin" /></div>}>
-      <HostelsContent />
-    </Suspense>
+    <section>
+      <Suspense fallback={<div className="py-12">Loading hostels...</div>}>
+        <HostelsContent />
+      </Suspense>
+    </section>
   );
 }

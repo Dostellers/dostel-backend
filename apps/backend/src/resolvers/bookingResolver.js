@@ -1,6 +1,32 @@
-const Booking = require('../models/Booking');
+const Booking = require('../models/booking');
+const Customer = require('../models/customer');
+
+const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const roundMoney = amount => Math.round((Number(amount) + Number.EPSILON) * 100) / 100;
+
+const paymentSummary = booking => {
+    const totalAmount = roundMoney(booking.totalAmount);
+    const depositPercentage = booking.depositPercentage == null ? 25 : booking.depositPercentage;
+    const depositRequired = roundMoney(totalAmount * depositPercentage / 100);
+    const payment = booking.payment || {};
+    const amountPaid = payment.status === 'Completed' ? Math.min(roundMoney(payment.amount || 0), totalAmount) : 0;
+
+    return {
+        depositPercentage,
+        depositRequired,
+        amountPaid,
+        balanceDue: roundMoney(Math.max(totalAmount - amountPaid, 0))
+    };
+};
 
 const bookingResolvers = {
+    Booking: {
+        depositPercentage: booking => paymentSummary(booking).depositPercentage,
+        depositRequired: booking => paymentSummary(booking).depositRequired,
+        amountPaid: booking => paymentSummary(booking).amountPaid,
+        balanceDue: booking => paymentSummary(booking).balanceDue
+    },
     Query: {
         // Get all bookings
         bookings: async () => {
@@ -21,6 +47,46 @@ const bookingResolvers = {
         
         bookingsByStatus: async (_, { status }) => {
             return await Booking.find({ status }).populate('customer').populate('hostel').populate('coupon');
+        },
+
+        adminBookings: async (_, args) => {
+            const limit = Math.min(Math.max(args.limit || 20, 1), 100);
+            const offset = Math.max(args.offset || 0, 0);
+            const filter = {};
+
+            if (args.hostelId) filter.hostel = args.hostelId;
+            if (args.status) filter.status = args.status;
+            if (args.dateFrom || args.dateTo) {
+                filter.checkInDate = {};
+                if (args.dateFrom) filter.checkInDate.$gte = args.dateFrom;
+                if (args.dateTo) filter.checkInDate.$lte = args.dateTo;
+            }
+
+            if (args.search && args.search.trim()) {
+                const search = new RegExp(escapeRegex(args.search.trim()), 'i');
+                const customerIds = await Customer.distinct('_id', { fullName: search });
+                filter.$or = [
+                    { reference: search },
+                    { customer: { $in: customerIds } }
+                ];
+            }
+
+            const [total, bookings] = await Promise.all([
+                Booking.countDocuments(filter),
+                Booking.find(filter)
+                    .sort({ createdAt: -1 })
+                    .skip(offset)
+                    .limit(limit)
+                    .populate('customer')
+                    .populate('hostel')
+                    .populate('discount.coupon')
+            ]);
+
+            return {
+                bookings,
+                total,
+                page: Math.floor(offset / limit) + 1
+            };
         },
 
         // Get all abandoned bookings
@@ -87,3 +153,5 @@ const bookingResolvers = {
 };
 
 module.exports = bookingResolvers;
+module.exports.roundMoney = roundMoney;
+module.exports.paymentSummary = paymentSummary;

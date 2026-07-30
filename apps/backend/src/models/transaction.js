@@ -8,7 +8,7 @@ const transactionSchema = new mongoose.Schema({
     currency: { type: String, default: 'USD' },
     paymentMethod: {
         type: String,
-        enum: ['Credit Card', 'Debit Card', 'PayPal', 'Bank Transfer', 'Cash', 'Others'],
+        enum: ['Credit Card', 'Debit Card', 'PayPal', 'Bank Transfer', 'UPI', 'Cash', 'Others'],
         required: true
     },
     status: {

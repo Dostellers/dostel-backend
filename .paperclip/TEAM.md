@@ -13,6 +13,7 @@ Board
  └── Dostel CEO
       ├── Dostel CMO
       │    ├── Dostel Market Researcher
+      │    ├── Dostel Competitive Analyst
       │    ├── Dostel Content Marketer
       │    └── Dostel Community Lead (Dostellers)
       ├── Dostel Product Manager
@@ -32,6 +33,7 @@ Board
 | CEO | Dostel CEO | `opencode_local` | free OmniRoute | board |
 | CMO | Dostel CMO | `opencode_local` | free OmniRoute | CEO |
 | Market Researcher | Dostel Market Researcher | `opencode_local` | free OmniRoute | CMO |
+| Competitive Analyst | Dostel Competitive Analyst | `opencode_local` | free OmniRoute | CMO |
 | Content Marketer | Dostel Content Marketer | `opencode_local` | free OmniRoute | CMO |
 | Community Lead | Dostel Community Lead | `opencode_local` | free OmniRoute | CMO |
 | Product Manager | Dostel Product Manager | `opencode_local` | free OmniRoute | CEO |
@@ -57,7 +59,7 @@ Board
 - **extraArgs:** `--auto`
 - **timeoutSec:** `600–900`
 - **model (general):** `opencode-omniroute/auto/best-free`
-- **model (engineering):** `opencode-omniroute/auto/best-coding`
+- **model (engineering):** `omniroute/coding-stable` (codex → kilocode → groq → nvidia priority chain)
 - **env:** `OMNIROUTE_API_KEY=local-dev`, `OPENAI_API_KEY=local-dev`, `OPENAI_BASE_URL=http://127.0.0.1:20128/v1`
 
 ## Live targets

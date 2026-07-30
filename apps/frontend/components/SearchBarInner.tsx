@@ -86,7 +86,7 @@ export default function SearchBarInner({
             type="text"
             value={destination}
             onChange={(e) => setDestination(e.target.value)}
-            placeholder="Where to? (e.g. Kasol, Goa...)"
+            placeholder={placeholder || "Search stays in Vattakanal..."}
             className="flex-1 py-2 text-sm text-forest-900 placeholder:text-stone-400 bg-transparent outline-none"
             aria-label="Destination"
           />

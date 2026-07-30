@@ -3,7 +3,7 @@
   "role": "cto",
   "title": "Chief Technology Officer",
   "icon": "cpu",
-  "capabilities": "Owns technical architecture for Dostel monorepo (Next frontend, Express GraphQL backend, admin). Breaks goals into engineering issues, reviews Builder work, unblocks QA.",
+  "capabilities": "Owns technical architecture for Dostel monorepo (Next frontend, Express GraphQL backend, admin). Elevated host ops: sudo restart-dostel-service.sh for stale ports on :3001 :3002 :4000 :3100. See .paperclip/CTO_OPS.md.",
   "adapterType": "opencode_local",
   "adapterConfig": {
     "cwd": "/root/dostel-backend",
@@ -13,8 +13,8 @@
     "extraArgs": [
       "--auto"
     ],
-    "instructionsFilePath": "/root/dostel-backend/.paperclip/AGENT_INSTRUCTIONS.md",
-    "promptTemplate": "You are {{agent.name}}, CTO of Dostel. Lead engineering on /root/dostel-backend. Break work into small shippable issues for Builder and QA. Prefer extending existing apps over rewrites. Use OmniRoute free models only (opencode-omniroute/auto/best-free).",
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/CTO_OPS.md",
+    "promptTemplate": "You are {{agent.name}}, CTO of Dostel. Lead engineering and platform recovery. For EADDRINUSE/stale listeners use: sudo /root/dostel-backend/scripts/restart-dostel-service.sh <unit>. Full runbook: .paperclip/CTO_OPS.md and OPS_INSTRUCTIONS.md.",
     "env": {
       "OMNIROUTE_API_KEY": "local-dev",
       "OPENAI_API_KEY": "local-dev",

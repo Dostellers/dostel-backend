@@ -5,9 +5,12 @@ import { usePathname } from "next/navigation";
 const navItems = [
   { href: "/", label: "Dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
   { href: "/hostels", label: "Hostels", icon: "M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" },
+  { href: "/rooms", label: "Rooms", icon: "M3 7v10m18-7v7M3 13h18M7 13V9h7a3 3 0 013 3v1M3 17h18" },
   { href: "/bookings", label: "Bookings", icon: "M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" },
   { href: "/guests", label: "Guests", icon: "M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" },
-  { href: "/badges", label: "Badges", icon: "M5 3a1 1 0 000 2h14a1 1 0 100-2H5zm0 8a1 1 0 000 2h14a1 1 0 100-2H5zm3 8a1 1 0 011-1h2a1 1 0 010 2H9a1 1 0 01-1-1z" },
+  { href: "/rates", label: "Rates", icon: "M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-6V6m0 10v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z" },
+  { href: "/housekeeping", label: "Housekeeping", icon: "M5 3v4m0 0l4 12m-4-12l12 4m2-6l-4 14m-8-4h8" },
+  { href: "/reports", label: "Reports", icon: "M9 17v-6m4 6V7m4 10v-3M5 21h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2z" },
 ];
 
 export default function Sidebar() {

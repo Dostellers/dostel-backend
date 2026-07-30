@@ -191,27 +191,27 @@ export const amenitiesList = [
 
 export const hostels = [
   {
-    slug: "dostel-kasol-parvati-valley",
-    name: "Kasol, Parvati Valley",
-    tagline: "Ka-Soulful Celebrations",
-    location: "Kasol, Himachal Pradesh",
-    address: "Manikaran Rd, near Narayan Temple, Kasol, HP 175105",
+    slug: "dostel-vattakanal",
+    name: "Dostel Vattakanal",
+    tagline: "A community hostel in the Kodaikanal mountains",
+    location: "Vattakanal, Kodaikanal",
+    address: "Vattakanal village, Kodaikanal, Tamil Nadu",
     price: 327,
     rating: 4.8,
     reviews: 1240,
     image: "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=800&q=80",
-    tags: ["Mountains", "Adventure", "Nature"],
+    tags: ["Mountains", "Community", "Workation"],
     category: "mountains",
     isNew: false,
     isTrending: true,
-    amenities: ["Wi-Fi", "Bonfire", "Common area", "Housekeeping", "Indoor games", "Parking", "Pet friendly", "Power backup", "Veg café", "Workation", "CCTV", "Hot shower"],
-    description: "Set against the lush and majestic backdrop of the Parvati valley, Dostel Kasol is your perfect mountain escape — whether you're dropping by for a weekend or staying put for a month-long reset. With a rooftop café that serves lip-smacking food and drop-dead gorgeous views of the green valleys beyond, this hostel is the ultimate backpacker paradise.",
+    amenities: ["Wi-Fi", "Altaf's Cafe", "Hot water", "Common room", "Bonfire pit", "Indoor games", "Housekeeping", "Power backup", "Lockers", "Pet friendly", "Mountain views"],
+    description: "Set against the misty forests of Vattakanal, Dostel is a backpacker hostel with soul. Founded on land restored by Bob & Tanya in 1985, it's become a gathering place for solo travelers, friend groups, families, and remote workers who want more than a bed — they want community.",
     checkIn: "2 PM",
     checkOut: "11 AM",
-    guestVisit: "9 AM – 9 PM",
-    nearbyTrain: "Chandigarh railway station – 273 km",
-    nearbyBus: "Bhuntar bus stand – 30 km (cab ~₹1600)",
-    nearbyAirport: "Bhuntar Airport (Kullu Manali) – 31 km (cab ~₹1800)",
+    guestVisit: "10 AM – 8 PM",
+    nearbyTrain: "Kodai Road Railway Station – 80 km (2.5 hr by cab)",
+    nearbyBus: "Kodaikanal Bus Stand – 3 km (15 min by auto)",
+    nearbyAirport: "Madurai Airport – 135 km (4 hr by cab)",
     maxCapacity: 110,
   },
   {
@@ -555,12 +555,12 @@ export const heroSlides = [
 ];
 
 export const trustBadges = [
-  { icon: "⚡", label: "Instant bookings" },
-  { icon: "💰", label: "Best prices guaranteed" },
-  { icon: "🌙", label: "Stay longer, save more!" },
-  { icon: "✅", label: "Free cancellation" },
-  { icon: "🏆", label: "500+ verified hostels" },
-  { icon: "⭐", label: "4.7+ avg rating" },
+  { icon: "🏔️", label: "Real Vattakanal hostel since 1985" },
+  { icon: "☕", label: "Altaf's Cafe on property" },
+  { icon: "🔥", label: "Campfire & community nights" },
+  { icon: "✅", label: "Free cancellation — no booking fees" },
+  { icon: "🌿", label: "Ecologically restored grounds" },
+  { icon: "📞", label: "24hr reception + local support" },
 ];
 
 export const dostellerTiers = [

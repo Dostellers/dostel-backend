@@ -1,36 +1,51 @@
-interface PolicyPillsProps {
-  policies: string[];
+import { FC } from 'react';
+
+interface PolicyPillProps {
+  label: string;
+  variant?: 'default' | 'important';
 }
 
-const policyIcons: Record<string, string> = {
-  cancel: "🔄",
-  "check-in": "🕐",
-  id: "🆔",
-  fee: "💰",
-  curfew: "🌙",
-  age: "🔞",
-};
+interface PolicyPillsProps {
+  policies: Array<{
+    label: string;
+    variant?: 'default' | 'important';
+  }>;
+}
 
-export default function PolicyPills({ policies }: PolicyPillsProps) {
-  if (!policies.length) return null;
-
+const PolicyPills: FC<PolicyPillsProps> = ({ policies }) => {
   return (
-    <div className="flex gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4" role="list" aria-label="Policies">
-      {policies.slice(0, 3).map((policy) => {
-        const key = Object.keys(policyIcons).find((k) => policy.toLowerCase().includes(k));
-        const icon = key ? policyIcons[key] : "📋";
-
-        return (
-          <span
-            key={policy}
-            role="listitem"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-stone-200 px-3 py-1.5 text-xs font-medium text-stone-600 whitespace-nowrap"
-          >
-            <span aria-hidden="true">{icon}</span>
-            {policy}
-          </span>
-        );
-      })}
+    <div className="flex flex-col gap-2 md:flex-row mb-4">
+      {policies.map((policy, index) => (
+        <div
+          key={index}
+          className={`flex items-center h-11 px-4 text-sm font-medium transition-[filter] duration-150 ease-in-out pill`}
+          style={{
+            borderRadius: 'var(--ds-radius-md)',
+            backgroundColor: 
+              policy.variant === 'important' 
+                ? 'var(--ds-color-sunset)' 
+                : 'var(--ds-color-stone-200)',
+            color: 
+              policy.variant === 'important' 
+                ? 'var(--ds-color-white)' 
+                : 'var(--ds-color-stone-600)',
+          }}
+        >
+          {policy.label}
+        </div>
+      ))}
+      <style jsx>{`
+        .pill:hover {
+          filter: brightness(0.96);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .pill:hover {
+            transition: none;
+          }
+        }
+      `}</style>
     </div>
   );
-}
+};
+
+export default PolicyPills;

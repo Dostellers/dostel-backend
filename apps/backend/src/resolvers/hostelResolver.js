@@ -1,16 +1,20 @@
-const Hostel = require('../models/Hostel');
+const Hostel = require('../models/hostel');
 
 const hostelResolvers = {
     Query: {
         hostels: async () => {
-            return await Hostel.find()
-                .populate('images.hero')
-                .populate('images.main')
-                .populate('images.thumbnail')
-                .populate('images.others')
-                .populate('amenities')
-                .populate('faqs')
-                .populate('blogs');
+            try {
+                return await Hostel.find()
+                    .populate('images.hero')
+                    .populate('images.main')
+                    .populate('images.thumbnail')
+                    .populate('images.others')
+                    .populate('amenities')
+                    .populate('faqs')
+                    .populate('blogs');
+            } catch (error) {
+                return [];
+            }
         },
         hostel: async (_, { id }) => {
             return await Hostel.findById(id)

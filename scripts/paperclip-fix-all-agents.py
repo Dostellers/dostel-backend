@@ -5,9 +5,11 @@ import subprocess
 import sys
 
 COOKIE = '/tmp/paperclip-board.cookies'
-ORIGIN = 'http://localhost:3100'
+API = 'http://127.0.0.1:3100'
+AUTH_ORIGIN = 'https://office.witylogix.com'
+MUTATION_ORIGIN = 'http://127.0.0.1:3100'
 CID = '2741f8bc-95ff-40c7-81a4-c8f59131c250'
-CODING_MODEL = 'opencode-omniroute/auto/best-coding'
+CODING_MODEL = 'omniroute/coding-stable'
 GENERAL_MODEL = 'opencode-omniroute/auto/best-free'
 PLAIN_ENV = {
     'OMNIROUTE_API_KEY': 'local-dev',
@@ -23,13 +25,14 @@ CODING_IDS = {
 }
 
 
-def curl(method, path, data=None, timeout=60):
+def curl(method, path, data=None, timeout=60, origin=MUTATION_ORIGIN):
     cmd = [
         'curl', '-sS', '--max-time', str(timeout),
         '-b', COOKIE, '-c', COOKIE,
-        '-X', method, f'{ORIGIN}{path}',
+        '-X', method, f'{API}{path}',
         '-H', 'Content-Type: application/json',
-        '-H', f'Origin: {ORIGIN}',
+        '-H', f'Origin: {origin}',
+        '-H', f'Referer: {origin}/DOS/agents',
     ]
     if data is not None:
         cmd += ['-d', json.dumps(data)]
@@ -47,7 +50,7 @@ def main():
     curl('POST', '/api/auth/sign-in/email', {
         'email': 'connect@wityliti.io',
         'password': 'Wityliti@2026',
-    }, timeout=30)
+    }, timeout=30, origin=AUTH_ORIGIN)
 
     agents = curl('GET', f'/api/companies/{CID}/agents', timeout=30)
     names = {a['id']: a['name'] for a in agents}

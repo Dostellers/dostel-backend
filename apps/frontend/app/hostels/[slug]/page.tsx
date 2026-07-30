@@ -1,434 +1,446 @@
-"use client";
+'use client';
 
-import { useState, useMemo, use } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { notFound, useSearchParams } from "next/navigation";
-import { hostels, hostelRooms, hostelFAQs, hostelPolicies, hostelWhyLove, amenitiesList, blogPosts, hostelImages } from "@/lib/data";
-import GalleryGrid from "@/components/GalleryGrid";
-import FAQAccordion from "@/components/FAQAccordion";
-import HostelCard from "@/components/HostelCard";
-import PolicyPills from "@/components/PolicyPills";
-import SocialProof from "@/components/SocialProof";
-import StickyBottomBar from "@/components/StickyBottomBar";
-import LongStayToggle from "@/components/LongStayToggle";
-import { useBooking } from "@/components/BookingProvider";
+import { useQuery } from '@apollo/client';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import HostelCard from '@/components/HostelCard';
+import PolicyPills from '@/components/PolicyPills';
+import { hostels } from '@/lib/data';
+import { GET_HOSTEL_DETAILS } from '@/lib/queries';
 
-const TIMINGS = [
-  { icon: "🔑", label: "Check-in", value: "2 PM" },
-  { icon: "🚪", label: "Check-out", value: "11 AM" },
-  { icon: "👥", label: "Guest visit", value: "10 AM – 8 PM" },
-  { icon: "🏨", label: "Reception", value: "24 Hrs" },
-  { icon: "☕", label: "Breakfast", value: "8 AM – 12 PM" },
-  { icon: "🍽️", label: "Lunch", value: "12 PM – 3 PM" },
-  { icon: "🌙", label: "Dinner", value: "6 PM – 1 AM" },
-  { icon: "🌊", label: "Common area", value: "24 Hrs" },
-  { icon: "🚿", label: "Hot water", value: "24 Hrs" },
-  { icon: "📞", label: "Customer support", value: "10 AM – 10 PM" },
+type ApiHostel = {
+  id: string;
+  name?: string | null;
+  tagline?: string | null;
+  shortDesc?: string | null;
+  basePrice?: number | null;
+  url?: string | null;
+  description?: { content?: string | null } | null;
+  location?: {
+    address?: {
+      line1?: string | null;
+      line2?: string | null;
+      city?: string | null;
+      state?: string | null;
+      country?: string | null;
+      pincode?: string | null;
+    } | null;
+  } | null;
+  timing?: { checkin?: string | null; checkout?: string | null } | null;
+  images?: {
+    hero?: { url?: string | null } | null;
+    main?: { url?: string | null } | null;
+    thumbnail?: { url?: string | null } | null;
+  } | null;
+};
+
+const slugify = (value: string) => value
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/(^-|-$)/g, '');
+
+const reliabilityItems = [
+  {
+    icon: "📶",
+    iconLabel: "Wi-Fi signal",
+    title: "Fiber Wi-Fi",
+    body: '50 Mbps fiber. Reliable for Zoom, Slack, and code pushes. Not "co-working speed" — just real internet that works. Speed is consistent through the day; peak usage (evenings) may dip slightly but stays usable for calls.',
+    measurement: "Wi-Fi speed = measured at 10 AM local (IST, non-peak) on the main router. Real-world evening speeds may be lower during peak usage.",
+  },
+  {
+    icon: "⚡",
+    iconLabel: "Power",
+    title: "Power backup",
+    body: "Generator covers outages. Hot water uses a separate heating system, so even during a full load-shedding window, hot water and Wi-Fi stay on.",
+    measurement: "Power backup = generator automatic-switch coverage for common areas + WiFi router + hostel kitchen. Private rooms with AC have separate wiring; AC runs on mains with backup for common lighting.",
+  },
+  {
+    icon: "🌫️",
+    iconLabel: "Misty weather",
+    title: "Weather",
+    body: "Kodaikanal is cool and misty year-round (10–25°C). Mornings are the best window for clear views. Afternoons can bring rain — raincoat in your bag is non-negotiable, umbrella optional (the mountains ignore umbrellas).",
+  },
+  {
+    icon: "🥾",
+    iconLabel: "Walking",
+    title: "Walk to Vattakanal village",
+    body: "5-minute downhill walk. Auto back to Kodaikanal bus stand is 15 min. No need for a car unless you're heading to the lake or a distant viewpoint.",
+  },
+  {
+    icon: "👤",
+    iconLabel: "Host",
+    title: "Host & community",
+    body: "We're on-site 24/7. Not just reception — people who live here, know every trail, and will point you to the best bonfire spot. Ask us anything at any hour.",
+  },
+  {
+    icon: "📡",
+    iconLabel: "Mobile signal",
+    title: "Mobile signal",
+    body: "Jio and Airtel work well in Vattakanal. BSNL is inconsistent. Vodafone is unreliable above 1,800m. Don't count on one carrier — carry both Jio and Airtel SIMs if you rely on mobile data as backup.",
+    measurement: "Mobile signal = tested on 4G LTE at the hostel reception point. Signal varies by building/room location and carrier.",
+  },
 ];
 
-interface Props {
-  params: Promise<{ slug: string }>;
-}
+const workweekInclusions = [
+  ["5 nights accommodation", "Dorm, couple room, or suite (your choice). Long-stay rates auto-applied."],
+  ["All meals", "Breakfast + lunch + dinner at Altaf's Cafe. Parathas, thali, chai, coffee. Dietary needs handled."],
+  ["Dedicated workspace", "Common room deck + Altaf's cafe corner. Not a fancy co-working space — just a quiet spot with a view and a power outlet."],
+  ["Fiber Wi-Fi", "50 Mbps. Works for calls, streaming, and uploads."],
+  ["Group trek + bonfire", "One organized group trek (Dolphin's Nose or Pillar Rocks, depending on weather) + bonfire night on Friday. Optional but encouraged."],
+  ["Skill-share session", "One 90-minute session where a Workweek guest shares a skill. We'll match you with the group. Past topics: Figma prototyping, Python automation, solo travel writing, Lightroom editing."],
+  ["Skill-share credit", "If you lead a session, your next Workweek booking gets 15% off. If you attend and give a 1-line review on the skill-share board, your next booking gets 5% off."],
+  ["Dosteller trial", "Sign up for Dosteller membership during the Workweek and get Explorer tier at 50% off the first month."],
+];
 
-export default function HostelDetailPage({ params }: Props) {
-  const { slug } = use(params);
-  const searchParams = useSearchParams();
-  const { state, actions } = useBooking();
+const workweekRates = [
+  ["Dorm", "₹260 (-20% off ₹327)", "₹1,300"],
+  ["Couple room", "₹1,039 (-20% off ₹1,299)", "₹5,195"],
+  ["Suite", "₹1,439 (-20% off ₹1,799)", "₹7,195"],
+];
 
-  const hostel = hostels.find((h) => h.slug === slug);
-  if (!hostel) notFound();
+const workweekExclusions = [
+  "Dedicated meeting room (the cafe works for 1:1s)",
+  "Laundry service (available at nominal charge, not included)",
+  "Spa / wellness add-ons (we don't have those yet)",
+  "Airport pickup (shared jeeps from Kodaikanal bus stand; we'll help arrange)",
+];
 
-  const images = hostelImages[slug as keyof typeof hostelImages] ?? hostelImages.default;
-  const similar = hostels.filter((h) => h.slug !== slug && h.category === hostel.category).slice(0, 4);
-  const moreHostels = similar.length < 4 ? [...similar, ...hostels.filter(h => h.slug !== slug).slice(0, 4 - similar.length)] : similar;
-
-  const [selectedRooms, setSelectedRooms] = useState<Set<string>>(new Set());
-  const [longStay, setLongStay] = useState(false);
-
-  const checkIn = searchParams.get("checkIn") || "";
-  const checkOut = searchParams.get("checkOut") || "";
-  const nights = useMemo(() => {
-    if (!checkIn || !checkOut) return 1;
-    const diff = new Date(checkOut).getTime() - new Date(checkIn).getTime();
-    return Math.max(1, Math.round(diff / (1000 * 60 * 60 * 24)));
-  }, [checkIn, checkOut]);
-  const showLongStay = nights >= 7;
-
-  const toggleRoom = (roomId: string) => {
-    const next = new Set(selectedRooms);
-    if (next.has(roomId)) {
-      next.delete(roomId);
-    } else {
-      next.add(roomId);
-    }
-    setSelectedRooms(next);
+export default function HostelDetailPage() {
+  const { slug } = useParams<{ slug: string }>();
+  const { data, loading, error } = useQuery<{ hostels: ApiHostel[] }>(GET_HOSTEL_DETAILS);
+  const fallback = hostels.find((item) => item.slug === slug) || hostels[0];
+  const apiHostel = data?.hostels.find((item) => {
+    const urlSlug = item.url?.split('/').filter(Boolean).pop();
+    const nameSlug = slugify(item.name || '');
+    return urlSlug === slug || nameSlug === slug || `dostel-${nameSlug}` === slug;
+  });
+  const address = apiHostel?.location?.address;
+  const location = [address?.city, address?.state].filter(Boolean).join(', ') || fallback.location;
+  const streetAddress = [address?.line1, address?.line2, address?.city, address?.state, address?.country, address?.pincode]
+    .filter(Boolean)
+    .join(', ') || fallback.address;
+  const hostel = {
+    ...fallback,
+    name: apiHostel?.name || fallback.name,
+    tagline: apiHostel?.tagline || fallback.tagline,
+    description: apiHostel?.description?.content || apiHostel?.shortDesc || fallback.description,
+    price: apiHostel?.basePrice ?? fallback.price,
+    location,
+    address: streetAddress,
+    image: apiHostel?.images?.hero?.url || apiHostel?.images?.main?.url || apiHostel?.images?.thumbnail?.url || fallback.image,
+    checkIn: apiHostel?.timing?.checkin || fallback.checkIn,
+    checkOut: apiHostel?.timing?.checkout || fallback.checkOut,
   };
-
-  const totalPrice = useMemo(() => {
-    return hostelRooms
-      .filter((r) => selectedRooms.has(r.id))
-      .reduce((sum, r) => sum + r.price * nights, 0);
-  }, [selectedRooms, nights]);
-
-  const lowestPrice = hostelRooms.reduce((min, r) => Math.min(min, r.price), Infinity);
-
-  const goToBooking = () => {
-    if (selectedRooms.size === 0) return;
-    const roomData = hostelRooms.filter((r) => selectedRooms.has(r.id));
-    actions.updateSearch({ checkIn, checkOut });
-    actions.setHostel({ slug, name: hostel.name, location: hostel.location });
-    roomData.forEach((r) => {
-      actions.selectRoom({
-        roomId: r.id,
-        name: r.name,
-        quantity: 1,
-        pricePerNight: r.price,
-        total: r.price * nights,
-      });
-    });
-    window.location.href = `/booking/${slug}/details?checkIn=${checkIn}&checkOut=${checkOut}`;
-  };
+  if (loading) {
+    return <div className="min-h-screen bg-snow flex items-center justify-center text-forest-900">Loading hostel...</div>;
+  }
 
   return (
-    <div className="min-h-screen bg-snow text-stone-600 pb-20 lg:pb-0">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16">
-        <GalleryGrid images={images} name={hostel.name} />
+    <div className="min-h-screen bg-snow">
+      <section
+        className="relative h-[70vh] sm:h-[60vh] min-h-[500px] overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: `url(${hostel.image})` }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-forest-900/90 via-forest-900/80 to-forest-900/70" />
+        <div className="relative z-[2] flex h-full w-full items-end pb-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">
+              {hostel.name}
+            </h1>
+            <p className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto mb-4">
+              {hostel.tagline}
+            </p>
+            <div className="inline-flex items-center px-3 py-1 text-xs font-semibold bg-white/20 text-white rounded-full">
+              {location}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div className="bg-white px-4 pt-4">
+        {error && (
+          <p className="mx-auto mb-3 max-w-7xl text-sm text-stone-600" role="status">
+            Live details are unavailable. Showing saved hostel information.
+          </p>
+        )}
+        <PolicyPills
+          policies={[
+            { label: "Free cancel 48h" },
+            { label: `Check-in ${hostel.checkIn}` },
+            { label: "ID required" }
+          ]}
+        />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-12">
-            <div>
-              <div className="flex flex-wrap gap-3 mb-6">
-                {hostel.tags?.map((tag: string) => (
-                  <span key={tag} className="rounded-full bg-stone-200/50 px-3 py-1.5 text-xs font-medium text-stone-400 uppercase tracking-wider">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-              <h1 className="font-heading text-3xl md:text-4xl font-semibold text-forest-900 mb-4 leading-tight">
-                Dostel<br /><span className="block">{hostel.name}</span>
-              </h1>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="flex items-center gap-2">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <svg key={i} className={`w-5 h-5 ${i < Math.floor(hostel.rating) ? "text-sunset" : "text-stone-200"}`} viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                </div>
-                <div className="flex flex-col">
-                  <span className="font-semibold text-forest-900">{hostel.rating}</span>
-                  <span className="text-sm text-stone-400">({hostel.reviews} reviews)</span>
-                </div>
-              </div>
-              <p className="text-base md:text-lg leading-relaxed text-stone-600 mb-6">{hostel.description}</p>
+      {/* Room Types Section */}
+      <section className="py-20 bg-snow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-8">
+            Rooms built for every kind of stay
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {/* Dorm */}
+            <HostelCard
+              slug="dorm"
+              name="Dormitory Bed"
+              location="Vattakanal, Kodaikanal"
+              tagline="Shared rooms with mountain light and locker access"
+              price={327}
+              rating={4.8}
+              reviewCount={124}
+              image="/images/dorm-room.jpg"
+              tags={[ "Dorm", "Budget", "Social" ]}
+              isNew={false}
+              isTrending={false}
+              bookedThisWeek={8}
+              dostellerPrice={294} // 10% discount for Dostellers
+            />
+            {/* Couple Room */}
+            <HostelCard
+              slug="couple-room"
+              name="Couple Room"
+              location="Vattakanal, Kodaikanal"
+              tagline="Private rooms for two, perfect for couples or solo travelers wanting space"
+              price={1299}
+              rating={4.9}
+              reviewCount={98}
+              image="/images/couple-room.jpg"
+              tags={[ "Couple", "Private", "Mountain View" ]}
+              isNew={false}
+              isTrending={false}
+              bookedThisWeek={5}
+              dostellerPrice={1169} // 10% discount for Dostellers
+            />
+            {/* Deluxe Suite */}
+            <HostelCard
+              slug="deluxe-suite"
+              name="Deluxe Suite"
+              location="Vattakanal, Kodaikanal"
+              tagline="Spacious suites with sitting area and mountain views"
+              price={1799}
+              rating={4.9}
+              reviewCount={87}
+              image="/images/deluxe-suite.jpg"
+              tags={[ "Suite", "Premium", "Mountain View" ]}
+              isNew={false}
+              isTrending={false}
+              bookedThisWeek={3}
+              dostellerPrice={1619} // 10% discount for Dostellers
+            />
+          </div>
+          <p className="mt-6 text-center text-stone-600">
+            *Prices shown are base rates. Long-stay and Dosteller discounts apply.
+          </p>
+        </div>
+      </section>
 
-              <PolicyPills policies={["Free cancel 48h", "Check-in 2PM", "ID required"]} />
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                Amenities
-              </h2>
-              <div className="overflow-hidden">
-                <div className="animate-marquee flex gap-6 py-4">
-                  {[...amenitiesList, ...amenitiesList, ...amenitiesList].map((a, i) => (
-                    <div key={i} className="flex flex-col items-center gap-2.5 px-4 py-3 bg-white rounded-2xl mx-2 min-w-[80px] border border-stone-200">
-                      <span className="text-3xl">{a.icon}</span>
-                      <span className="text-sm font-medium text-stone-400 whitespace-nowrap">{a.label}</span>
-                    </div>
-                  ))}
-                </div>
+      {slug === "dostel-vattakanal" && (
+        <>
+          <section className="bg-forest-900 py-20 text-white">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="max-w-3xl">
+                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-white/60">The honest mountain check</p>
+                <h2 className="font-heading text-3xl font-semibold md:text-4xl">Know before you climb</h2>
+                <p className="mt-4 text-lg leading-8 text-white/75">
+                  Vattakanal is real. The internet, the power, the mist — all of it. Here&apos;s what to expect so you can pack right and work confidently.
+                </p>
               </div>
-            </div>
-
-            <div id="rooms">
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                Rooms
-              </h2>
-              {showLongStay && (
-                <div className="mb-6">
-                  <LongStayToggle
-                    onToggle={setLongStay}
-                    active={longStay}
-                    isDosteller={false}
-                  />
-                </div>
-              )}
-              <div className="space-y-4">
-                {hostelRooms.map((room) => {
-                  const isSelected = selectedRooms.has(room.id);
-                  return (
-                    <div
-                      key={room.id}
-                      className={`rounded-2xl border-2 bg-white overflow-hidden transition-all duration-250 ${
-                        isSelected
-                          ? "border-forest-500 shadow-md"
-                          : room.available
-                            ? "border-stone-200 hover:border-forest-500/40"
-                            : "border-stone-200 opacity-60"
-                      }`}
-                    >
-                      <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 p-4">
-                        <div className="sm:col-span-4">
-                          <Image src={room.image} alt={room.name} width={400} height={300} className="h-36 w-full object-cover rounded-xl" />
-                        </div>
-                        <div className="sm:col-span-8 space-y-3">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <h3 className="font-heading text-lg font-semibold text-forest-900">{room.name}</h3>
-                              <p className="text-sm text-stone-400">Up to {room.capacity} guests</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="font-heading text-xl font-extrabold text-forest-900">₹{longStay ? Math.round(room.price * 0.8) : room.price}</p>
-                              {room.originalPrice && (
-                                <p className="text-xs text-stone-400 line-through">₹{room.originalPrice}</p>
-                              )}
-                              <p className="text-xs text-stone-400">/night</p>
-                            </div>
-                          </div>
-                          <div className="flex flex-wrap gap-1.5">
-                            {room.amenities.slice(0, 5).map((a) => (
-                              <span key={a} className="rounded-full bg-stone-200/50 px-2.5 py-0.5 text-xs font-medium text-stone-400">
-                                {a}
-                              </span>
-                            ))}
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <SocialProof count={(room as any).bookedThisWeek || 0} label="booked this week" />
-                            <button
-                              onClick={() => toggleRoom(room.id)}
-                              disabled={!room.available}
-                              className={`rounded-xl px-5 py-2.5 text-sm font-semibold transition-all duration-150 active:scale-[0.97] focus-visible:outline-2 focus-visible:outline-sky ${
-                                isSelected
-                                  ? "bg-forest-500 text-white"
-                                  : room.available
-                                    ? "border-2 border-forest-500 text-forest-500 hover:bg-forest-50"
-                                    : "bg-stone-200/50 text-stone-400 cursor-not-allowed"
-                              }`}
-                            >
-                              {!room.available ? "Sold out" : isSelected ? "Selected" : "Select"}
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                Why you&apos;ll love it here
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {hostelWhyLove.map((item) => (
-                  <div key={item.title} className="rounded-2xl bg-stone-200/30 p-6">
+              <div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {reliabilityItems.map((item) => (
+                  <article key={item.title} className="rounded-2xl border border-white/15 bg-white/10 p-6">
                     <div className="flex items-start gap-4">
-                      <span className="text-4xl shrink-0">{item.icon}</span>
+                      <span className="text-2xl" role="img" aria-label={item.iconLabel}>{item.icon}</span>
                       <div>
-                        <h3 className="font-heading text-lg font-semibold text-forest-900 mb-2">{item.title}</h3>
-                        <p className="text-stone-600 leading-relaxed">{item.desc}</p>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-heading text-lg font-semibold">{item.title}</h3>
+                          {item.measurement && (
+                            <span className="group relative inline-flex">
+                              <button
+                                type="button"
+                                aria-label={`How ${item.title.toLowerCase()} is measured`}
+                                aria-describedby={`measurement-${slugify(item.title)}`}
+                                className="flex h-5 w-5 items-center justify-center rounded-full border border-white/30 text-xs text-white/70 focus:outline-none focus:ring-2 focus:ring-white"
+                              >
+                                i
+                              </button>
+                              <span
+                                id={`measurement-${slugify(item.title)}`}
+                                role="tooltip"
+                                className="pointer-events-none absolute bottom-8 left-1/2 z-10 hidden w-64 -translate-x-1/2 rounded-lg bg-white p-3 text-xs leading-5 text-forest-900 shadow-xl group-hover:block group-focus-within:block"
+                              >
+                                {item.measurement}
+                              </span>
+                            </span>
+                          )}
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-white/75">{item.body}</p>
                       </div>
                     </div>
-                  </div>
+                  </article>
                 ))}
               </div>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                Location
-              </h2>
-              <div className="rounded-2xl border border-stone-200 bg-white p-8 space-y-6">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <span className="text-3xl shrink-0">🚂</span>
-                    <div>
-                      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">From the train station</p>
-                      <p className="text-forest-900">{hostel.nearbyTrain}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <span className="text-3xl shrink-0">🚌</span>
-                    <div>
-                      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">From the bus stand</p>
-                      <p className="text-forest-900">{hostel.nearbyBus}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <span className="text-3xl shrink-0">✈️</span>
-                    <div>
-                      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider mb-1">From the airport</p>
-                      <p className="text-forest-900">{hostel.nearbyAirport}</p>
-                    </div>
-                  </div>
-                </div>
+              <div className="mt-10">
+                <Link href="/hostels/dostel-vattakanal" className="inline-flex h-11 items-center justify-center rounded-lg bg-white px-6 text-sm font-semibold text-forest-900 transition hover:bg-white/90">
+                  Book a room in Vattakanal
+                </Link>
               </div>
             </div>
+          </section>
 
-            <div>
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                Important information
-              </h2>
-              <div className="space-y-8">
+          <section className="bg-white py-20">
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <div className="grid gap-12 lg:grid-cols-[1.3fr_0.7fr]">
                 <div>
-                  <h3 className="font-heading text-lg font-semibold text-forest-900 mb-4 uppercase tracking-wider">Important timings</h3>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {TIMINGS.map((t) => (
-                      <div key={t.label} className="flex items-center gap-3 rounded-xl border border-stone-200 bg-white p-4">
-                        <span className="text-2xl shrink-0">{t.icon}</span>
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-sunset">Work from the mountains</p>
+                  <h2 className="font-heading text-3xl font-semibold text-forest-900 md:text-4xl">The Workweek</h2>
+                  <p className="mt-4 text-xl font-medium text-forest-900">5 nights of focus, fire, and community. Remote work with the mountain doing the heavy lifting.</p>
+                  <p className="mt-5 max-w-3xl leading-7 text-stone-600">
+                    Most workation packages make big promises. Ours is simpler: a quiet room, solid internet, three meals a day, and a community of people who also brought their laptops. No productivity theater — just a mountain base that actually works for remote work.
+                  </p>
+                  <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                    {workweekInclusions.map(([title, detail]) => (
+                      <article key={title} className="rounded-xl border border-stone-200 p-5">
+                        <h3 className="font-heading font-semibold text-forest-900">{title}</h3>
+                        <p className="mt-2 text-sm leading-6 text-stone-600">{detail}</p>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+
+                <aside className="h-fit rounded-2xl bg-snow p-6 lg:sticky lg:top-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">Sunday–Thursday</p>
+                  <h3 className="mt-2 font-heading text-2xl font-semibold text-forest-900">Five-night rates</h3>
+                  <div className="mt-6 overflow-hidden rounded-xl border border-stone-200 bg-white">
+                    {workweekRates.map(([room, nightly, total]) => (
+                      <div key={room} className="grid grid-cols-[1fr_auto] gap-4 border-b border-stone-200 p-4 last:border-0">
                         <div>
-                          <p className="text-xs font-medium text-stone-400">{t.label}</p>
-                          <p className="font-semibold text-forest-900">{t.value}</p>
+                          <p className="font-medium text-forest-900">{room}</p>
+                          <p className="text-xs text-stone-500">{nightly} per night</p>
                         </div>
+                        <p className="font-heading font-semibold text-forest-900">{total}</p>
                       </div>
                     ))}
                   </div>
-                </div>
-                <div>
-                  <h3 className="font-heading text-lg font-semibold text-forest-900 mb-4 uppercase tracking-wider">General information</h3>
-                  <ul className="space-y-3">
-                    {hostelPolicies.slice(0, 5).map((p, i) => (
-                      <li key={i} className="flex items-start gap-3 text-stone-600">
-                        <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-sunset" />
-                        {p}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                FAQs
-              </h2>
-              <FAQAccordion faqs={hostelFAQs} />
-            </div>
-
-            <div>
-              <h2 className="font-heading text-xl md:text-2xl font-semibold text-forest-900 mb-6 uppercase tracking-wider">
-                Policies
-              </h2>
-              <div className="space-y-6">
-                <h3 className="font-heading text-lg font-semibold text-forest-900 mb-4 uppercase tracking-wider">General policies</h3>
-                <ul className="space-y-4">
-                  {hostelPolicies.map((p, i) => (
-                    <li key={i} className="flex items-start gap-3 text-stone-600">
-                      <span className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-stone-200" />
-                      {p}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          <aside className="lg:col-span-1">
-            <div className="lg:sticky lg:top-6 space-y-8">
-              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-lg">
-                <div className="flex items-baseline gap-2 mb-4">
-                  <span className="text-4xl font-extrabold text-forest-900">
-                    ₹{selectedRooms.size > 0 ? Math.round(totalPrice / Math.max(1, nights)) : (hostel.price || lowestPrice)}
-                  </span>
-                  <span className="text-sm text-stone-400">/night</span>
-                </div>
-                <p className="text-sm text-stone-400 mb-5">Free cancellation available</p>
-                <div className="mb-6 overflow-hidden rounded-xl border border-stone-200">
-                  <div className="grid grid-cols-2 divide-x divide-stone-200">
-                    <div className="p-4">
-                      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider">Check-in</p>
-                      <p className="mt-2 font-semibold text-forest-900">{checkIn || "Select dates"}</p>
-                    </div>
-                    <div className="p-4">
-                      <p className="text-xs font-medium text-stone-400 uppercase tracking-wider">Check-out</p>
-                      <p className="mt-2 font-semibold text-forest-900">{checkOut || "Select dates"}</p>
-                    </div>
+                  <p className="mt-3 text-xs leading-5 text-stone-500">Workweek rate is available Sunday–Thursday bookings. Dosteller members get an additional 10–15% off the Workweek total.</p>
+                  <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-xs leading-5 text-amber-900" role="note">
+                    Pricing, internet speed, backup coverage, meal inclusions, discounts, and activity availability require operator validation before publishing.
                   </div>
-                  <div className="border-t border-stone-200 p-4">
-                    <p className="text-xs font-medium text-stone-400 uppercase tracking-wider">Duration</p>
-                    <p className="mt-2 font-semibold text-forest-900">{nights} {nights === 1 ? "Night" : "Nights"}</p>
+                  <Link href="/hostels/dostel-vattakanal?workweek=true" className="mt-6 inline-flex h-11 w-full items-center justify-center rounded-lg bg-sunset px-6 text-sm font-semibold text-white transition hover:brightness-95">
+                    Book a Workweek
+                  </Link>
+                  <div className="mt-8 border-t border-stone-200 pt-6">
+                    <h3 className="font-heading font-semibold text-forest-900">What&apos;s NOT included (we&apos;re honest about this)</h3>
+                    <ul className="mt-3 space-y-3 text-sm leading-6 text-stone-600">
+                      {workweekExclusions.map((exclusion) => (
+                        <li key={exclusion} className="flex items-start gap-2">
+                          <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-sunset" />
+                          <span>{exclusion}</span>
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                </div>
-                <button
-                  onClick={goToBooking}
-                  disabled={selectedRooms.size === 0}
-                  className="w-full rounded-xl bg-sunset px-5 py-3 text-sm font-extrabold text-white uppercase tracking-wider transition-all duration-150 active:scale-[0.97] hover:brightness-95 disabled:opacity-45 disabled:cursor-not-allowed"
-                >
-                  {selectedRooms.size === 0 ? "Select a room" : `Book now · ₹${totalPrice}`}
-                </button>
-                <p className="mt-4 text-center text-xs text-stone-400">No booking fees · Instant confirmation</p>
-              </div>
-
-              <div className="rounded-2xl bg-stone-200/30 p-6">
-                <div className="flex items-start gap-4">
-                  <span className="text-2xl shrink-0">📞</span>
-                  <div>
-                    <p className="text-sm text-stone-400">Need help? Call us</p>
-                    <p className="font-semibold text-forest-900">+91 98101 87717</p>
-                    <p className="text-sm text-stone-400">10 AM – 10 PM</p>
-                  </div>
-                </div>
+                </aside>
               </div>
             </div>
-          </aside>
-        </div>
-      </div>
-
-      <StickyBottomBar
-        price={selectedRooms.size > 0 ? Math.round(totalPrice / Math.max(1, nights)) : (hostel.price || lowestPrice)}
-        total={totalPrice}
-        ctaLabel={selectedRooms.size === 0 ? "Select a room" : `Book now · ₹${totalPrice}`}
-        disabled={selectedRooms.size === 0}
-        onCtaClick={goToBooking}
-        show
-      />
-
-      {moreHostels.length > 0 && (
-        <div className="bg-stone-200/30">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-8 uppercase tracking-wider">
-              Similar properties
-            </h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {moreHostels.slice(0, 4).map((h: any) => (
-                <HostelCard key={h.slug} {...h} reviewCount={h.reviews} />
-              ))}
-            </div>
-          </div>
-        </div>
+          </section>
+        </>
       )}
 
-      <div className="bg-stone-200/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-          <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-8 uppercase tracking-wider">
-            Must reads
+      {/* Amenities Section */}
+      <section className="py-20 bg-snow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-8">
+            What&apos;s included in your stay
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {blogPosts.map((post) => (
-              <Link key={post.slug} href={`/blog/${post.slug}`} className="group block rounded-2xl border border-stone-200 bg-white overflow-hidden hover:shadow-md transition-all duration-250 hover:-translate-y-0.5">
-                <div className="relative aspect-video">
-                  <Image src={post.image} alt={post.title} fill className="object-cover group-hover:scale-105 transition-transform duration-300" />
-                  <div className="absolute top-2 left-2 rounded-full bg-white/90 backdrop-blur-sm px-2 py-0.5 text-xs font-medium text-stone-400">
-                    {post.readTime}
-                  </div>
-                </div>
-                <div className="p-5 space-y-2">
-                  <p className="text-xs text-stone-400">{post.date}</p>
-                  <h3 className="font-heading text-lg font-semibold text-forest-900 line-clamp-2 group-hover:text-sunset transition-colors">
-                    {post.title}
-                  </h3>
-                  <p className="text-sm text-stone-600 line-clamp-3">{post.excerpt}</p>
-                </div>
-              </Link>
-            ))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6 text-center">
+            <div>
+              <span className="text-2xl mb-2 block">🔥</span>
+              <p className="text-sm font-medium text-forest-900">Campfire & community nights</p>
+            </div>
+            <div>
+              <span className="text-2xl mb-2 block">☕</span>
+              <p className="text-sm font-medium text-forest-900">Altaf&apos;s Cafe on property</p>
+            </div>
+            <div>
+              <span className="text-2xl mb-2 block">🌿</span>
+              <p className="text-sm font-medium text-forest-900">Ecologically restored grounds</p>
+            </div>
+            <div>
+              <span className="text-2xl mb-2 block">📞</span>
+              <p className="text-sm font-medium text-forest-900">24hr reception + local support</p>
+            </div>
+            <div>
+              <span className="text-2xl mb-2 block">🏔️</span>
+              <p className="text-sm font-medium text-forest-900">Real Vattakanal hostel since 1985</p>
+            </div>
+            <div>
+              <span className="text-2xl mb-2 block">🧳</span>
+              <p className="text-sm font-medium text-forest-900">Free cancellation — no booking fees</p>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Location Section */}
+      <section className="py-20 bg-snow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-6">
+            Where we are
+          </h2>
+          <p className="text-stone-600 mb-6">
+            {hostel.description}
+          </p>
+          <p className="text-stone-600 text-center">
+            {hostel.address}
+          </p>
+        </div>
+      </section>
+
+      {/* The Dostellers Section */}
+      <section className="py-20 bg-snow">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-6">
+            Stay long enough to belong
+          </h2>
+          <p className="text-stone-600 mb-8">
+            Our Dostellers program rewards long stays and repeat visitors. Stay 14+ nights in a month to unlock: shared meals at Altaf&apos;s Cafe, group treks to Dolphin&apos;s Nose, bonfire nights, and access to the Dostellers WhatsApp group.
+          </p>
+          <div className="flex justify-center">
+            <Link
+              href="/membership"
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-sunset px-6 text-sm font-medium text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
+            >
+              Learn about Dostellers
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA Section */}
+      <section className="bg-forest-900 text-white">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+          <h2 className="font-heading text-3xl md:text-4xl font-semibold mb-6">
+            Come stay awhile
+          </h2>
+          <p className="text-white/80 max-w-xl mx-auto mb-8">
+            {hostel.location} is waiting. Whether you&apos;re passing through for a weekend or staying for a month — there&apos;s a bed, a fire, and a community here.
+          </p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <Link
+              href={`/booking/${slug}/dates`}
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-sm font-medium text-white transition-all duration-150 hover:bg-white/20 active:scale-[0.97]"
+            >
+              Check availability
+            </Link>
+            <Link
+              href="/membership"
+              className="inline-flex h-11 items-center justify-center rounded-lg bg-sunset px-6 text-sm font-medium text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
+            >
+              Become a Dosteller
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

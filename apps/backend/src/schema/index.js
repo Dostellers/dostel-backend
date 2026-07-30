@@ -21,7 +21,7 @@ const userTypeDefs = require('./userTypeDefs');
 const roleTypeDefs = require('./roleTypeDefs');
 const couponTypeDefs = require('./couponTypeDefs');
 const healthTypeDefs = require('./healthTypeDefs');
-// Import other typedefs as needed...
+const membershipTypeDefs = require('./membershipTypeDefs');
 
 const mergedTypeDefs = mergeTypeDefs([
     amenityTypeDefs,
@@ -40,11 +40,12 @@ const mergedTypeDefs = mergeTypeDefs([
     reviewTypeDefs,
     roomTypeDefs,
     taxRateTypeDefs,
+    transactionTypeDefs,
     userTypeDefs,
     roleTypeDefs,
     couponTypeDefs,
-    transactionTypeDefs,
-    healthTypeDefs
+    healthTypeDefs,
+    membershipTypeDefs
 ]);
 
 module.exports = mergedTypeDefs;

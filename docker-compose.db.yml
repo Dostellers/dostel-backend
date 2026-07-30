@@ -1,0 +1,18 @@
+services:
+  mongo:
+    image: mongo:6
+    container_name: dostel-mongo
+    restart: unless-stopped
+    ports:
+      - '127.0.0.1:27017:27017'
+    volumes:
+      - dostel_mongo_config:/data/configdb
+      - dostel_mongo_data:/data/db
+
+volumes:
+  dostel_mongo_config:
+    external: true
+    name: e8d72e8fb01050f879d7e7938846cbf602ba89e0f636246e763d7aca3684bea1
+  dostel_mongo_data:
+    external: true
+    name: 86c9fc689c79e3caad37662a72d0228b7a2b6901be4fbc297070bc89293f24b5

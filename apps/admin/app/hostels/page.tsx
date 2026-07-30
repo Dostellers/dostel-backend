@@ -1,9 +1,7 @@
 "use client";
-import { useState } from "react";
 import { hostels } from "@/lib/data";
 
 export default function HostelsPage() {
-  const [selected, setSelected] = useState("all");
 
   return (
     <div className="space-y-6">

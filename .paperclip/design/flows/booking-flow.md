@@ -1,4 +1,4 @@
-# Booking Flow Spec v3.0 — Guest Booking Journey
+# Booking Flow Spec v4.0 — Guest Booking Journey
 
 ## Audit delta from v2.0 (Jul 28 2026)
 - **v2.0 assumed a working frontend**. The audit found:
@@ -14,6 +14,40 @@
   - HostelCard missing `soldOut`, `bookedThisWeek`, `dostellerPrice`, `variant`
   - No step indicator for checkout
 - **v3.0 adds**: concrete code targets per step, state machine for drop-off tracking, API contract alignment with backend
+
+## v4 interaction refinement (Jul 30 2026)
+
+### Journey contract
+
+| Step | Guest question | Primary action | Continuity promise | Recovery |
+|---|---|---|---|---|
+| Search | Where and when can I stay? | Search hostels | Destination, dates, and guests remain visible | Invalid dates stay editable with inline guidance |
+| Listing | Which property fits this trip? | Open property | Search context follows every card link | Empty results preserve inputs and offer date/filter reset |
+| Detail | Which room is right and what will it cost? | Select room, then book | Total updates without leaving the page | Unavailable selection retains dates and suggests alternatives |
+| Guest details | What is the minimum information needed? | Continue to review | Draft saves after each valid field | First invalid field receives focus; entered data remains |
+| Review | Is everything correct and transparent? | Confirm and pay | Edit returns to the same review position | Price changes require explicit acknowledgement |
+| Payment | How can I pay safely? | Pay total | Booking is reserved during payment | Failure keeps booking pending and offers retry/change method |
+| Confirmation | What happens next? | View trip | Reference and arrival details remain retrievable | Receipt/calendar failures retry independently |
+
+### Shared interaction rules
+
+- One primary action per viewport; labels state the outcome and include the payable amount when relevant.
+- Never erase valid input because another field fails, a request errors, or the guest navigates back.
+- Async controls retain their width, replace the label with a progress label, and set `aria-busy="true"`; no layout shift.
+- Success updates are announced in a polite live region. Blocking errors use an assertive live region and move focus to the error summary.
+- Hover is enhancement only. Every hover disclosure must also open on focus and tap; Escape closes it and returns focus to its trigger.
+- Disabled controls include visible reason text nearby; color and opacity alone never communicate state.
+- Sticky surfaces reserve space in layout, remain above browser safe-area insets, and never cover focused fields.
+
+### Purposeful motion
+
+1. **Selection confirmation:** selected room content changes instantly; border and check indicator transition for 160ms. No card movement.
+2. **Price reconciliation:** changed numeric rows briefly use Forest-100 for 600ms, while the sticky total cross-fades for 160ms; screen readers hear the complete new total once.
+3. **Page continuity:** checkout content fades in for 180ms only after restored state is ready; skeletons do not cross-fade into errors.
+
+Under `prefers-reduced-motion: reduce`, all transitions are removed and state changes remain immediate.
+
+---
 
 ## Competitive context: drop-off gaps vs Zostel/Hosteller
 
@@ -162,6 +196,8 @@ Tapping any pill re-expands the search bar inline. The "Edit" button expands all
 - [ ] Trending destinations shown when search is empty (from `heroSlides` or curated data)
 - [ ] Date inputs use `<input type="date">` on mobile (native picker)
 - [ ] Past check-in date: disabled in picker + inline message
+- [ ] If user is a Dosteller and nights>=7, show "Dosteller: up to 40% off" badge on hostel card
+- [ ] If user is not a Dosteller and nights>=7, show "Unlock Dosteller pricing" badge linking to /dostellers
 
 ---
 
@@ -309,6 +345,7 @@ BOOK_NOW → user taps CTA
 ```
 - **Height**: 72px (page has 80px bottom padding)
 - **Shows**: lowest available price/night + total for selected dates
+  - If user is a Dosteller and nights>=7, show the discounted Dosteller price
 - **CTA text**: "Book now" if room selected, "Select a room" if none, "Sold out" if unavailable
 - **On scroll UP**: appears with slide-up (250ms ease-out)
 - **On scroll DOWN**: hides
@@ -624,13 +661,14 @@ interface BookingActions {
 
 ## Mobile-first layout rules (enforced across all booking pages)
 
-1. **Sticky bottom bar** on detail + checkout: price + CTA in thumb zone
-2. **Thumb zone** (bottom 72px): primary actions only — nothing critical above it
-3. **Date inputs**: native `<input type="date">` — no custom pickers
-4. **Single column** on < 768px, sidebar layout on desktop (detail + review + payment)
-5. **Back navigation**: `history.back()` for back buttons, never `router.push()`
-6. **Touch targets**: all interactive elements >= 44px
-7. **Edge-to-edge images**: no horizontal padding on gallery, cards full-width on mobile
+ 1. **Sticky bottom bar** on detail + checkout: price + CTA in thumb zone
+ 2. **Thumb zone** (bottom 72px): primary actions only — nothing critical above it
+ 3. **Date inputs**: native `<input type="date">` — no custom pickers
+ 4. **Single column** on < 768px, sidebar layout on desktop (detail + review + payment)
+ 5. **Back navigation**: `history.back()` for back buttons, never `router.push()`
+ 6. **Touch targets**: all interactive elements >= 44px
+ 7. **Edge-to-edge images**: no horizontal padding on gallery, cards full-width on mobile
+ 8. **Motion**: only use the 3 prescribed animations (card lift, page fade-in, button press) and respect `prefers-reduce motion: card lift, page fade-in, button press) and respect `prefers-reduced-motion`
 
 ---
 

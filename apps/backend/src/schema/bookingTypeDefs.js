@@ -22,6 +22,10 @@ const bookingTypeDefs = gql`
     checkOutDate: Date!
     guests: Int!
     totalAmount: Float!
+    depositPercentage: Float!
+    depositRequired: Float!
+    amountPaid: Float!
+    balanceDue: Float!
     payment: PaymentInfo!
     specialRequests: String
     source: SourceDetail
@@ -32,10 +36,17 @@ const bookingTypeDefs = gql`
     updatedAt: Date!
   }
 
+  type AdminBookingsResult {
+    bookings: [Booking!]!
+    total: Int!
+    page: Int!
+  }
+
   type PaymentInfo {
     status: String!
     method: String
     transactionId: String
+    amount: Float!
   }
 
   type DiscountInfo {
@@ -66,6 +77,7 @@ const bookingTypeDefs = gql`
     status: String!
     method: String
     transactionId: String
+    amount: Float!
   }
 
   input DiscountInput {
@@ -88,6 +100,15 @@ const bookingTypeDefs = gql`
     bookingsByCustomer(customerId: ID!): [Booking!]!
     bookingsByStatus(status: String!): [Booking!]!
     abandonedBookings: [Booking!]!
+    adminBookings(
+      hostelId: ID
+      status: String
+      dateFrom: Date
+      dateTo: Date
+      search: String
+      limit: Int
+      offset: Int
+    ): AdminBookingsResult!
   }
 
   extend type Mutation {

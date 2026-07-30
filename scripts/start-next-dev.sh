@@ -25,4 +25,4 @@ PY
 fi
 
 cd "$APP_DIR"
-exec npm run dev -- -p "$PORT" -H 0.0.0.0
+exec npx next dev -p "$PORT" -H 0.0.0.0

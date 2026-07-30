@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { BookingProvider } from "@/components/BookingProvider";
+import { ApolloProviderWrapper } from "@/lib/apollo-provider";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-heading",
@@ -31,9 +32,11 @@ export default function RootLayout({
     <html lang="en" className={`${playfairDisplay.variable} ${inter.variable}`}>
       <body className="min-h-screen flex flex-col">
         <BookingProvider>
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <ApolloProviderWrapper>
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </ApolloProviderWrapper>
         </BookingProvider>
       </body>
     </html>

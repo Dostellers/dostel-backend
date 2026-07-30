@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
-    "scheduler": "node ../../scheduler.js"
+    "scheduler": "node ../../scheduler.js",
+    "test": "node test/payment-behavior.test.js"
   },
   "author": "Sushil Singh",
   "license": "ISC",

@@ -15,10 +15,12 @@ const bookingSchema = new mongoose.Schema({
     checkOutDate: { type: Date, required: true },
     guests: { type: Number, required: true },
     totalAmount: { type: Number, required: true },
+    depositPercentage: { type: Number, min: 0, max: 100, default: 25 },
     payment: {
         status: { type: String, enum: ['Pending', 'Completed', 'Failed'], default: 'Pending' },
-        method: { type: String, enum: ['Credit Card', 'Debit Card', 'PayPal', 'Cash', 'Others'] },
-        transactionId: String
+        method: { type: String, enum: ['Credit Card', 'Debit Card', 'PayPal', 'UPI', 'Cash', 'Others'] },
+        transactionId: String,
+        amount: { type: Number, required: true, min: 0 }
     },
     specialRequests: String,
     source: SourceDetailSchema,

@@ -8,10 +8,19 @@ const RoomReservationSchema = new mongoose.Schema({
 });
 
 const RoomSchema = new mongoose.Schema({
-    type: { type: String, required: true, trim: true },
-    capacity: { type: Number, required: true, min: 1 },
+    number: { type: String, trim: true },
+    roomType: { type: mongoose.Schema.Types.ObjectId, ref: 'RoomType' },
+    floor: Number,
+    status: {
+        type: String,
+        enum: ['available', 'occupied', 'maintenance', 'out_of_order'],
+        default: 'available',
+        required: true
+    },
+    type: { type: String, trim: true },
+    capacity: { type: Number, min: 1 },
     maxCapacity: Number,
-    price: { type: Number, required: true },
+    price: Number,
     msp: Number,
     additionalGuestPrice: Number,
     description: { type: String, trim: true },
@@ -29,5 +38,8 @@ const RoomSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
+
+RoomSchema.index({ hostel: 1, number: 1 }, { unique: true, sparse: true });
+RoomSchema.index({ hostel: 1, status: 1 });
 
 module.exports = mongoose.model('Room', RoomSchema);

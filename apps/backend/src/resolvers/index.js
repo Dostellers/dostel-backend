@@ -19,6 +19,7 @@ const userResolver = require('./userResolver');
 const roleResolver = require('./roleResolver');
 const departmentResolver = require('./departmentResolver');
 const healthResolver = require('./healthResolver');
+const membershipResolver = require('./membershipResolver');
 
 module.exports = {
     Query: {
@@ -42,7 +43,8 @@ module.exports = {
         ...userResolver.Query,
         ...roleResolver.Query,
         ...departmentResolver.Query,
-        ...healthResolver.Query
+        ...healthResolver.Query,
+        ...membershipResolver.Query
     },
     Mutation: {
         ...amenityResolver.Mutation,
@@ -64,6 +66,7 @@ module.exports = {
         ...transactionResolver.Mutation,
         ...userResolver.Mutation,
         ...roleResolver.Mutation,
-        ...departmentResolver.Mutation
+        ...departmentResolver.Mutation,
+        ...membershipResolver.Mutation
     }
 };

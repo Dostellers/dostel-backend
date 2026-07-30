@@ -1,0 +1,30 @@
+{
+  "name": "Dostel Competitive Analyst",
+  "role": "researcher",
+  "title": "Competitive Intelligence / Feature Comparison",
+  "icon": "target",
+  "reportsTo": "27086b1d-4109-4396-aae3-223cf097cc67",
+  "capabilities": "Continuous competitive analysis vs Zostel, Hosteller, Cloudbeds. Maintains feature comparison matrix and USP backlog. Files PM/CMO issues for differentiators Dostel should ship.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 900,
+    "extraArgs": [],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/COMPETITIVE_ANALYSIS_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}} for Dostel. Compare competitors feature-by-feature, find USPs, update .paperclip/research/competitive-feature-matrix.md and usp-backlog.md, and create Paperclip issues for PM/CMO. OmniRoute auto/best-free only.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1800,
+      "wakeOnDemand": true
+    }
+  }
+}

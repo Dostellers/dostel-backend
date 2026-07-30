@@ -401,6 +401,7 @@ interface LongStayToggleProps {
 - [ ] All pages mobile-first (single column < 768px)
 - [ ] All CTAs touch target >= 44px
 - [ ] All text meets WCAG AA contrast
+- [ ] Motion: only use the 3 prescribed animations (card lift, page fade-in, button press) and respect `prefers-reduced-motion`
 
 ### Backend API contracts
 ```graphql

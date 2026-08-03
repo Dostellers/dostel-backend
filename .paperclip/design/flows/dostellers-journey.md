@@ -1,4 +1,4 @@
-# Dostellers Journey Spec v2.0 — Community Membership
+# Dostellers Journey Spec v2.1 — Community Membership
 
 ## Audit delta from v1.0 (Jul 28 2026)
 - **v1.0 assumed design-only**. The code audit found:
@@ -22,6 +22,7 @@
 - Loyalty points → free nights (100 points = ₹100 off)
 - Badge system (Trailblazer, Storyteller, Remote Pro, etc.)
 - Early access to new properties and events
+- Tree planting rewards via afforestation.org partnership
 
 ---
 
@@ -29,7 +30,7 @@
 
 | Feature | Zostel | Hosteller | Dostel (target) |
 |---------|--------|-----------|-----------------|
-| Loyalty program | None visible | None visible | Tiered (Bronze/Silver/Gold) with clear benefits |
+| Loyalty program | None visible | None visible | Tiered (Explorer/Nomad/Wanderer) with clear benefits |
 | Long-stay pricing | No visible discount | 10-15% off weekly | 20-40% off weekly/monthly, shown upfront |
 | Community features | None in app | None in app | Events feed, member dashboard, badges |
 | Gamification | None | None | Points, badges, milestones |
@@ -80,8 +81,8 @@ Member dashboard  (/dashboard)
 |  +-----------------------------------+
 |                                       |
 |  +-- Tiers ---------------------------+
-|  | [Bronze Free] [Silver ₹999/yr]     |
-|  | [Gold ₹2499/yr]                    |
+|  | [Explorer Free] [Nomad ₹999/yr]     |
+|  | [Wanderer ₹2499/yr]                    |
 |  | Stacked on mobile, 3-col desktop  |
 |  +-----------------------------------+
 |                                       |
@@ -96,23 +97,24 @@ Member dashboard  (/dashboard)
 ```
 
 ### Tier comparison
-| Feature | Bronze (Free) | Silver ₹999/yr | Gold ₹2499/yr |
+| Feature | Explorer (Free) | Nomad ₹999/yr | Wanderer ₹2499/yr |
 |---------|---------------|----------------|----------------|
 | Community access | ✅ | ✅ | ✅ |
 | Member events | ❌ | ✅ | ✅ |
 | Discount on stays | 0% | 15% | 25% |
 | Priority booking | ❌ | ❌ | ✅ |
 | Exclusive events | ❌ | ❌ | ✅ |
+| Tree planting rewards | ✅ | ✅ | ✅ |
 | Annual savings estimate | ₹0 | ₹3,000+ (on 2 trips) | ₹7,500+ (on 3 trips) |
 
-**UX rule**: Bronze must feel generous, not "lacking". Focus on community access as the core value. Silver shows clear ROI ("Save ₹3,000/year on a single trip"). Gold is aspirational.
+**UX rule**: Explorer must feel generous, not "lacking". Focus on community access as the core value. Nomad shows clear ROI ("Save ₹3,000/year on a single trip"). Wanderer is aspirational.
 
 ### TierCard component contract
 ```typescript
 interface TierCardProps {
-  tier: 'bronze' | 'silver' | 'gold'
+  tier: 'explorer' | 'nomad' | 'wanderer'
   name: string
-  price: number            // 0 for bronze
+  price: number            // 0 for explorer
   period: 'free' | '/yr'
   benefits: string[]
   highlighted?: boolean     // "Most popular" badge
@@ -127,9 +129,9 @@ interface TierCardProps {
 |-------|--------|
 | Loading | Skeleton cards |
 | Loaded | Full tier comparison |
-| Bronze selected | Card border highlighted (forest-500) |
-| Silver selected | Card highlighted, "Most popular" badge |
-| Gold selected | Card highlighted, premium border treatment |
+| Explorer selected | Card border highlighted (forest-500) |
+| Nomad selected | Card highlighted, "Most popular" badge |
+| Wanderer selected | Card highlighted, premium border treatment |
 
 ### Acceptance criteria
 - [ ] Hero image: mountain/nature photography consistent with Dostel brand
@@ -156,7 +158,7 @@ interface TierCardProps {
 |                                       |
 |  Select your tier                      |
 |                                       |
-|  [Bronze] [Silver ✓] [Gold]           |
+|  [Explorer] [Nomad ✓] [Wanderer]      |
 |   Free     ₹999/yr   ₹2499/yr        |
 |                                       |
 |  Your details                         |
@@ -175,20 +177,20 @@ interface TierCardProps {
 | State | Visual | Behaviour |
 |-------|--------|-----------|
 | Loading | Spinner on create button | |
-| Bronze selected | "Create account" → instant access | No credit card needed |
-| Silver/Gold selected | "Create & pay ₹999" | Redirect to Razorpay after account creation |
+| Explorer selected | "Create account" → instant access | No credit card needed |
+| Nomad/Wanderer selected | "Create & pay ₹999" | Redirect to Razorpay after account creation |
 | Email taken | "Already registered? Log in" link | Link to /login |
 | Validation errors | Inline red text below fields | |
 | Success | Redirect to /dashboard with welcome toast | |
 
 ### Acceptance criteria
 - [ ] Tier cards: selectable BEFORE form appears (or tier + form on same page)
-- [ ] Bronze pre-selected by default
+- [ ] Explorer pre-selected by default
 - [ ] Password: min 8 chars, show requirements visually
-- [ ] Phone: required for paid tiers, optional for Bronze
+- [ ] Phone: required for paid tiers, optional for Explorer
 - [ ] Terms checkbox: required (CTA disabled until checked)
-- [ ] Bronze: instant access — no credit card
-- [ ] Silver/Gold: after account creation, redirect to `/booking/membership/payment` (Razorpay)
+- [ ] Explorer: instant access — no credit card
+- [ ] Nomad/Wanderer: after account creation, redirect to `/booking/membership/payment` (Razorpay)
 
 ---
 

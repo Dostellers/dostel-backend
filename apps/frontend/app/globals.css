@@ -6,6 +6,7 @@
   --color-forest-500: #2d6a4f;
   --color-forest-100: #d8f3dc;
   --color-sunset: #e07a2f;
+  --color-sunset-700: #9a4511;
   --color-sky: #2b6cb0;
   --color-earth: #d4a373;
   --color-snow: #fefcf5;
@@ -15,6 +16,12 @@
   --color-stone-600: #6b6258;
   --color-error: #dc2626;
   --color-success: #16a34a;
+
+  --color-bronze: #9a4e18;
+  --color-silver: #5f6670;
+  --color-gold: #8a5a08;
+  --color-points: #2b6cb0;
+  --color-discount: #16724a;
 
   --font-heading: var(--font-heading);
   --font-body: var(--font-body);

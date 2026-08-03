@@ -2,6 +2,7 @@
 
 import { Suspense, useState, useMemo, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import HostelCard from "@/components/HostelCard";
 import { useQuery } from "@apollo/client";
 import { GET_HOSTELS } from "@/lib/queries";
@@ -14,6 +15,35 @@ type HostelSummary = {
   location?: { address?: { city?: string | null } | null } | null;
   images?: { thumbnail?: { url?: string | null } | null } | null;
 };
+
+const slugify = (value: string) => value
+  .toLowerCase()
+  .replace(/[^a-z0-9]+/g, "-")
+  .replace(/(^-|-$)/g, "");
+
+const roomTypes = [
+  {
+    id: "dorm",
+    eyebrow: "For solo travellers",
+    title: "Dorms — where solo becomes social",
+    body: "Choose a bunk when you want an easy way into hostel life, shared stories, and plans made around the table.",
+    cta: "Explore dorms",
+  },
+  {
+    id: "couple",
+    eyebrow: "For two",
+    title: "Couple rooms — mountain mornings for two",
+    body: "A private room for slower mornings and your own space, with the rest of the hostel close when you feel social.",
+    cta: "Explore couple rooms",
+  },
+  {
+    id: "suite",
+    eyebrow: "For longer stays",
+    title: "Suites — space to breathe, stay awhile",
+    body: "More room for travellers who want to settle in, unpack properly, and make Vattakanal their base for a while.",
+    cta: "Explore suites",
+  },
+];
 
 type HostelCardData = {
   id: string;
@@ -52,22 +82,26 @@ function HostelsContent() {
     router.replace(`/hostels?${params.toString()}`, { scroll: false });
   }, [router]);
 
-  const hostels = useMemo<HostelCardData[]>(() => data?.hostels?.map((hostel) => ({
-    id: hostel.id,
-    slug: hostel.id,
-    name: hostel.name || "Dostel Hostel",
-    location: hostel.location?.address?.city || "",
-    tagline: hostel.tagline || "",
-    price: hostel.basePrice || 0,
-    rating: 0,
-    reviewCount: 0,
-    image: hostel.images?.thumbnail?.url || "/images/hostel-exterior.jpg",
-    tags: [],
-    isNew: false,
-    isTrending: false,
-    soldOut: false,
-    bookedThisWeek: 0,
-  })) || [], [data]);
+  const hostels = useMemo<HostelCardData[]>(() => data?.hostels?.map((hostel) => {
+    const name = hostel.name || "Dostel Hostel";
+
+    return {
+      id: hostel.id,
+      slug: slugify(name),
+      name,
+      location: hostel.location?.address?.city || "Vattakanal",
+      tagline: hostel.tagline || "A community hostel in the Kodaikanal mountains",
+      price: hostel.basePrice || 0,
+      rating: 0,
+      reviewCount: 0,
+      image: hostel.images?.thumbnail?.url || "/images/hostel-exterior.jpg",
+      tags: [],
+      isNew: false,
+      isTrending: false,
+      soldOut: false,
+      bookedThisWeek: 0,
+    };
+  }) || [], [data]);
 
   const filtered = useMemo(() => {
     return hostels
@@ -148,6 +182,30 @@ function HostelsContent() {
           ))}
         </div>
       </div>
+
+      <section className="border-b border-stone-200 bg-snow px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="max-w-2xl">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-sunset">Choose how you stay</p>
+            <h2 className="mt-3 font-heading text-3xl font-semibold text-forest-900 md:text-4xl">Three room styles. One mountain home.</h2>
+            <p className="mt-4 leading-7 text-stone-600">Start with the kind of space you want. Live room details and rates are shown when you check your dates.</p>
+          </div>
+          <div className="mt-10 grid gap-px overflow-hidden rounded-2xl border border-stone-200 bg-stone-200 lg:grid-cols-3">
+            {roomTypes.map((room, index) => (
+              <article key={room.id} className="group relative bg-white p-7 sm:p-8">
+                <span className="font-heading text-5xl text-forest-900/10">0{index + 1}</span>
+                <p className="mt-8 text-xs font-semibold uppercase tracking-[0.18em] text-sunset">{room.eyebrow}</p>
+                <h3 className="mt-3 font-heading text-2xl font-semibold text-forest-900">{room.title}</h3>
+                <p className="mt-4 text-sm leading-7 text-stone-600">{room.body}</p>
+                <Link href={`/hostels/dostel-vattakanal?room=${room.id}`} className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-forest-900 transition group-hover:text-sunset">
+                  {room.cta}
+                  <span aria-hidden="true">→</span>
+                </Link>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-6 flex justify-between items-center">

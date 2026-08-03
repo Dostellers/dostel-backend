@@ -1,25 +1,25 @@
-const amenityResolver = require('./amenityResolver');
-const authResolver = require('./authResolver');
-const badgeResolver = require('./badgeResolver');
-const blogResolver = require('./blogResolver');
-const billResolver = require('./billResolver');
-const bookingResolver = require('./bookingResolver');
-const couponResolver = require('./couponResolver');
-const customerResolver = require('./customerResolver');
-const faqResolver = require('./faqsResolver');
-const hostelResolver = require('./hostelResolver');
-const imageResolver = require('./imageResolver');
-const permissionResolver = require('./permissionResolver');
-const productResolver = require('./productResolver');
-const reviewResolver = require('./reviewResolver');
-const roomResolver = require('./roomResolver');
-const taxRateResolver = require('./taxRateResolver');
-const transactionResolver = require('./transactionResolver');
-const userResolver = require('./userResolver');
-const roleResolver = require('./roleResolver');
-const departmentResolver = require('./departmentResolver');
-const healthResolver = require('./healthResolver');
-const membershipResolver = require('./membershipResolver');
+const amenityResolver = require('./amenityResolver.js');
+const authResolver = require('./authResolver.js');
+const badgeResolver = require('./badgeResolver.js');
+const blogResolver = require('./blogResolver.js');
+const billResolver = require('./billResolver.js');
+const bookingResolver = require('./bookingResolver.js');
+const couponResolver = require('./couponResolver.js');
+const customerResolver = require('./customerResolver.js');
+const faqResolver = require('./faqsResolver.js');
+const hostelResolver = require('./hostelResolver.js');
+const imageResolver = require('./imageResolver.js');
+const permissionResolver = require('./permissionResolver.js');
+const productResolver = require('./productResolver.js');
+const reviewResolver = require('./reviewResolver.js');
+const roomResolver = require('./roomResolver.js');
+const taxRateResolver = require('./taxRateResolver.js');
+const transactionResolver = require('./transactionResolver.js');
+const userResolver = require('./userResolver.js');
+const roleResolver = require('./roleResolver.js');
+const departmentResolver = require('./departmentResolver.js');
+const healthResolver = require('./healthResolver.js');
+const membershipResolver = require('./membershipResolver.js');
 
 module.exports = {
     Query: {
@@ -45,6 +45,9 @@ module.exports = {
         ...departmentResolver.Query,
         ...healthResolver.Query,
         ...membershipResolver.Query
+    },
+    Booking: {
+        ...bookingResolver.Booking
     },
     Mutation: {
         ...amenityResolver.Mutation,

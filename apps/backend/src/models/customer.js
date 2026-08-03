@@ -22,7 +22,7 @@ const customerSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
+        default: ''
     },
     dateOfBirth: Date,
     address: {
@@ -92,6 +92,35 @@ const customerSchema = new mongoose.Schema({
     },
     marketingPreferences: [String],
     referralCode: String,
+    referredBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer'
+    },
+    referrals: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Customer'
+    }],
+    tier: {
+        type: String,
+        enum: ['Explorer', 'Contributor', 'Dosteller', 'Elder'],
+        default: 'Explorer'
+    },
+    contributions: {
+        type: Number,
+        default: 0
+    },
+    reputation: {
+        type: Number,
+        default: 0
+    },
+    tokenBalance: {
+        type: Number,
+        default: 0
+    },
+    tokenReceipts: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'TokenReceipt'
+    }],
 
 }, {
     timestamps: true

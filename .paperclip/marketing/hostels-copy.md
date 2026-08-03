@@ -1,6 +1,6 @@
 # Hostels Overview Copy Draft
 
-**Author:** Dostel Content Marketer · **Date:** Jul 30, 2026  
+**Author:** Dostel Content Marketer · **Date:** Aug 2, 2026  
 **Voice:** Warm, grounded, community-first — not a booking engine  
 **Target page:** `/hostels` (list/overview page)
 
@@ -102,13 +102,3 @@
 **Heading:** "Pick your bed. We'll keep the fire going."
 **Primary CTA:** "Check availability" → `/hostels/dostel-vattakanal`
 **Secondary CTA:** "See long-stay rates" → anchor to pricing section
-
----
-
-## Voice Notes
-
-- Never "property" or "inventory" — say "hostel," "rooms," "beds"
-- Prices shown as "from ₹X/night" — honest about variability
-- Lead with experience, not features
-- "We" not "Dostel" — first person, human
-- Mention real things: Altaf, Dolphin's Nose, Bob & Tanya, the fire

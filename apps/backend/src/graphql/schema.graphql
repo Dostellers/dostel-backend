@@ -1,0 +1,13 @@
+mutation awardReferralReward($customerId: ID!, $points: Int!) {
+awardReferralReward(customerId: $customerId, points: $points) {
+  customer
+  referrals
+}
+}
+
+mutation addTokenReceipt($customerId: ID!, $amount: Int!, $type: String!, $description: String, $paymentId: String) {
+  addTokenReceipt(customerId: $customerId, amount: $amount, type: $type, description: $description, paymentId: $paymentId) {
+    receipt
+    payment
+  }
+}

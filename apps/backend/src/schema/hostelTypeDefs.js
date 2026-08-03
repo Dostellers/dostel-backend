@@ -4,7 +4,9 @@ const { gql } = require('apollo-server-express');
 const hostelTypeDefs = gql`
   type Hostel {
     id: ID!
+    slug: String!
     name: String
+    city: String
     tagline: String
     metaDesc: String
     shortDesc: String

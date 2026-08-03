@@ -11,7 +11,8 @@ const hostelResolvers = {
                     .populate('images.others')
                     .populate('amenities')
                     .populate('faqs')
-                    .populate('blogs');
+                    .populate('blogs')
+                    .select('id slug name city tagline description createdAt updatedAt');
             } catch (error) {
                 return [];
             }

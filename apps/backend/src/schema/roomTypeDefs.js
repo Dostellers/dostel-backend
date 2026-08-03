@@ -64,7 +64,7 @@ const roomTypeDefs = gql`
     roomType: String!
     totalRooms: Int!
     availableRooms: Int!
-    price: Float!
+    pricePerNight: Float!
     roomId: ID!
   }
 

@@ -44,15 +44,19 @@ export default function BookingConfirmationPage({ params }: { params: { slug: st
   const [guestEmail, setGuestEmail] = useState("");
 
   useEffect(() => {
-    const data = getConfirmationData();
-    if (!data) {
-      router.replace(`/hostels/${params.slug}`);
-      return;
-    }
-    setBooking(buildConfirmation(data));
-    setGuestEmail(data.guestInfo?.email || "your@email.com");
-    clearConfirmation();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    const timeout = window.setTimeout(() => {
+      const data = getConfirmationData();
+      if (!data) {
+        router.replace(`/hostels/${params.slug}`);
+        return;
+      }
+      setBooking(buildConfirmation(data));
+      setGuestEmail(data.guestInfo?.email || "your@email.com");
+      clearConfirmation();
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [params.slug, router]);
 
   if (!booking) {
     return (

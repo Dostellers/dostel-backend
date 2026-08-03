@@ -29,6 +29,18 @@
 | `--ds-color-error` | `#dc2626` | Errors, destructive actions |
 | `--ds-color-success` | `#16a34a` | Success states, confirmations |
 
+### Loyalty program palette (Dostellers)
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `--ds-color-bronze` | `#9a4e18` | Bronze tier border/text; Forest-900 text on tint |
+| `--ds-color-silver` | `#5f6670` | Silver tier border/text; Forest-900 text on tint |
+| `--ds-color-gold` | `#8a5a08` | Gold tier border/text; Forest-900 text on tint |
+| `--ds-color-points` | `#2b6cb0` | Points progress and balance emphasis |
+| `--ds-color-discount` | `#16724a` | Dosteller savings and eligible rewards |
+
+Tier metallic colors are accents, not text backgrounds. Use each at 10% opacity for fills with Forest-900 text; this avoids low-contrast metallic text and keeps the system mountain-grounded rather than casino-like.
+
 ### Semantic mapping
 
 | Context | Token |

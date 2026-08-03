@@ -1,7 +1,7 @@
 # Workations Copy Draft — Vattakanal
 
-**Author:** Dostel Content Marketer · **Date:** Jul 28, 2026  
-**Voice:** Honest about remote work realities · not overpromising · community + productivity  
+**Author:** Dostel Content Marketer · **Date:** Aug 2, 2026
+**Voice:** Honest about remote work realities · not overpromising · community + productivity
 **Target page:** `/workations`
 
 ---
@@ -9,6 +9,8 @@
 ## Premise
 
 The current workations page uses generic co-working imagery and language ("Escape your home office", "Workations built for you") — feels like every other workation site. Dostel's advantage: it's a real mountain community where remote workers already live for weeks at a time, not a dedicated "workation resort" that's empty on weekdays.
+
+This is the Vattakanal-only version. When new properties launch, update the destinations carousel accordingly.
 
 ---
 
@@ -22,14 +24,14 @@ The current workations page uses generic co-working imagery and language ("Escap
 **Subtitle:**
 > Fiber internet, mountain air, and a community of people who also brought their laptop. Dostel has been a remote work base for years — not because we branded it that way, but because people kept staying.
 
-**CTA:** "Book a long stay" → `/hostels/dostel-vattakanal?longStay=true`  
-**Secondary:** "See our long-stay rates" → (scroll to pricing)
+**Primary CTA:** "Book a long stay" → `/hostels/dostel-vattakanal?longStay=true`  
+**Secondary CTA:** "See our long-stay rates" → (scroll to pricing)
 
 ---
 
 ## The "Why Vattakanal for Work" Section
 
-Replace generic "High-speed WiFi" / "Co-working Spaces" cards (all generic) with real-feel reasons:
+Replace generic "High-speed WiFi" / "Co-working Spaces" cards with real-feel reasons:
 
 ### Card 1 — Internet that actually works
 > Mountain fiber. Reliable for Zoom, Slack, and the usual firefighting. Not "co-working speed" — just real internet that works. We know that's the first question, so here's the honest answer.

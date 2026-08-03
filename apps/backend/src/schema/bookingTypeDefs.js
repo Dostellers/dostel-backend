@@ -5,13 +5,13 @@ const GraphQLJSON = require('graphql-type-json'); // Import the library
 
 const bookingTypeDefs = gql`
   scalar JSON
-  
+   
   type SourceDetail {
     name: String
     referenceId: String
     additionalInfo: JSON
   }
-
+   
   type Booking {
     id: ID!
     reference: String!
@@ -35,27 +35,27 @@ const bookingTypeDefs = gql`
     createdAt: Date!
     updatedAt: Date!
   }
-
+   
   type AdminBookingsResult {
     bookings: [Booking!]!
     total: Int!
     page: Int!
   }
-
+   
   type PaymentInfo {
     status: String!
     method: String
     transactionId: String
     amount: Float!
   }
-
+   
   type DiscountInfo {
     coupon: String
     amount: Float!
     percentage: Float!
     applied: Float!
   }
-
+   
   input BookingInput {
     reference: String!
     customerId: ID!
@@ -72,27 +72,27 @@ const bookingTypeDefs = gql`
     discount: DiscountInput
     status: String
   }
-
+   
   input PaymentInput {
     status: String!
     method: String
     transactionId: String
     amount: Float!
   }
-
+   
   input DiscountInput {
     couponId: ID
     amount: Float!
     percentage: Float!
     applied: Float!
   }
-
+   
   input SourceInput {
     name: String
     referenceId: String
     additionalInfo: String
   }
-
+   
   extend type Query {
     bookings: [Booking!]!
     booking(id: ID!): Booking
@@ -110,7 +110,7 @@ const bookingTypeDefs = gql`
       offset: Int
     ): AdminBookingsResult!
   }
-
+   
   extend type Mutation {
     createBooking(input: BookingInput!): Booking!
     updateBooking(id: ID!, input: BookingInput!): Booking!

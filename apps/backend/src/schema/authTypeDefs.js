@@ -3,16 +3,15 @@ const { gql } = require('apollo-server-express');
 const authTypeDefs = gql`
   type AuthPayload {
     token: String!
-    customer: Customer!
+    user: User!
   }
 
   input SignupInput {
-    fullName: String!
+    username: String!
     email: String!
-    phone: String!
     password: String!
-    dateOfBirth: Date
-    referralCode: String
+    firstName: String!
+    lastName: String!
   }
 
   extend type Mutation {
@@ -21,7 +20,7 @@ const authTypeDefs = gql`
   }
 
   extend type Query {
-    me: Customer
+    me: User
   }
 `;
 

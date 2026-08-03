@@ -1,0 +1,15 @@
+mutation CreateBooking($bookingData: BookingInput!) {
+  createBooking(input: $bookingData) {
+    id
+    reference
+    status
+    checkInDate
+    checkOutDate
+    totalAmount
+    payment {
+      status
+      method
+      transactionId
+    }
+  }
+}

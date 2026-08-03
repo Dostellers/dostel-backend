@@ -48,9 +48,11 @@ All tokens spec: `.paperclip/design/system/design-tokens.md`
 | Flow | File | Version | Key deliverables |
 |---|---|---|---|
 | Guest booking (7-step) | `.paperclip/design/flows/booking-flow.md` | v3.0 | Search→Listing→Detail+Rooms→Guest Details→Review→Payment→Confirmation |
-| Dostellers journey (5-step) | `.paperclip/design/flows/dostellers-journey.md` | v2.0 | Discover→Join→Dashboard→Long-stay Book→Badges; API contracts |
+| Dostellers journey (5-step) | `.paperclip/design/flows/dostellers-journey.md` | v2.1 | Discover→Join→Dashboard→Long-stay Book→Badges; UI contracts |
 | Property decision & arrival | `.paperclip/design/flows/property-decision-arrival.md` | v1.0 | Decision strip, room choices, access guide, arrival plan |
 | Admin/PMS enterprise shell | `.paperclip/design/flows/admin-shell.md` | v1.0 | Operational IA, dense tables, filters, detail drawers, status and audit contracts |
+| Search & listing flow | `.paperclip/design/flows/search-listing-flow.md` | v1.0 | SearchBar URL sync, HostelCard with social proof/policy pills, sticky bar |
+| Property detail & room selection | `.paperclip/design/flows/property-detail-room-selection.md` | v1.0 | Inline room selection, no separate rooms route, decision strip |
 
 ---
 
@@ -75,9 +77,7 @@ Dostel wins on:
 | DOS-249 | Product Designer | P0 | Todo | Refine booking flow user journeys and micro-interactions |
 | DOS-250 | UI Engineer | P0 | Todo | Build design token system and component prototypes |
 
----
-
-## Shipped tickets (Jul 28)
+### Shipped tickets (July 30)
 
 | Ticket | For | Priority | Status | What |
 |--------|-----|----------|--------|------|
@@ -86,12 +86,19 @@ Dostel wins on:
 | DS-003 | UI Engineer | P0 | ✅ Shipped | 12 components implemented, 4 checkout routes, detail page refactor |
 | DS-004 | Design Systems | P1 | ✅ Shipped | Admin PMS: 5 routes, Sidebar with Lucide icons, MetricCard, StatusBadge, DataTable |
 | DS-005 | Product Designer | P1 | ✅ Shipped | Dostellers: 5 routes, 6 components (TierCard, PointsBar, BadgeGrid, MemberHeader, QuickActions, LongStayToggle) |
+| DS-010 | UI Engineer | P0 | ✅ Shipped | TierCard component + Dostellers landing page |
+| DS-011 | UI Engineer | P0 | ✅ Shipped | Join page + Dashboard components |
+| DS-012 | UI Engineer | P1 | ✅ Shipped | MemberLayout + bottom nav integration |
+| DS-013 | UI Engineer | P1 | ✅ Shipped | Badges page + unlock toast notification |
+| DS-014 | UI Engineer | P1 | ✅ Shipped | LongStayToggle integration in booking flow |
+| DS-016 | UI Engineer | P0 | ✅ Shipped | Admin Booking Workspace implementation |
+| DS-017 | UI Engineer | P0 | ✅ Shipped | Search & Listing Flow implementation |
 
 All tickets saved to `.paperclip/design/tickets/`.
 
 ---
 
-## Known frontend issues (addressed by DS-001 + DS-002/003 + DS-005)
+## Known frontend issues (addressed by DS-001 + DS-002/003 + DS-005 + DS-010/011/012/013/014/016/017)
 
 | Issue | Ticket(s) | Fix |
 |-------|-----------|-----|
@@ -112,6 +119,12 @@ All tickets saved to `.paperclip/design/tickets/`.
 | No Dostellers pages | DS-005 | 5 new routes, 6 new components |
 | Page background: cool slate `#f8fafc` instead of warm off-white `#fefcf5` | DS-001 | Update `--color-snow` in globals.css |
 | No long-stay pricing in booking flow | DS-005 | LongStayToggle on detail page for 7+ nights |
+| No Dosteller pricing badge in property grid | DS-003 | Add dostellerPrice badge to HostelCard |
+| Property detail missing policy pills and social proof | DS-002/003 | Add PolicyPills + SocialProof to detail page |
+| Listing grid missing Dosteller availability signals | DS-017 | Add Dosteller pricing and social proof to HostelCard in grid |
+| Booking flow lacks state persistence | DS-002/003 | BookingProvider with URL/context/localStorage triple persistence |
+| No admin booking workspace | DS-016 | Operational table with saved views, filters, detail drawer |
+| SearchBar not persisting filters | DS-017 | URL param sync + debounced apply for filters |
 
 ---
 

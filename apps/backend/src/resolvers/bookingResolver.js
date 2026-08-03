@@ -1,157 +1,173 @@
+const logger = require('../config/logger');
 const Booking = require('../models/booking');
-const Customer = require('../models/customer');
 
-const escapeRegex = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-
+const BOOKING_STATUSES = ['Draft', 'Confirmed', 'CheckedIn', 'CheckedOut', 'Completed', 'Abandoned'];
+const transitionRules = {
+    Draft: ['Confirmed'],
+    Confirmed: ['Draft', 'CheckedIn', 'CheckedOut', 'Completed', 'Abandoned'],
+    CheckedIn: ['CheckedOut', 'Abandoned'],
+    CheckedOut: ['Completed', 'Abandoned'],
+    Completed: [],
+    Abandoned: []
+};
 const roundMoney = amount => Math.round((Number(amount) + Number.EPSILON) * 100) / 100;
 
-const paymentSummary = booking => {
-    const totalAmount = roundMoney(booking.totalAmount);
-    const depositPercentage = booking.depositPercentage == null ? 25 : booking.depositPercentage;
-    const depositRequired = roundMoney(totalAmount * depositPercentage / 100);
-    const payment = booking.payment || {};
-    const amountPaid = payment.status === 'Completed' ? Math.min(roundMoney(payment.amount || 0), totalAmount) : 0;
-
-    return {
-        depositPercentage,
-        depositRequired,
-        amountPaid,
-        balanceDue: roundMoney(Math.max(totalAmount - amountPaid, 0))
-    };
+const getBookingModel = () => {
+    try {
+        const mongoose = require('mongoose');
+        return mongoose.model('Booking');
+    } catch (error) {
+        logger.error('Failed to get Booking model:', error);
+        throw error;
+    }
 };
 
-const bookingResolvers = {
-    Booking: {
-        depositPercentage: booking => paymentSummary(booking).depositPercentage,
-        depositRequired: booking => paymentSummary(booking).depositRequired,
-        amountPaid: booking => paymentSummary(booking).amountPaid,
-        balanceDue: booking => paymentSummary(booking).balanceDue
-    },
-    Query: {
-        // Get all bookings
-        bookings: async () => {
-            return await Booking.find().populate('customer').populate('hostel').populate('discount.coupon');
-        },
-        // Get a single booking by ID
-        booking: async (_, { id }) => {
-            return await Booking.findById(id).populate('customer').populate('hostel').populate('discount.coupon');
-        },
-        // Get all draft bookings
-        draftBookings: async () => {
-            return await Booking.find({ status: 'Draft' }).populate('customer').populate('hostel').populate('discount.coupon');
-        },
+const getBookingById = async (ctx, { id }) => {
+    try {
+        const Booking = getBookingModel();
+        const booking = await Booking.findById(id)
+          .populate('customer')
+          .populate('hostel')
+          .exec();
 
-        bookingsByCustomer: async (_, { customerId }) => {
-            return await Booking.find({ customer: customerId }).populate('hostel').populate('coupon');
-        },
-        
-        bookingsByStatus: async (_, { status }) => {
-            return await Booking.find({ status }).populate('customer').populate('hostel').populate('coupon');
-        },
-
-        adminBookings: async (_, args) => {
-            const limit = Math.min(Math.max(args.limit || 20, 1), 100);
-            const offset = Math.max(args.offset || 0, 0);
-            const filter = {};
-
-            if (args.hostelId) filter.hostel = args.hostelId;
-            if (args.status) filter.status = args.status;
-            if (args.dateFrom || args.dateTo) {
-                filter.checkInDate = {};
-                if (args.dateFrom) filter.checkInDate.$gte = args.dateFrom;
-                if (args.dateTo) filter.checkInDate.$lte = args.dateTo;
-            }
-
-            if (args.search && args.search.trim()) {
-                const search = new RegExp(escapeRegex(args.search.trim()), 'i');
-                const customerIds = await Customer.distinct('_id', { fullName: search });
-                filter.$or = [
-                    { reference: search },
-                    { customer: { $in: customerIds } }
-                ];
-            }
-
-            const [total, bookings] = await Promise.all([
-                Booking.countDocuments(filter),
-                Booking.find(filter)
-                    .sort({ createdAt: -1 })
-                    .skip(offset)
-                    .limit(limit)
-                    .populate('customer')
-                    .populate('hostel')
-                    .populate('discount.coupon')
-            ]);
-
-            return {
-                bookings,
-                total,
-                page: Math.floor(offset / limit) + 1
-            };
-        },
-
-        // Get all abandoned bookings
-        abandonedBookings: async () => {
-            return await Booking.find({ status: 'Abandoned' }).populate('customer').populate('hostel').populate('discount.coupon');
+        if (!booking) {
+            throw new Error(`Booking with ID ${id} not found`);
         }
+
+        return booking;
+    } catch (error) {
+        logger.error('Error fetching booking:', error);
+        throw error;
+    }
+};
+
+const getBookingsByCustomer = async (ctx, { customerId }) => {
+    try {
+        const Booking = getBookingModel();
+        return await Booking.find({ customer: customerId })
+          .populate('hostel')
+          .sort({ createdAt: -1 })
+          .exec();
+    } catch (error) {
+        logger.error('Error fetching bookings by customer:', error);
+        throw error;
+    }
+};
+
+const createBooking = async (ctx, { input }) => {
+    try {
+        const { reference, customerId, hostelId, roomType, checkInDate, checkOutDate, guests, totalAmount, payment, specialRequests } = input;
+
+        // Validate required fields
+        if (!customerId || !hostelId || !roomType || !checkInDate || !checkOutDate || !totalAmount || !payment) {
+            throw new Error('Missing required booking fields');
+        }
+
+        // Calculate deposits and balances
+        const isUPI = payment.method === 'UPI';
+        const depositPercentage = payment.depositPercentage || (isUPI ? 25 : 20); // Default 20% deposit
+        const depositRequired = (totalAmount * depositPercentage) / 100;
+        const amountPaid = payment.amount || 0;
+        const balanceDue = totalAmount - amountPaid;
+
+        // Determine status based on payment
+        let status = 'Draft'; // Default status
+        const normalizedAmountPaid = Number(amountPaid);
+        const normalizedTotal = Number(totalAmount);
+
+        if (normalizedAmountPaid >= normalizedTotal) {
+            status = 'Confirmed';
+        } else if (depositRequired > 0 && normalizedAmountPaid >= depositRequired) {
+            status = 'Confirmed'; 
+        }
+
+        const newBooking = new Booking({
+            reference: reference || `DOS-${Date.now()}`,
+            customer: customerId,
+            hostel: hostelId,
+            roomType,
+            checkInDate,
+            checkOutDate,
+            guests,
+            totalAmount,
+            depositPercentage,
+            depositRequired,
+            amountPaid,
+            balanceDue,
+            payment: {
+                status: payment.status? payment.status.charAt(0).toUpperCase() + payment.status.slice(1).toLowerCase() : (amountPaid >= totalAmount? 'Completed' : 'Pending'),
+                method: payment.method,
+                transactionId: payment.transactionId,
+                amount: payment.amount
+            },
+            specialRequests,
+            sequenceStatus: status,
+            source: input.source? {
+                name: input.source.name,
+                referenceId: input.source.referenceId,
+                additionalInfo: input.source.additionalInfo
+            } : undefined
+        });
+
+        const savedBooking = await newBooking.save();
+        logger.info(`Booking created: ${savedBooking.reference}`);
+        return savedBooking;
+    } catch (error) {
+        logger.error('Error creating booking:', error);
+        throw error;
+    }
+};
+
+const resolvers = {
+    Query: {
+        booking: getBookingById,
+        bookings: () => Booking.find({}).populate('customer').populate('hostel').sort({ createdAt: -1 }),
+        bookingsByCustomer: getBookingsByCustomer
+    },
+    Booking: {
+        status: (booking) => booking.sequenceStatus || 'Draft'
     },
     Mutation: {
-        // Create a new booking
-        createBooking: async (_, { input }) => {
-            const newBooking = new Booking(input);
-            return await newBooking.save();
-        },
-        // Update an existing booking
-        updateBooking: async (_, { id, input }) => {
-            return await Booking.findByIdAndUpdate(id, input, { new: true }).populate('customer').populate('hostel').populate('discount.coupon');
-        },
-        // Delete a booking
-        deleteBooking: async (_, { id }) => {
-            return await Booking.findByIdAndDelete(id);
-        },
-        // Apply a coupon to a booking
-        applyCouponToBooking: async (_, { bookingId, couponId }) => {
-            const booking = await Booking.findById(bookingId);
-            booking.discount.coupon = couponId;
-            // Logic to calculate and apply the discount can be added here
-            return await booking.save();
-        },
-        // Confirm a booking
-        confirmBooking: async (_, { id }) => {
-            const booking = await Booking.findById(id);
-            booking.status = 'Confirmed';
-            return await booking.save();
-        },
-
-        // Mark a booking as completed
-        completeBooking: async (_, { id }) => {
-            const booking = await Booking.findById(id);
-            booking.status = 'Completed';
-            return await booking.save();
-        },
-
-        // Mark a booking as abandoned
-        abandonBooking: async (_, { id }) => {
-            const booking = await Booking.findById(id);
-            booking.status = 'Abandoned';
-            return await booking.save();
-        },
-
-        // Reactivate an abandoned booking
-        reactivateBooking: async (_, { id }) => {
-            const booking = await Booking.findById(id);
-            if (booking.status === 'Abandoned') {
-                booking.status = 'Draft';
-                return await booking.save();
-            }
-            throw new Error('Only abandoned bookings can be reactivated.');
-        },
-
+        createBooking,
+        confirmBooking: async (_, { id }) => Booking.findByIdAndUpdate(
+            id,
+            { sequenceStatus: 'Confirmed' },
+            { new: true }
+        ).populate('customer').populate('hostel'),
+        completeBooking: async (_, { id }) => Booking.findByIdAndUpdate(
+            id,
+            { sequenceStatus: 'Completed' },
+            { new: true }
+        ).populate('customer').populate('hostel'),
+        abandonBooking: async (_, { id }) => Booking.findByIdAndUpdate(
+            id,
+            { sequenceStatus: 'Abandoned' },
+            { new: true }
+        ).populate('customer').populate('hostel'),
         changeBookingStatus: async (_, { id, status }) => {
-            return await Booking.findByIdAndUpdate(id, { status }, { new: true }).populate('customer').populate('hostel').populate('coupon');
+            if (!BOOKING_STATUSES.includes(status)) {
+                throw new Error(`Invalid booking status: ${status}`);
+            }
+
+            const current = await Booking.findById(id);
+            if (!current) {
+                throw new Error(`Booking with ID ${id} not found`);
+            }
+
+            const currentStatus = current.sequenceStatus || 'Draft';
+            const allowed = transitionRules[currentStatus] || [];
+            if (!allowed.includes(status)) {
+                throw new Error(`Invalid status transition: ${currentStatus} -> ${status}`);
+            }
+
+            return Booking.findByIdAndUpdate(
+                id,
+                { sequenceStatus: status },
+                { new: true, runValidators: true }
+            ).populate('customer').populate('hostel');
         }
     }
 };
 
-module.exports = bookingResolvers;
+module.exports = resolvers;
 module.exports.roundMoney = roundMoney;
-module.exports.paymentSummary = paymentSummary;

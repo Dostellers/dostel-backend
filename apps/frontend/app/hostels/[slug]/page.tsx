@@ -1,10 +1,12 @@
 'use client';
 
 import { useQuery } from '@apollo/client';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import HostelCard from '@/components/HostelCard';
 import PolicyPills from '@/components/PolicyPills';
+import RoomSelector from '@/components/RoomSelector';
+import StickyBottomBar from '@/components/StickyBottomBar';
+import { useBooking } from '@/components/BookingProvider';
 import { hostels } from '@/lib/data';
 import { GET_HOSTEL_DETAILS } from '@/lib/queries';
 
@@ -107,8 +109,11 @@ const workweekExclusions = [
 
 export default function HostelDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const router = useRouter();
+  const { state } = useBooking();
   const { data, loading, error } = useQuery<{ hostels: ApiHostel[] }>(GET_HOSTEL_DETAILS);
   const fallback = hostels.find((item) => item.slug === slug) || hostels[0];
+  const hasSelection = state.selectedRooms.length > 0;
   const apiHostel = data?.hostels.find((item) => {
     const urlSlug = item.url?.split('/').filter(Boolean).pop();
     const nameSlug = slugify(item.name || '');
@@ -164,75 +169,86 @@ export default function HostelDetailPage() {
           </p>
         )}
         <PolicyPills
-          policies={[
-            { label: "Free cancel 48h" },
-            { label: `Check-in ${hostel.checkIn}` },
-            { label: "ID required" }
+          items={[
+            {
+              id: "cancellation",
+              label: "Free cancel 48h",
+              detail: "Cancel at least 48 hours before check-in for a full refund.",
+              tone: "positive",
+              icon: "calendar-check",
+            },
+            {
+              id: "check-in",
+              label: `Check-in ${hostel.checkIn}`,
+              detail: `Check-in begins at ${hostel.checkIn}. Contact the property before arrival if you expect to be late.`,
+              tone: "informative",
+              icon: "clock",
+            },
+            {
+              id: "photo-id",
+              label: "Photo ID required",
+              detail: "Every guest must present a valid government-issued photo ID at check-in.",
+              tone: "neutral",
+              icon: "id-card",
+            },
           ]}
         />
       </div>
 
-      {/* Room Types Section */}
-      <section className="py-20 bg-snow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-8">
-            Rooms built for every kind of stay
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Dorm */}
-            <HostelCard
-              slug="dorm"
-              name="Dormitory Bed"
-              location="Vattakanal, Kodaikanal"
-              tagline="Shared rooms with mountain light and locker access"
-              price={327}
-              rating={4.8}
-              reviewCount={124}
-              image="/images/dorm-room.jpg"
-              tags={[ "Dorm", "Budget", "Social" ]}
-              isNew={false}
-              isTrending={false}
-              bookedThisWeek={8}
-              dostellerPrice={294} // 10% discount for Dostellers
-            />
-            {/* Couple Room */}
-            <HostelCard
-              slug="couple-room"
-              name="Couple Room"
-              location="Vattakanal, Kodaikanal"
-              tagline="Private rooms for two, perfect for couples or solo travelers wanting space"
-              price={1299}
-              rating={4.9}
-              reviewCount={98}
-              image="/images/couple-room.jpg"
-              tags={[ "Couple", "Private", "Mountain View" ]}
-              isNew={false}
-              isTrending={false}
-              bookedThisWeek={5}
-              dostellerPrice={1169} // 10% discount for Dostellers
-            />
-            {/* Deluxe Suite */}
-            <HostelCard
-              slug="deluxe-suite"
-              name="Deluxe Suite"
-              location="Vattakanal, Kodaikanal"
-              tagline="Spacious suites with sitting area and mountain views"
-              price={1799}
-              rating={4.9}
-              reviewCount={87}
-              image="/images/deluxe-suite.jpg"
-              tags={[ "Suite", "Premium", "Mountain View" ]}
-              isNew={false}
-              isTrending={false}
-              bookedThisWeek={3}
-              dostellerPrice={1619} // 10% discount for Dostellers
-            />
-          </div>
-          <p className="mt-6 text-center text-stone-600">
-            *Prices shown are base rates. Long-stay and Dosteller discounts apply.
-          </p>
-        </div>
-      </section>
+{/* Room Types Section */}
+       <section className="py-20 bg-snow">
+         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+           <h2 className="font-heading text-2xl md:text-3xl font-semibold text-forest-900 mb-8">
+             Rooms built for every kind of stay
+           </h2>
+           <RoomSelector
+             rooms={[
+               {
+                 id: "dorm",
+                 name: "Dormitory Bed",
+                 type: "Dorm",
+                 price: 327,
+                 capacity: 6,
+                 image: "/images/dorm-room.jpg",
+                 amenities: ["Locker", "Reading Light", "Power Socket", "Privacy Curtain", "Hot Shower"],
+                 available: true,
+                 bookedThisWeek: 8,
+                 dostellerPrice: 294,
+               },
+               {
+                 id: "couple-room",
+                 name: "Couple Room",
+                 type: "Couple",
+                 price: 1299,
+                 capacity: 2,
+                 image: "/images/couple-room.jpg",
+                 amenities: ["Attached Bath", "WiFi", "Mountain View", "TV", "Housekeeping"],
+                 available: true,
+                 bookedThisWeek: 5,
+                 dostellerPrice: 1169,
+               },
+               {
+                 id: "deluxe-suite",
+                 name: "Deluxe Suite",
+                 type: "Suite",
+                 price: 1799,
+                 capacity: 2,
+                 image: "/images/deluxe-suite.jpg",
+                 amenities: ["AC", "WiFi", "Mountain View", "Balcony", "Hot Shower"],
+                 available: true,
+                 bookedThisWeek: 3,
+                 dostellerPrice: 1619,
+               },
+             ]}
+             checkIn={state.checkIn}
+              checkOut={state.checkOut}
+
+           />
+           <p className="mt-6 text-center text-stone-600">
+             *Prices shown are base rates. Long-stay and Dosteller discounts apply.
+           </p>
+         </div>
+       </section>
 
       {slug === "dostel-vattakanal" && (
         <>
@@ -414,33 +430,43 @@ export default function HostelDetailPage() {
             </Link>
           </div>
         </div>
-      </section>
+       </section>
 
-      {/* Final CTA Section */}
-      <section className="bg-forest-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-          <h2 className="font-heading text-3xl md:text-4xl font-semibold mb-6">
-            Come stay awhile
-          </h2>
-          <p className="text-white/80 max-w-xl mx-auto mb-8">
-            {hostel.location} is waiting. Whether you&apos;re passing through for a weekend or staying for a month — there&apos;s a bed, a fire, and a community here.
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href={`/booking/${slug}/dates`}
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-sm font-medium text-white transition-all duration-150 hover:bg-white/20 active:scale-[0.97]"
-            >
-              Check availability
-            </Link>
-            <Link
-              href="/membership"
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-sunset px-6 text-sm font-medium text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
-            >
-              Become a Dosteller
-            </Link>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
-}
+       {/* Final CTA Section */}
+       <section className="bg-forest-900 text-white">
+         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
+           <h2 className="font-heading text-3xl md:text-4xl font-semibold mb-6">
+             Come stay awhile
+           </h2>
+           <p className="text-white/80 max-w-xl mx-auto mb-8">
+             {hostel.location} is waiting. Whether you&apos;re passing through for a weekend or staying for a month — there&apos;s a bed, a fire, and a community here.
+           </p>
+           <div className="flex flex-col sm:flex-row justify-center gap-4">
+             <Link
+               href={`/booking/${slug}/dates`}
+               className="inline-flex h-11 items-center justify-center rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 px-6 text-sm font-medium text-white transition-all duration-150 hover:bg-white/20 active:scale-[0.97]"
+             >
+               Check availability
+             </Link>
+             <Link
+               href="/membership"
+               className="inline-flex h-11 items-center justify-center rounded-lg bg-sunset px-6 text-sm font-medium text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
+             >
+               Become a Dosteller
+             </Link>
+           </div>
+         </div>
+       </section>
+
+       {hasSelection && (
+         <StickyBottomBar
+            price={state.subtotal / state.nights || 0}
+           total={state.total}
+           ctaLabel="Continue to guest details"
+            onCtaClick={() => router.push(`/booking/${slug}/guest`)}
+           show
+         />
+       )}
+     </div>
+   );
+ }

@@ -8,9 +8,13 @@ const logger = require('./config/logger');
 const mergedTypeDefs = require('./schema');
 const { authenticate } = require('./middleware/authentication');
 const authService = require('./services/authService');
+const adminRouter = require('./routes/admin');
 
 const app = express();
 app.use(authenticate);
+
+// Admin routes
+app.use('/api/admin', adminRouter);
 
 async function startServer() {
   await connectDB();

@@ -1,5 +1,6 @@
 const Room = require('../models/room');
 const RoomType = require('../models/RoomType');
+const Hostel = require('../models/hostel');
 
 const populateRoom = query => query
     .populate('amenities')
@@ -38,7 +39,7 @@ const buildRoomAvailability = (rooms, checkIn, checkOut) => {
             roomType,
             totalRooms: 0,
             availableRooms: 0,
-            price,
+            pricePerNight: price,
             roomId: room.id
         };
         current.totalRooms += 1;
@@ -57,6 +58,10 @@ const requireDocument = (document, label) => {
         throw new Error(`${label} not found`);
     }
     return document;
+};
+
+const validateHostel = async hostelId => {
+    requireDocument(await Hostel.findById(hostelId), 'Hostel');
 };
 
 const validateRoomTypeHostel = async input => {
@@ -127,15 +132,18 @@ const roomResolvers = {
             return Boolean(await RoomType.findByIdAndDelete(id));
         },
         createRoom: async (_, { input }) => {
+            await validateHostel(input.hostel);
             await validateRoomTypeHostel(input);
             const room = await new Room(input).save();
             return await populateRoom(Room.findById(room.id));
         },
         updateRoom: async (_, { id, input }) => {
             const currentRoom = requireDocument(await Room.findById(id), 'Room');
+            const hostel = input.hostel || currentRoom.hostel;
+            await validateHostel(hostel);
             await validateRoomTypeHostel({
                 roomType: input.roomType || currentRoom.roomType,
-                hostel: input.hostel || currentRoom.hostel
+                hostel
             });
             const room = await populateRoom(Room.findByIdAndUpdate(id, input, {
                 new: true,

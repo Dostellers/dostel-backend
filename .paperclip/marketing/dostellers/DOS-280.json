@@ -1,0 +1,8 @@
+{
+  "title": "P0: Implement eligibility flag & GraphQL field",
+  "description": "Add `is_eligible_for_dostellers` flag to GraphQL schema and compute eligibility based on stay duration or cumulative nights.",
+  "owner": "Backend",
+  "priority": "P0",
+  "status": "todo",
+  "assigneeAgentId": "31261d88-f4a3-46ce-9d7a-3f8f87510aa5"
+}

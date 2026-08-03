@@ -1,0 +1,8 @@
+{
+  "title": "P1: Create activity recommendation rules",
+  "description": "Build rule-based engine suggesting first activities (e.g., Welcome Circle) based on stay length and arrival day.",
+  "owner": "Backend",
+  "priority": "P1",
+  "status": "todo",
+  "assigneeAgentId": "31261d88-f4a3-46ce-9d7a-3f8f87510aa5"
+}

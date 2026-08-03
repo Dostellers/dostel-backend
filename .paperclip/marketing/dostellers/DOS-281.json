@@ -1,0 +1,8 @@
+{
+  "title": "P0: Build opt-in consent capture endpoint",
+  "description": "Create API endpoint for Dostellers WhatsApp opt-in and consent storage, linked to booking record.",
+  "owner": "Backend",
+  "priority": "P0",
+  "status": "todo",
+  "assigneeAgentId": "31261d88-f4a3-46ce-9d7a-3f8f87510aa5"
+}

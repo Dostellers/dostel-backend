@@ -17,10 +17,12 @@
     "scheduler": "node apps/backend/scheduler.js"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "typescript": "6.0.3"
   },
   "dependencies": {
-    "@apollo/client": "^4.2.8",
-    "graphql": "^15.8.0"
+    "@apollo/client": "^4.2.9",
+    "graphql": "^16.14.2",
+    "mongoose": "^6.0.0"
   }
 }

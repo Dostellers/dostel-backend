@@ -1,7 +1,7 @@
 # Membership & Dostellers Copy Draft
 
-**Author:** Dostel Content Marketer · **Date:** Jul 28, 2026  
-**Voice:** Warm, community-first · not a loyalty program pitch · an invitation to belong  
+**Author:** Dostel Content Marketer · **Date:** Aug 2, 2026
+**Voice:** Warm, community-first · not a loyalty program pitch · an invitation to belong
 **Target page:** `/membership`
 
 ---
@@ -41,7 +41,7 @@ New section before pricing — answers the question "why should I join?"
 
 | Community | Savings | Access |
 |---|---|---|
-| Private Dostellers-only WhatsApp group | 10–20% off all bookings | Priority check-in |
+| Private Dostellers WhatsApp group | 10–20% off all bookings | Priority check-in |
 | Monthly member dinners at Altaf's Cafe | Free nights at higher tiers | Late checkout |
 | Group treks and events | No booking fees | Dedicated host |
 | "You know a Dosteller" cred at partner spots | Long-stay rates stack | Event pre-sales |
@@ -54,7 +54,7 @@ Replace the generic color-gradient cards with cards that feel community-rooted.
 
 ### Tier 1 — Dosteller Explorer
 **Price:** ₹999/month  
-**Tag:** "For the weekend crew"  
+**Tag:** "For the weekend crew"
 
 **Best for:** Solo travelers who visit once a quarter, friend groups, weekenders.
 
@@ -67,7 +67,7 @@ Replace the generic color-gradient cards with cards that feel community-rooted.
 
 ### Tier 2 — Dosteller Nomad *(Most popular)*
 **Price:** ₹1,999/month  
-**Tag:** "For the regulars"  
+**Tag:** "For the regulars"
 
 **Best for:** Remote workers, monthly visitors, people who come back every season.
 
@@ -82,7 +82,7 @@ Replace the generic color-gradient cards with cards that feel community-rooted.
 
 ### Tier 3 — Dosteller Wanderer
 **Price:** ₹4,999/month  
-**Tag:** "For the family"  
+**Tag:** "For the family"
 
 **Best for:** Long-stayers (3+ months), couples, families, people who treat Dostel as a second home.
 
@@ -100,7 +100,7 @@ Replace the generic color-gradient cards with cards that feel community-rooted.
 
 ## Stats Section
 
-Replace generic "₹12K+ avg savings" / "500+ hostels" / "50K+ members" (which are clearly invented) with real-feeling stats:
+Replace generic "₹12K+ avg savings" / "500+ hostels" / "50K+ members" with real-feeling stats:
 
 | Stat | Label |
 |---|---|

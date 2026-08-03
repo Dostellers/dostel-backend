@@ -1,4 +1,45 @@
-import { gql } from '@apollo/client';
+import { gql } from "@apollo/client";
+
+// Auth Mutations
+export const SIGNUP_MUTATION = gql`
+  mutation Signup($input: SignupInput!) {
+    signup(input: $input) {
+      token
+      customer {
+        id
+        fullName
+        email
+      }
+    }
+  }
+`;
+
+export const LOGIN_MUTATION = gql`
+  mutation Login($email: String!, $password: String!) {
+    login(email: $email, password: $password) {
+      token
+      customer {
+        id
+        fullName
+        email
+      }
+    }
+  }
+`;
+
+// Customer Mutations
+export const FIND_OR_CREATE_CUSTOMER = gql`
+  mutation FindOrCreateCustomer($email: String!, $fullName: String!, $phone: String) {
+    findOrCreateCustomer(email: $email, fullName: $fullName, phone: $phone) {
+      id
+      fullName
+      email
+      phone
+    }
+  }
+`;
+
+// Hostel Queries
 
 export const GET_HOSTELS = gql`
   query GetHostels {
@@ -7,57 +48,24 @@ export const GET_HOSTELS = gql`
       name
       tagline
       basePrice
-      location {
-        address {
-          city
-        }
-      }
-      images {
-        thumbnail {
-          url
-        }
-      }
+      location { address { city } }
+      images { thumbnail { url } }
     }
   }
 `;
 
 export const GET_HOSTEL_DETAILS = gql`
-  query GetHostelDetails {
-    hostels {
+  query GetHostelDetail($id: ID!) {
+    hostel(id: $id) {
       id
       name
-      tagline
-      shortDesc
-      basePrice
-      url
-      description {
-        content
+      description
+      rooms {
+        id
+        type
+        price
       }
-      location {
-        address {
-          line1
-          line2
-          city
-          state
-          country
-          pincode
-        }
-      }
-      timing {
-        checkin
-        checkout
-      }
-      images {
-        hero {
-          url
-        }
-        main {
-          url
-        }
-        thumbnail {
-          url
-        }
-      }
+      images { url }
     }
   }
 `;

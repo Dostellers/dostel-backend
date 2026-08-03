@@ -7,6 +7,7 @@ import BookingSummary from "@/components/BookingSummary";
 import PaymentMethodSelector from "@/components/PaymentMethodSelector";
 import StickyBottomBar from "@/components/StickyBottomBar";
 import { useBooking } from "@/components/BookingProvider";
+import { getStripe } from "@/components/stripe";
 
 export default function BookingPaymentPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
@@ -16,9 +17,27 @@ export default function BookingPaymentPage({ params }: { params: { slug: string 
 
   const handlePay = async () => {
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    actions.confirmBooking();
-    router.push(`/booking/${params.slug}/confirmation`);
+    try {
+      if (method === "card") {
+        const stripe = await getStripe();
+        if (!stripe) {
+          throw new Error("Stripe failed to load");
+        }
+        // In a real implementation, we'd redirect to Stripe Checkout or use Elements
+        // For now, simulate successful payment
+        await new Promise((r) => setTimeout(r, 1500));
+        actions.confirmBooking();
+        router.push(`/booking/${params.slug}/confirmation`);
+      } else {
+        // UPI/NetBanking - simulate payment
+        await new Promise((r) => setTimeout(r, 1500));
+        actions.confirmBooking();
+        router.push(`/booking/${params.slug}/confirmation`);
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      setLoading(false);
+    }
   };
 
   return (

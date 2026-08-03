@@ -92,7 +92,7 @@ Control
 - Sidebar uses a dense 40px row rhythm and may collapse to a 64px labelled-icon rail between 1024 and 1199px.
 - Main content owns scrolling; shell header/sidebar remain stable.
 - Detail drawer is 440px at ≥1280px and overlays at 1024–1279px. It does not alter table sorting or scroll position.
-- Admin uses functional sans for every heading and control. No decorative display font.
+- Admin uses functional sans throughout; no decorative display font.
 
 ### 360×800 exception mode
 
@@ -378,29 +378,27 @@ Destructive actions use a confirmation dialog naming the record and consequence.
 
 - WCAG 2.2 AA; 4.5:1 text contrast, 3:1 component boundaries and status icons.
 - Functional sans throughout admin; minimum 14px table text and 16px form inputs on mobile.
-- All controls have visible persistent labels; placeholders are examples only.
-- Focus ring is ≥2px trail blue with 2px offset and never clipped by table/drawer overflow.
-- Keyboard order follows visible task order; no positive `tabindex`.
-- Skip link moves to page heading/main workspace.
-- Navigation uses `aria-current="page"`; collapsed rail retains accessible names and tooltips.
-- Table includes caption; headers use correct `scope`; sorting exposes `aria-sort`.
-- Filter/result updates use one polite live region.
-- Modal drawer/dialog traps focus and restores it. Non-modal drawer does not trap focus.
-- Status and validation never depend on color alone.
-- At 200% zoom, no required control or content is lost; responsive card mode activates before horizontal loss.
-- Touch targets are ≥44px on mobile; dense desktop row controls may be 32px only with adequate spacing and equivalent keyboard access.
+- All controls have visible persistent labels; placeholders are never labels.
+- Focus indicator is at least 2px, high-contrast trail blue, and never clipped.
+- Logical source/tab order; no positive `tabindex`; room choices are buttons or labelled quantity controls.
+- Selected state includes text/icon and `aria-pressed` or native selection semantics.
+- Error summary receives focus after invalid submit and links to each invalid field.
+- At 200% zoom and 320 CSS px, content reflows without two-dimensional scrolling.
+- Gallery controls announce position; images have meaningful alt text, decorative contour graphics use empty alt.
+- External map action identifies that it opens a new app/tab.
+- Reduced motion removes transforms; selection and confirmation remain immediately legible.
 
-## 13. Motion
+## 13. Purposeful motion
 
-1. **Drawer reveal:** 180ms opacity/translate ≤8px.
+1. **Drawer reveal:** 180ms opacity and ≤8px translate.
 2. **Row update:** 150ms background emphasis after successful mutation.
 3. **Navigation collapse:** 180ms width/opacity, preserving focus.
 
-No animated KPI counters, chart flourishes, bouncing alerts or continuous shimmer. Reduced-motion mode removes transforms and makes state changes immediate.
+No auto-rotating gallery, parallax, shimmer after content loads, or motion-based urgency. Under `prefers-reduced-motion: reduce`, remove transforms and shorten transitions to effectively immediate.
 
 ## 14. Visual direction
 
-- Shola green anchors navigation and selected states; campfire sunset is reserved for primary/high-attention actions, not every control.
+- Shola green (Forest-500) anchors navigation and selected states; campfire sunset is reserved for primary/high-attention actions, not every control.
 - Mist/snow surfaces provide hierarchy; operational tables remain white with restrained separators.
 - Trail blue is reserved for focus, links and informational state.
 - No gradients, glass panels, oversized metric cards, decorative Playfair headings or dashboard-in-dashboard compositions.
@@ -437,12 +435,12 @@ No animated KPI counters, chart flourishes, bouncing alerts or continuous shimme
 
 ### Accessibility and responsive verification
 
-- [ ] Keyboard-only route completion has logical order and unobscured focus.
+- [ ] Keyboard-only completion has visible, unobscured focus and logical order.
 - [ ] Screen reader announces page, result changes, sort direction, drawer heading and mutation result once.
-- [ ] 200% zoom retains every required control without two-dimensional scrolling.
+- [ ] 200% zoom and 320px width retain all required content/actions without horizontal scrolling.
 - [ ] 360×800 passes menu focus trap, record-card actions and full-screen detail checks.
-- [ ] 1440×900 and 1024×768 pass density, drawer, sticky header and focus restoration checks.
-- [ ] Reduced motion removes transforms while preserving state comprehension.
+- [ ] 1280×800 and 1440×900 pass sidebar, focus-order and total/policy consistency checks.
+- [ ] Reduced-motion mode removes transforms and preserves state clarity.
 
 ## 16. Engineering handoff
 
@@ -460,7 +458,7 @@ No animated KPI counters, chart flourishes, bouncing alerts or continuous shimme
 
 `AdminShell`, `PropertySwitcher`, `OperationalPageHeader`, `FilterBar`, `SavedViewTabs`, `AppliedFilters`, `DataTable`, `MobileRecordList`, `DetailDrawer`, `BulkActionBar`, `ConfirmationDialog`, `ActivityTimeline`, `InlineNotice`, `SkeletonTable`.
 
-### Verification notes template
+### Verification note template
 
 ```text
 Desktop 1440×900:
@@ -485,3 +483,6 @@ States/a11y:
 - keyboard/screen reader/200% zoom:
 - reduced motion:
 ```
+
+---
+*Hand-off to UI Engineer/Builder. Start with DS-001 token migration before touching admin UI components.*

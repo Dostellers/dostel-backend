@@ -30,3 +30,6 @@ const amenityTypeDefs = gql`
 `;
 
 module.exports = amenityTypeDefs;
+
+
+module.exports = amenityTypeDefs;

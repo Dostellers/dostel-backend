@@ -1,0 +1,22 @@
+type BookingInput {
+  reference: String!
+  customerId: ID!
+  hostelId: ID!
+  roomType: String!
+  checkInDate: Date!
+  checkOutDate: Date!
+  totalAmount: Float!
+  payment: PaymentInput!
+  specialRequests: String
+  source: SourceInput!
+  loyaltyPointsRedeemed: Int
+  discount: DiscountInput!
+  status: String
+}
+
+mutation addTokenReceipt($customerId: ID!, $amount: Int!, $type: String!, $description: String, $paymentId: String) {
+  addTokenReceipt(customerId: $customerId, amount: $amount, type: $type, description: $description, paymentId: $paymentId) {
+    receipt
+    payment
+  }
+}

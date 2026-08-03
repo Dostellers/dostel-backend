@@ -8,16 +8,22 @@ const roomTypes = [
   {
     name: "Dorms",
     description: "A shared room for solo travellers and new friends.",
+    price: 327,
+    dostellerPrice: 247,
     image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
   },
   {
     name: "Couple rooms",
     description: "A private room for two in the heart of the hostel.",
+    price: 1299,
+    dostellerPrice: 974,
     image: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&q=80",
   },
   {
     name: "Private suites",
     description: "More room to settle in and stay awhile.",
+    price: 1799,
+    dostellerPrice: 1349,
     image: "https://images.unsplash.com/photo-1631049421450-348ccd7f2949?w=800&q=80",
   },
 ];

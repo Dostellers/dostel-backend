@@ -8,6 +8,10 @@
 
 | ID | Priority | Owner | Title |
 |----|----------|-------|-------|
+| **DOS‑250** | **P0** | Backend | Eligibility & consent engine – detect ≥7‑night stays, capture 3 consents |
+| **DOS‑251** | **P0** | Full-stack | Long‑stay offer display – show community access perks during booking |
+| **DOS‑252** | **P0** | Frontend | Staff event management UI – CRUD for weekly community events |
+| **DOS‑253** | **P0** | Full-stack | Guest RSVP & privacy – anonymous RSVP, cancellation, anonymized reports |
 | [DOS-280](marketing/dostellers/DOS-280.json) | **P0** | Backend | Eligibility flag & GraphQL field |
 | [DOS-281](marketing/dostellers/DOS-281.json) | **P0** | Backend | Opt-in consent capture endpoint |
 | [DOS-282](marketing/dostellers/DOS-282.json) | **P1** | Frontend | Eligibility badge UI & copy |

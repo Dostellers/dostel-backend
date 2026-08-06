@@ -28,6 +28,7 @@ const hostelTypeDefs = gql`
     policies: HostelPolicies
     faqs: [FAQ]
     blogs: [Blog]
+    rooms: [Room!]!
     createdAt: Date!
     updatedAt: Date
   }

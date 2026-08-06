@@ -18,6 +18,14 @@ interface Room {
   bookedThisWeek?: number;
 }
 
+export interface RoomSelection {
+  roomId: string;
+  name: string;
+  quantity: number;
+  pricePerNight: number;
+  total: number;
+}
+
 interface RoomSelectorProps {
   rooms: Room[];
   checkIn: string;
@@ -57,7 +65,7 @@ export default function RoomSelector({
   };
 
   const handleSelect = (room: Room) => {
-    const currentQty = getSelectedQuantity(room.id);
+    const currentQty = selectedRooms.find((r) => r.roomId === room.id)?.quantity || 0;
     const newQty = currentQty >= room.capacity ? 0 : currentQty + 1;
     
     const roomPrice = isDosteller && room.originalPrice ? room.originalPrice : room.price;
@@ -81,8 +89,7 @@ export default function RoomSelector({
   return (
     <div className="space-y-3">
       {rooms.map((room) => {
-        const isSelected = getSelectedQuantity(room.id) > 0;
-        const selectedQty = getSelectedQuantity(room.id);
+        const isSelected = selectedRooms.find((r) => r.roomId === room.id)?.quantity > 0;
         const dostellerPrice = getDostellerPrice(room);
 
         return (
@@ -119,23 +126,23 @@ export default function RoomSelector({
                       <p className="text-sm font-semibold text-forest-900">{room.name}</p>
                       <p className="text-xs text-stone-400">Up to {room.capacity} guests</p>
                     </div>
-                    {room.available && (
-                      <div
-                        className={`flex h-8 min-w-[80px] cursor-pointer items-center justify-center rounded-md text-xs font-semibold transition-all duration-150 ${
-                          isSelected
-                            ? "bg-sunset text-white"
-                            : "bg-forest-500 text-white hover:brightness-95"
-                        }`}
-                        onClick={() => handleSelect(room)}
-                        role="button"
-                        tabIndex={0}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            handleSelect(room);
-                          }
-                        }}
-                        aria-label={`${isSelected ? "Selected" : "Select"} ${room.name}`}
+{room.available && (
+                       <div
+                         className={`flex h-8 min-w-[80px] cursor-pointer items-center justify-center rounded-md text-xs font-semibold transition-all duration-150 ${
+                           isSelected
+                             ? "bg-sunset text-white"
+                             : "bg-forest-500 text-white hover:brightness-95"
+                         }`}
+                         onClick={() => handleSelect(room)}
+                         role="button"
+                         tabIndex={0}
+                         onKeyDown={(e) => {
+                           if (e.key === "Enter" || e.key === " ") {
+                             e.preventDefault();
+                             handleSelect(room);
+                           }
+                         }}
+                         aria-label={`${isSelected ? "Deselect" : "Select"} ${room.name}`}
                       >
                         {isSelected ? (
                           <span className="flex items-center gap-1">

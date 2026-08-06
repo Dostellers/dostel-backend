@@ -144,6 +144,7 @@ const customerTypeDefs = gql`
   }
 
   extend type Mutation {
+    addTokenReceipt(id: ID!, input: TokenReceiptInput!): TokenReceipt!
     createCustomer(input: CustomerInput!): Customer!
     updateCustomer(id: ID!, input: CustomerInput!): Customer!
     deleteCustomer(id: ID!): Boolean!

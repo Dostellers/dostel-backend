@@ -12,6 +12,7 @@ const navItems = [
   { href: '/rates', label: 'Rates' },
   { href: '/housekeeping', label: 'Housekeeping' },
   { href: '/reports', label: 'Reports' },
+    { href: '/token-receipts', label: 'Token Receipts' },
 ];
 
 export default function Sidebar() {

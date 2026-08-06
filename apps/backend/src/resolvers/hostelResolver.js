@@ -4,7 +4,7 @@ const hostelResolvers = {
     Query: {
         hostels: async () => {
             try {
-                return await Hostel.find()
+                const populated = await Hostel.find()
                     .populate('images.hero')
                     .populate('images.main')
                     .populate('images.thumbnail')
@@ -12,40 +12,77 @@ const hostelResolvers = {
                     .populate('amenities')
                     .populate('faqs')
                     .populate('blogs')
-                    .select('id slug name city tagline description createdAt updatedAt');
+                    .populate('rooms')
+                    .select('id slug name city tagline description createdAt updatedAt rooms');
+
+                return populated.map(hostel => {
+                    const obj = hostel.toObject();
+                    obj.id = obj._id.toString();
+                    if (obj.rooms && obj.rooms.length > 0) {
+                        obj.rooms = obj.rooms.map(room => ({
+                            ...room.toObject(),
+                            id: room._id.toString(),
+                            roomType: room.roomType?.id?.toString() || room.roomType
+                        }));
+                    }
+                    return obj;
+                });
             } catch (error) {
                 return [];
             }
         },
         hostel: async (_, { id }) => {
-            return await Hostel.findById(id)
+            const hostel = await Hostel.findById(id)
                 .populate('images.hero')
                 .populate('images.main')
                 .populate('images.thumbnail')
                 .populate('images.others')
                 .populate('amenities')
                 .populate('faqs')
-                .populate('blogs');
+                .populate('blogs')
+                .populate('rooms');
+
+            if (!hostel) return null;
+            const obj = hostel.toObject();
+            obj.id = obj._id.toString();
+            if (obj.rooms && obj.rooms.length > 0) {
+                obj.rooms = obj.rooms.map(room => ({
+                    ...room.toObject(),
+                    id: room._id.toString(),
+                    roomType: room.roomType?.id?.toString() || room.roomType
+                }));
+            }
+            return obj;
         },
         hostelsByAmenity: async (_, { amenityId }) => {
-            return await Hostel.find({ amenities: amenityId })
+            const populated = await Hostel.find({ amenities: amenityId })
                 .populate('images.hero')
                 .populate('images.main')
                 .populate('images.thumbnail')
-                .populate('images.others')
                 .populate('amenities')
                 .populate('faqs')
                 .populate('blogs');
+
+            return populated.map(hostel => {
+                const obj = hostel.toObject();
+                obj.id = obj._id.toString();
+                return obj;
+            });
         },
         hostelsByLocation: async (_, { city }) => {
-            return await Hostel.find({ 'location.address.city': city })
+            const populated = await Hostel.find({ 'location.address.city': city })
                 .populate('images.hero')
                 .populate('images.main')
                 .populate('images.thumbnail')
-                .populate('images.others')
                 .populate('amenities')
                 .populate('faqs')
                 .populate('blogs');
+
+            return populated.map(hostel => {
+                const obj = hostel.toObject();
+                obj.id = obj._id.toString();
+                return obj;
+            });
         }
     },
     Mutation: {

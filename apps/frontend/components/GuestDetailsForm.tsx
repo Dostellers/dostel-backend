@@ -121,12 +121,12 @@ export default function GuestDetailsForm({ onSubmit, initialData, loading = fals
     [form, onSubmit]
   );
 
-  const inputClass = (field: keyof GuestInfo) =>
+  const inputClass = (field: keyof GuestInfo, isSelect = false) =>
     `w-full rounded-lg border px-4 py-3 text-sm text-forest-900 placeholder:text-stone-400 transition-all duration-150 focus-visible:outline-2 focus-visible:outline-sky focus-visible:outline-offset-0 ${
       errors[field] && touched.has(field)
         ? "border-error"
         : "border-stone-200"
-    }`;
+    }${errors[field] && touched.has(field) ? " opacity-60" : ""}${isSelect ? " bg-white" : ""}`;
 
   return (
     <form ref={formRef} onSubmit={handleSubmit} className="space-y-4" noValidate>
@@ -193,6 +193,51 @@ export default function GuestDetailsForm({ onSubmit, initialData, loading = fals
         />
         {errors.phone && touched.has("phone") && (
           <p id="phone-error" className="mt-1 text-xs text-error" role="alert">{errors.phone}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="govtIdType" className="mb-1.5 block text-sm font-medium text-forest-900">
+          Government ID Type <span className="text-stone-400">(required for Indian guests)</span>
+        </label>
+        <select
+          id="govtIdType"
+          value={form.govtIdType || ""}
+          onChange={(e) => updateField("govtIdType", e.target.value)}
+          onBlur={() => handleBlur("govtIdType")}
+          className={inputClass("govtIdType", true)}
+          aria-describedby={errors.govtIdType ? "govtIdType-error" : undefined}
+          data-error={errors.govtIdType ? true : undefined}
+        >
+          <option value="">Select ID type</option>
+          <option value="Aadhar">Aadhar Card</option>
+          <option value="PAN">PAN Card</option>
+          <option value="Passport">Passport</option>
+          <option value="Driving License">Driving License</option>
+          <option value="Voter ID">Voter ID</option>
+        </select>
+        {errors.govtIdType && touched.has("govtIdType") && (
+          <p id="govtIdType-error" className="mt-1 text-xs text-error" role="alert">{errors.govtIdType}</p>
+        )}
+      </div>
+
+      <div>
+        <label htmlFor="govtIdNumber" className="mb-1.5 block text-sm font-medium text-forest-900">
+          Government ID Number <span className="text-stone-400">(required for Indian guests)</span>
+        </label>
+        <input
+          id="govtIdNumber"
+          type="text"
+          value={form.govtIdNumber || ""}
+          onChange={(e) => updateField("govtIdNumber", e.target.value)}
+          onBlur={() => handleBlur("govtIdNumber")}
+          className={inputClass("govtIdNumber")}
+          placeholder="Enter your ID number"
+          aria-describedby={errors.govtIdNumber ? "govtIdNumber-error" : undefined}
+          data-error={errors.govtIdNumber ? true : undefined}
+        />
+        {errors.govtIdNumber && touched.has("govtIdNumber") && (
+          <p id="govtIdNumber-error" className="mt-1 text-xs text-error" role="alert">{errors.govtIdNumber}</p>
         )}
       </div>
 

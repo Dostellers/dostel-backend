@@ -1,13 +1,31 @@
-mutation awardReferralReward($customerId: ID!, $points: Int!) {
-awardReferralReward(customerId: $customerId, points: $points) {
-  customer
-  referrals
-}
+mutation AddRoom($input: RoomInput!) {
+  addRoom(input: $input) {
+    id
+    number
+    type
+    price
+    capacity
+    status
+  }
 }
 
-mutation addTokenReceipt($customerId: ID!, $amount: Int!, $type: String!, $description: String, $paymentId: String) {
-  addTokenReceipt(customerId: $customerId, amount: $amount, type: $type, description: $description, paymentId: $paymentId) {
-    receipt
-    payment
+mutation UpdateRoom($id: ID!, $input: RoomInput!) {
+  updateRoom(id: $id, input: $input) {
+    id
+    number
+    type
+    price
+    capacity
+    status
   }
+}
+
+mutation DeleteRoom($id: ID!) {
+  deleteRoom(id: $id) {
+    success
+  }
+}
+
+# Room type definition 7: type Room {
+  id: ID! 8: number: String 9: type: String 10: price: Float 11: capacity: Int 12: status: String 13: hostel: Hostel 14: roomType: String 15: images: [Image] 16: features: [String] 17: amenities: [Amenity] 18: accessibilityFeatures: [String]
 }

@@ -19,13 +19,15 @@ app.use('/api/admin', adminRouter);
 async function startServer() {
   await connectDB();
 
-  const server = new ApolloServer({
-    typeDefs: mergedTypeDefs,
-    resolvers,
-    context: ({ req }) => {
-      return { user: req.user };
-    },
-  });
+const server = new ApolloServer({
+  typeDefs: mergedTypeDefs,
+  resolvers,
+  context: ({ req }) => {
+    return { user: req.user };
+  },
+  cache: 'bounded',
+  persistedQueries: false
+});
 
   await server.start();
 

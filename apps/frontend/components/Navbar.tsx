@@ -8,6 +8,7 @@ import { usePathname } from "next/navigation";
    app/hostels/page.tsx, not decoration. The old menu sent ?cat= (read by
    nothing) and advertised Kasol/Manali, where the network has no beds. */
 const hostelNav = [
+  { label: "The Exchange · live board", href: "/exchange" },
   { label: "Filling fast", href: "/hostels?filter=trending" },
   { label: "Just opened", href: "/hostels?filter=new" },
   { label: "Mountains", href: "/hostels?category=mountains" },

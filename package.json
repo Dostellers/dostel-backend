@@ -1,0 +1,28 @@
+{
+  "name": "dostel",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/frontend",
+    "apps/backend",
+    "apps/admin"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\"",
+    "dev:frontend": "npm run dev --workspace=apps/frontend",
+    "dev:backend": "npm run dev --workspace=apps/backend",
+    "build": "npm run build --workspace=apps/frontend",
+    "start:frontend": "npm run start --workspace=apps/frontend",
+    "start:backend": "npm run start --workspace=apps/backend",
+    "scheduler": "node apps/backend/scheduler.js"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "6.0.3"
+  },
+  "dependencies": {
+    "@apollo/client": "^4.2.9",
+    "graphql": "^16.14.2",
+    "mongoose": "^6.0.0"
+  }
+}

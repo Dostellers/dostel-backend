@@ -1,0 +1,31 @@
+{
+  "name": "Dostel Builder",
+  "role": "engineer",
+  "title": "Dostel PMS Engineer (OpenCode + OmniRoute Free)",
+  "icon": "bot",
+  "capabilities": "Builds Dostel PMS monorepo (frontend, backend, admin) using OpenCode via OmniRoute free models. Implements GraphQL API, Next.js guest site, and admin panel in small heartbeat slices.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 900,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/AGENT_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}. Continue Paperclip assigned work for Dostel PMS in /root/dostel-backend. Use OmniRoute free models only. Prefer small shippable slices across apps/frontend, apps/backend, and apps/admin. Follow Paperclip heartbeat checkout/update rules.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 600,
+      "wakeOnDemand": true
+    }
+  }
+}

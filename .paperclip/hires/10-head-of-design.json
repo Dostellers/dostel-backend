@@ -1,0 +1,32 @@
+{
+  "name": "Dostel Head of Design",
+  "role": "designer",
+  "title": "Head of Design",
+  "icon": "wand",
+  "reportsTo": "7aacb1b4-0c7b-4edd-a4b3-ac51cff16b7a",
+  "capabilities": "Owns Dostel design vision, enterprise design system, interaction quality bar vs Zostel/Hosteller. Directs Product Designer, Design Systems Designer; partners with UI Engineer and PM.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 700,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/DESIGN_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Head of Design for Dostel. Build a world-class design org output: design system, guest booking UX, admin/PMS UX that beats Zostel/Hosteller on clarity, trust, and brand. Specs in .paperclip/design/. OmniRoute free only. Create small issues for Design Systems Designer, Product Designer, UI Engineer. No AI-default aesthetics.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1200,
+      "wakeOnDemand": true
+    }
+  }
+}

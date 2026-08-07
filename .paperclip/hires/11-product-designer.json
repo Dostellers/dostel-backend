@@ -1,0 +1,32 @@
+{
+  "name": "Dostel Product Designer",
+  "role": "designer",
+  "title": "Product Designer (UX)",
+  "icon": "eye",
+  "reportsTo": "f8e3e452-81bf-4665-ac0e-0a0b93f9d5a3",
+  "capabilities": "Owns end-to-end UX flows: discovery, property detail, booking, membership/Dostellers, admin ops. Wireframes, user journeys, interaction specs.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-free",
+    "command": "opencode",
+    "timeoutSec": 700,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/DESIGN_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, Product Designer for Dostel. Design booking and Dostellers journeys that reduce drop-off vs Zostel-class apps. Produce flow specs + acceptance criteria in .paperclip/design/flows/. Hand off to UI Engineer/Builder. OmniRoute free only. Mobile-first, accessible.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 1500,
+      "wakeOnDemand": true
+    }
+  }
+}

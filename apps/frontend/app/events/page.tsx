@@ -1,296 +1,148 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import SearchBar from "@/components/SearchBar";
-import { events } from "@/lib/data";
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
+import { events } from '@/lib/data';
+import SplitFlapBoard, { type BoardRow } from '@/components/SplitFlapBoard';
+import Reveal from '@/components/Reveal';
+
+/* The events page is where the split-flap board is most literal: a departures
+   board of things about to happen. Rows derive from the same data as the
+   cards below — the board is never decoration with different facts. */
+
+const shortDate = (iso: string) => {
+  const d = new Date(iso + 'T00:00:00');
+  return `${String(d.getDate()).padStart(2, '0')}${d.toLocaleString('en', { month: 'short' }).toUpperCase().slice(0, 3)}`;
+};
 
 export default function EventsPage() {
-  const [query, setQuery] = useState("");
-  const [location, setLocation] = useState("");
-  const [date, setDate] = useState("");
-  const [selectedCat, setSelectedCat] = useState("all");
-  const [sortBy, setSortBy] = useState("date-asc");
+  const [cat, setCat] = useState('all');
 
-  const categories = [
-    { label: "All", value: "all" },
-    { label: "Music", value: "music" },
-    { label: "Art", value: "art" },
-    { label: "Workshop", value: "workshop" },
-    { label: "Food", value: "food" },
-    { label: "Adventure", value: "adventure" },
-  ];
+  const cats = useMemo(() => {
+    const seen = new Map<string, string>();
+    events.forEach((e) => seen.set(e.category, e.categoryLabel));
+    return [...seen.entries()];
+  }, []);
 
-  const sortOptions = [
-    { label: "Date: Newest", value: "date-desc" },
-    { label: "Date: Oldest", value: "date-asc" },
-    { label: "Price: Low to High", value: "price-asc" },
-    { label: "Price: High to Low", value: "price-desc" },
-    { label: "Popularity", value: "popularity" },
-  ];
+  const list = useMemo(
+    () => (cat === 'all' ? events : events.filter((e) => e.category === cat)),
+    [cat],
+  );
 
-  const filtered = events
-    .filter(
-      (e) =>
-        (selectedCat === "all" || e.category === selectedCat) &&
-        (query === "" ||
-          e.title.toLowerCase().includes(query.toLowerCase()) ||
-          e.description.toLowerCase().includes(query.toLowerCase())) &&
-        (location === "" || e.location.toLowerCase().includes(location.toLowerCase())) &&
-        (date === "" || e.date.includes(date))
-    )
-    .sort((a, b) => {
-      if (sortBy === "date-desc") return new Date(b.date).getTime() - new Date(a.date).getTime();
-      if (sortBy === "date-asc") return new Date(a.date).getTime() - new Date(b.date).getTime();
-      if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
-      if (sortBy === "price-desc") return Number(b.price) - Number(a.price);
-      if (sortBy === "popularity") return Number(b.spotsLeft) - Number(a.spotsLeft);
-      return 0;
-    });
+  const boardRows: BoardRow[] = events.slice(0, 6).map((e) => ({
+    what: e.title,
+    where: e.location.split(',')[0]?.trim() ?? '',
+    when: shortDate(e.startDate),
+    status: e.spotsLeft <= 0 ? 'Full' : `${e.spotsLeft} left`,
+    live: e.spotsLeft > 0 && e.spotsLeft <= 40,
+  }));
 
   return (
-    <div className="min-h-screen pb-16 lg:pb-0">
-      {/* Header */}
-      <section className="bg-[var(--color-brand-primary)]/50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <h1 className="heading-2xl text-[var(--color-brand-primary)] mb-4">
-              Discover<br /><span className="block">Unforgettable Experiences</span>
-            </h1>
-            <p className="body-lg text-[var(--color-text-muted)] max-w-xl mx-auto">
-              Explore handpicked events across music, art, food, adventure and more
-            </p>
+    <div className="min-h-screen bg-paper pb-16 lg:pb-0">
+      {/* ── Board hero ───────────────────────────────────────── */}
+      <section className="bg-ink-1000 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <div className="grid items-center gap-12 lg:grid-cols-[0.9fr_1.1fr] lg:gap-16">
+            <div className="min-w-0">
+              <Reveal>
+                <span className="stamp text-yellow-300">Events</span>
+              </Reveal>
+              <Reveal delay={80}>
+                <h1 className="mt-5 text-[2.75rem] leading-[0.95] tracking-[-0.035em] text-white sm:text-6xl">
+                  What&apos;s about<br />to happen
+                </h1>
+              </Reveal>
+              <Reveal delay={160}>
+                <p className="mt-5 max-w-md text-lg leading-8 text-white/70">
+                  Treks, walks, workshops and the occasional very loud night — run by the
+                  houses and the people staying in them.
+                </p>
+              </Reveal>
+            </div>
+            <Reveal delay={200} className="min-w-0">
+              <SplitFlapBoard
+                rows={boardRows}
+                title="Departures · events"
+                columns={['Event', 'Where', 'On', 'Spots']}
+                caption="Upcoming events across the Dostel network"
+              />
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* Search & Filters */}
-      <section className="bg-[var(--color-surface)] border-b border-[var(--color-border)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            <SearchBar
-              dark
-              placeholder="Search events, artists, venues..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full"
-            />
-            
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-[var(--color-text-primary)]">
-                Location
-              </label>
-              <input
-                type="text"
-                placeholder="City, area or venue"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                className="input w-full"
-              />
-            </div>
-            
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-[var(--color-text-primary)]">
-                Date
-              </label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input w-full"
-              />
-            </div>
-            
-            <div className="flex flex-col">
-              <label className="mb-2 text-sm font-medium text-[var(--color-text-primary)]">
-                Category
-              </label>
-              <select
-                value={selectedCat}
-                onChange={(e) => setSelectedCat(e.target.value)}
-                className="select w-full"
-              >
-                {categories.map((cat) => (
-                  <option key={cat.value} value={cat.value}>
-                    {cat.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-          
-          <div className="mt-4 flex flex-col lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-wrap gap-3 mb-4 lg:mb-0">
-              <button
-                onClick={() => {
-                  setQuery("");
-                  setLocation("");
-                  setDate("");
-                  setSelectedCat("all");
-                }}
-                className="btn btn-outline btn-sm"
-              >
-                Clear filters
-              </button>
-              <button
-                onClick={() => {
-                  setQuery("");
-                  setLocation("");
-                  setDate("");
-                  setSelectedCat("all");
-                  setSortBy("date-asc");
-                }}
-                className="btn btn-primary btn-sm"
-              >
-                Sort by: {sortOptions.find((o) => o.value === sortBy)?.label}
-                <svg className="ml-2 w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
-            
-            <div className="hidden lg:flex items-center gap-4">
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="select"
-              >
-                {sortOptions.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              
-              <span className="text-[var(--color-text-muted)] text-sm">
-                Showing {filtered.length} of {events.length} events
-              </span>
-            </div>
-          </div>
+      {/* ── Filter ───────────────────────────────────────────── */}
+      <div className="sticky top-16 z-40 border-b border-ink-200 bg-paper/95 backdrop-blur-md">
+        <div className="scrollbar-hide mx-auto flex max-w-7xl gap-2 overflow-x-auto px-4 py-3 sm:px-6 lg:px-8">
+          {[['all', `All ${events.length}`], ...cats].map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setCat(id)}
+              aria-pressed={cat === id}
+              className={`min-h-11 shrink-0 whitespace-nowrap rounded-sm border px-4 text-sm font-medium transition-colors duration-150 ${
+                cat === id
+                  ? 'border-coral-600 bg-coral-600 text-white'
+                  : 'border-ink-200 bg-white text-ink-700 hover:border-ink-400'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-      </section>
+      </div>
 
-      {/* Events Grid */}
-      <section className="pb-16 lg:pb-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {filtered.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-[var(--color-text-muted)] text-lg mb-6">
-                No events match your filters. Try adjusting your search.
-              </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button
-                  onClick={() => {
-                    setQuery("");
-                    setLocation("");
-                    setDate("");
-                    setSelectedCat("all");
-                  }}
-                  className="btn btn-outline"
-                >
-                  Clear all filters
-                </button>
-                <button className="btn btn-primary">Explore all events</button>
-              </div>
-            </div>
-          ) : (
-            <div className="grid gap-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                {filtered.map((event) => (
-                  <Link
-                    key={event.slug}
-                    href={`/events/${event.slug}`}
-                    className="group block bg-[var(--color-surface)] border border-[var(--color-border)] rounded-xl overflow-hidden hover:shadow-lg transition-shadow duration-300"
-                  >
-                    <div className="relative aspect-[16/9] bg-[var(--color-bg-muted)]">
-                      <Image
-                        src={event.image}
-                        alt={event.title}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-                      
-                      <div className="absolute top-3 left-3 flex gap-2">
-                        <span className="px-2.5 py-1 text-xs font-medium bg-[var(--color-brand-secondary)] text-white rounded-full">
-                          {event.categoryLabel}
-                        </span>
-                      </div>
-                      
-                      {event.spotsLeft < 15 && (
-                        <div className="absolute top-3 right-3">
-                          <span className="px-2.5 py-1 text-xs font-medium bg-amber-400 text-gray-900 rounded-full">
-                            {event.spotsLeft} spots left!
-                          </span>
-                        </div>
+      {/* ── Cards ────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8 lg:py-14">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {list.map((e, i) => (
+            <Reveal key={e.slug} delay={(i % 3) * 80}>
+              <article className="flex h-full flex-col overflow-hidden rounded-sm border border-ink-200 bg-white">
+                <div className="relative">
+                  <div
+                    className="aspect-[16/9] w-full bg-ink-100 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${e.image})` }}
+                    role="presentation"
+                  />
+                  <span className="absolute left-0 top-4 bg-ink-1000 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-white">
+                    {e.categoryLabel}
+                  </span>
+                  {e.spotsLeft > 0 && e.spotsLeft <= 40 && (
+                    <span className="absolute right-0 top-4 bg-coral-600 px-3 py-1 text-[0.6875rem] font-semibold uppercase tracking-[0.12em] text-white">
+                      {e.spotsLeft} spots left
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-1 flex-col p-5">
+                  <p className="data text-[0.6875rem] uppercase tracking-[0.14em] text-ink-500">
+                    {e.date} · {e.duration}
+                  </p>
+                  <h2 className="mt-2 text-lg leading-tight text-ink-1000">{e.title}</h2>
+                  <p className="mt-1 text-sm text-ink-600">{e.location}</p>
+                  <p className="mt-3 line-clamp-2 flex-1 text-sm leading-6 text-ink-700">{e.description}</p>
+                  <div className="mt-4 flex items-end justify-between border-t border-ink-200 pt-4">
+                    <div>
+                      <span className="data text-xl font-semibold text-ink-1000">₹{e.price.toLocaleString('en-IN')}</span>
+                      {e.originalPrice > e.price && (
+                        <span className="data ml-2 text-xs text-ink-500 line-through">₹{e.originalPrice.toLocaleString('en-IN')}</span>
                       )}
-                      
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <p className="text-[var(--color-text-primary)] font-bold text-xl leading-tight">
-                          {event.title}
-                        </p>
-                        <p className="text-[var(--color-text-muted)] text-sm">
-                          {event.date} · {event.location}
-                        </p>
-                        <p className="text-[var(--color-text-muted)] text-xs mt-0.5">
-                          {event.duration}
-                        </p>
-                      </div>
                     </div>
-                    
-                    <div className="p-5">
-                      <p className="text-[var(--color-text-secondary)] text-sm line-clamp-3 mb-4">
-                        {event.description}
-                      </p>
-                      <div className="flex items-center justify-between mt-4">
-                        <div>
-                          <p className="text-[var(--color-brand-primary)] font-bold text-xl">
-                            ₹{event.price.toLocaleString()}
-                          </p>
-                          <p className="text-[var(--color-text-muted)] text-xs line-through">
-                            ₹{event.originalPrice.toLocaleString()}
-                          </p>
-                        </div>
-                        <span
-                          className="px-4 py-2 bg-[var(--color-brand-secondary)] text-white text-sm font-medium rounded-hover hover:opacity-90 transition-opacity"
-                        >
-                          Book now
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          )}
+                    <Link
+                      href={`/hostels/${e.hostel}`}
+                      className="text-sm font-semibold text-coral-700 underline-offset-4 hover:underline"
+                    >
+                      Stay nearby
+                    </Link>
+                  </div>
+                </div>
+              </article>
+            </Reveal>
+          ))}
         </div>
-      </section>
 
-      {/* CTA Section */}
-      <section className="bg-[var(--color-brand-primary)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
-          <h2 className="heading-lg text-white mb-6">
-            Host your own event with Dostel
-          </h2>
-          <p className="body-lg text-white/80 mb-8 max-w-xl mx-auto">
-            From intimate gatherings to large festivals, we help you create unforgettable experiences
-          </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Link
-              href="/list-event"
-              className="btn btn-outline btn-lg hover:bg-[var(--color-brand-primary)]/20 hover:text-white"
-            >
-              List your event
-            </Link>
-            <Link
-              href="/organizer"
-              className="btn btn-primary btn-lg"
-            >
-              Organizer resources
-            </Link>
-          </div>
-        </div>
+        <p className="data mt-8 text-xs leading-5 text-ink-600">
+          Events are run by properties and guests. Dates and spot counts are the
+          organiser&apos;s numbers — confirm with the house before travelling for one.
+        </p>
       </section>
     </div>
   );

@@ -1,146 +1,153 @@
-import Image from "next/image";
-import Link from "next/link";
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { hostels } from '@/lib/data';
+import Reveal from '@/components/Reveal';
 
-const coliveProperties = [
+export const metadata: Metadata = {
+  title: 'Colive — Dostel',
+  description:
+    'Stay by the month at real Dostel properties. Long-stay rates, one room that stays yours, and a house that learns your name.',
+};
+
+/* The old page advertised three "Dostel Colive" properties that do not exist
+   in inventory. This page sells only what we operate: monthly stays at real
+   houses, at long-stay rates derived from real nightly prices. */
+const COLIVE_SLUGS = ['dostel-bangalore-hsr', 'dostel-vattakanal', 'dostel-coorg-rainforest', 'dostel-goa-beach'];
+
+const COLIVE_PITCH: Record<string, string> = {
+  'dostel-bangalore-hsr': 'The commuter option — live here, work anywhere in the city.',
+  'dostel-vattakanal': 'The original long-stay house. 14+ nights is how Dostellers started.',
+  'dostel-coorg-rainforest': 'A month of green. Best in the dry season, honest about the wet one.',
+  'dostel-goa-beach': 'Season-dependent: glorious Nov–Feb, monsoon-quiet the rest.',
+};
+
+/** Long-stay maths, stated plainly: ~20% off nightly past 7 nights. */
+const monthly = (nightly: number) => Math.round(nightly * 30 * 0.8);
+
+const truths = [
   {
-    slug: "dostel-colive-bangalore",
-    name: "Dostel Colive, Bangalore",
-    location: "Indiranagar, Bangalore",
-    price: 12000,
-    period: "month",
-    image: "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=800&q=80",
-    features: ["Private Room", "All Meals", "High-speed WiFi", "Co-work Space", "Gym", "Community Events"],
-    available: true,
+    head: 'One bed, held for you',
+    body: 'A monthly stay is the same bed the whole month — no re-checking in, no shuffling dorms, your things stay where you left them.',
   },
   {
-    slug: "dostel-colive-goa",
-    name: "Dostel Colive, Goa",
-    location: "Assagao, North Goa",
-    price: 15000,
-    period: "month",
-    image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&q=80",
-    features: ["Private Room", "Breakfast", "Pool Access", "Co-work Space", "Beach Trips", "Weekly BBQ"],
-    available: true,
+    head: 'The rate is the nightly rate, discounted',
+    body: 'Long-stay pricing is roughly 20% off the public nightly rate past seven nights. No separate “colive product” with separate fine print.',
   },
   {
-    slug: "dostel-colive-delhi",
-    name: "Dostel Colive, Delhi",
-    location: "Hauz Khas, New Delhi",
-    price: 18000,
-    period: "month",
-    image: "https://images.unsplash.com/photo-1587474260584-136574528ed5?w=800&q=80",
-    features: ["Private Room", "All Meals", "High-speed WiFi", "Co-work Space", "Gym", "Rooftop Lounge"],
-    available: false,
+    head: 'A month is how you stop being a guest',
+    body: 'Fourteen nights is where Dostellers came from. Stay a month and the staff know your order, your work hours, and when to drag you to a bonfire.',
   },
 ];
 
 export default function ColivePage() {
-  return (
-    <div className="min-h-screen">
-      <div className="bg-gradient-to-br from-[var(--color-brand-teal)] to-[var(--color-brand-success)] text-[var(--color-text-primary)] py-24 px-4 text-center">
-        <span className="inline-block px-4 py-1.5 bg-[var(--color-surface)]/20 rounded-full text-sm font-medium mb-4">
-          🏢 Coliving
-        </span>
-        <h1 className="heading-4xl font-playfair mb-4">
-          Live with your tribe
-        </h1>
-        <p className="body-lg text-[var(--color-text-muted)] max-w-2xl mx-auto">
-          Monthly coliving spaces with everything included — meals, WiFi, community and more.
-          Meet amazing people while keeping your life flexible.
-        </p>
-      </div>
+  const houses = COLIVE_SLUGS.map((s) => hostels.find((h) => h.slug === s)).filter(
+    (h): h is NonNullable<typeof h> => Boolean(h),
+  );
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {coliveProperties.map((prop) => (
-            <div key={prop.slug} className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300">
-              <div className="relative aspect-video bg-[var(--color-bg-muted)]">
-                <Image
-                  src={prop.image}
-                  alt={prop.name}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                />
-                {!prop.available && (
-                  <div className="absolute inset-0 bg-[var(--color-bg-muted)]/50 flex items-center justify-center">
-                    <span className="px-4 py-2 bg-[var(--color-surface)]/90 text-[var(--color-text-primary)] text-sm font-bold rounded-full">
-                      Waitlist only
-                    </span>
-                  </div>
-                )}
-              </div>
-              <div className="p-6">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="heading-lg font-playfair text-[var(--color-brand-primary)] leading-tight">
-                    {prop.name}
-                  </h3>
-                  {prop.available && (
-                    <span className="px-2.5 py-0.5 text-xs font-medium bg-[var(--color-success)]/20 text-[var(--color-success)] rounded-full shrink-0 ml-2">
-                      Available
-                    </span>
-                  )}
-                </div>
-                <p className="text-[var(--color-text-muted)] text-sm mb-5 flex items-center gap-2">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  </svg>
-                  {prop.location}
+  return (
+    <div className="min-h-screen bg-paper pb-16 lg:pb-0">
+      <section className="bg-ink-1000 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <Reveal>
+            <span className="stamp text-yellow-300">Colive</span>
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 className="mt-5 max-w-3xl text-[2.5rem] leading-[0.98] tracking-[-0.035em] text-white sm:text-6xl">
+              Stay a month.<br />Stop being a guest.
+            </h1>
+          </Reveal>
+          <Reveal delay={160}>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-white/70">
+              Monthly stays at the same houses everyone else visits for a weekend — at
+              long-stay rates, with a bed that stays yours.
+            </p>
+          </Reveal>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="grid gap-x-10 gap-y-12 md:grid-cols-3">
+          {truths.map((t, i) => (
+            <Reveal key={t.head} delay={i * 100}>
+              <div>
+                <p className="data text-xs uppercase tracking-[0.16em] text-coral-700">
+                  {String(i + 1).padStart(2, '0')}
                 </p>
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {prop.features.slice(0, 4).map((f) => (
-                    <span key={f} className="px-2.5 py-1 text-xs font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] rounded-full">
-                      {f}
-                    </span>
-                  ))}
-                  {prop.features.length > 4 && (
-                    <span className="px-2.5 py-1 text-xs font-medium bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] rounded-full">
-                      +{prop.features.length - 4} more
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-3xl font-extrabold text-[var(--color-brand-primary)]">
-                      ₹{prop.price.toLocaleString()}
-                    </span>
-                    <span className="text-[var(--color-text-muted)] text-sm">/{prop.period}</span>
-                  </div>
-                  <Link
-                    href={prop.available ? `/colive/${prop.slug}` : "/colive/waitlist"}
-                    className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 ${
-                      prop.available
-                        ? "bg-[var(--color-brand-secondary)] text-white hover:bg-[var(--color-brand-primary)]/90"
-                        : "bg-[var(--color-bg-muted)] text-[var(--color-text-muted)] cursor-not-allowed"
-                    }`}
-                  >
-                    {prop.available ? "Apply now" : "Join waitlist"}
-                  </Link>
-                </div>
+                <h2 className="mt-3 text-xl text-ink-1000">{t.head}</h2>
+                <p className="mt-3 leading-7 text-ink-700">{t.body}</p>
               </div>
-            </div>
+            </Reveal>
           ))}
         </div>
+      </section>
 
-        <div className="mt-16 bg-[var(--color-bg-muted)] rounded-3xl p-8 sm:p-12 text-center">
-          <h2 className="heading-2xl font-playfair text-[var(--color-brand-primary)] mb-4">
-            Want to list your property?
-          </h2>
-          <p className="body-lg text-[var(--color-text-muted)] max-w-lg mx-auto mb-6">
-            Partner with Dostel to offer your space as a coliving property and
-            reach thousands of digital nomads.
-          </p>
-          <Link
-            href="/list-property"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[var(--color-brand-secondary)] text-white text-sm font-medium rounded-xl hover:bg-[var(--color-brand-primary)]/90 transition-colors"
-          >
-            List your property
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
+      <section className="border-t border-ink-200 bg-coral-50 py-16 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <h2 className="text-3xl text-ink-1000 sm:text-4xl">Houses that take monthly stays</h2>
+            <p className="mt-3 max-w-xl leading-7 text-ink-700">
+              Estimated from the public nightly rate — the checkout applies the exact
+              long-stay discount to your dates.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            {houses.map((h, i) => (
+              <Reveal key={h.slug} delay={(i % 4) * 90}>
+                <Link
+                  href={`/hostels/${h.slug}`}
+                  className="group flex h-full flex-col overflow-hidden rounded-sm border border-ink-200 bg-white transition-transform duration-150 hover:-translate-y-0.5"
+                >
+                  <div
+                    className="aspect-[4/3] w-full bg-ink-100 bg-cover bg-center"
+                    style={{ backgroundImage: `url(${h.image})` }}
+                    role="presentation"
+                  />
+                  <div className="flex flex-1 flex-col p-5">
+                    <h3 className="text-lg leading-tight text-ink-1000">{h.name}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-6 text-ink-700">{COLIVE_PITCH[h.slug]}</p>
+                    <div className="mt-4 border-t border-ink-200 pt-4">
+                      <p>
+                        <span className="data text-xl font-semibold text-ink-1000">
+                          ~₹{monthly(h.price).toLocaleString('en-IN')}
+                        </span>
+                        <span className="ml-1 text-xs text-ink-600">/ month, dorm</span>
+                      </p>
+                      <p className="data mt-1 text-[0.6875rem] uppercase tracking-[0.1em] text-ink-500">
+                        vs ₹{h.price}/night short-stay
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={150}>
+            <p className="data mt-8 text-xs leading-5 text-ink-600">
+              Private rooms and suites by the month exist at Vattakanal and Bangalore —
+              ask when booking. Monthly estimates are dorm-bed maths, not a quote.
+            </p>
+          </Reveal>
         </div>
-      </div>
+      </section>
+
+      <section className="bg-ink-1000 py-16 text-white lg:py-24">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <Reveal>
+            <h2 className="text-3xl text-white sm:text-4xl">Fourteen nights is the door</h2>
+            <p className="mx-auto mt-4 max-w-xl leading-8 text-white/70">
+              Stay 14+ nights in a month anywhere on the network and Dostellers opens:
+              long-stay rates everywhere, and a name that travels with you.
+            </p>
+            <Link
+              href="/dostellers"
+              className="mt-8 inline-flex h-12 items-center rounded-sm bg-yellow-400 px-7 text-sm font-semibold text-ink-1000 transition-all duration-150 hover:bg-yellow-300 active:scale-[0.97]"
+            >
+              About Dostellers
+            </Link>
+          </Reveal>
+        </div>
+      </section>
     </div>
   );
 }

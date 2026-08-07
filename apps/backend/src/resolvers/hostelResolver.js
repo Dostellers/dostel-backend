@@ -1,6 +1,35 @@
 const Hostel = require('../models/hostel');
+const reliability = require('../services/reliabilityService');
 
 const hostelResolvers = {
+    Hostel: {
+        /**
+         * The measured reliability record (DOS-503).
+         *
+         * Computed on request rather than stored, so the published numbers can
+         * always be re-derived from the raw events — which is the whole basis
+         * for asking a guest to believe them.
+         *
+         * Only resolved when the query asks for it; hostel listings that do not
+         * select `reliability` pay nothing for it.
+         */
+        reliability: async hostel => {
+            const record = await reliability.buildReliability(hostel._id || hostel.id);
+
+            // No telemetry at all reads as "no record", not as a perfect one.
+            if (!record.totalObservations) return null;
+
+            const { windows, ...rest } = record;
+            return {
+                ...rest,
+                computedAt: record.computedAt.toISOString(),
+                last7d: windows['7d'],
+                last30d: windows['30d'],
+                last90d: windows['90d']
+            };
+        }
+    },
+
     Query: {
         hostels: async () => {
             try {

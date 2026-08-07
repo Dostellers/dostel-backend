@@ -1,0 +1,468 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Dostel Vattakanal — Connect to WiFi</title>
+<!--
+  Captive portal (DOS-501).
+
+  Deliberately a single self-contained file with zero external requests: the guest
+  has no internet when this renders, so any CDN font, script or image would hang.
+  It is also served outside the Next.js app because Apple's Captive Network
+  Assistant and the Android captive browser are stripped-down webviews with no
+  service workers and unreliable storage — a React hydration payload is a poor bet
+  there, and the App Router would force the site's Navbar/Footer/Apollo layout onto
+  a page that must stay minimal.
+
+  Router setup: redirect unauthenticated clients to
+    http://<frontend-host>:3001/portal/?mac=<client-mac>&ap=<ap-mac>&ssid=<ssid>&authorizeUrl=<router-auth-endpoint>
+  The router must verify the grant signature via POST /api/portal/authorize before
+  opening the walled garden. It must not trust this page alone.
+-->
+<style>
+  :root {
+    --forest-900: #0f1a14;
+    --forest-700: #1a3328;
+    --forest-500: #2d6a4f;
+    --forest-100: #d8f3dc;
+    --sunset: #e07a2f;
+    --snow: #fefcf5;
+    --stone-200: #e6e0d8;
+    --stone-400: #a89f94;
+    --stone-600: #6b6258;
+    --error: #dc2626;
+    --success: #16a34a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    /* System stack only — a webfont would be an external request. */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--forest-900);
+    color: var(--snow);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 16px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--forest-700);
+    border-radius: 16px;
+    padding: 28px 24px 24px;
+    box-shadow: 0 12px 40px rgba(0,0,0,.35);
+  }
+
+  .brand { font-size: 13px; letter-spacing: .18em; text-transform: uppercase; color: var(--forest-100); opacity: .8; }
+  h1 { font-size: 24px; line-height: 1.25; margin: 10px 0 6px; font-weight: 600; }
+  .sub { font-size: 14px; line-height: 1.5; color: var(--stone-200); margin: 0 0 22px; }
+
+  label { display: block; font-size: 13px; font-weight: 600; margin: 0 0 6px; color: var(--forest-100); }
+  .field { margin-bottom: 16px; }
+
+  input[type=text], input[type=tel], input[type=email], select {
+    width: 100%;
+    /* 16px minimum stops iOS zooming the viewport on focus. */
+    font-size: 16px;
+    padding: 12px 13px;
+    border-radius: 9px;
+    border: 1px solid rgba(255,255,255,.16);
+    background: rgba(0,0,0,.22);
+    color: var(--snow);
+    font-family: inherit;
+    appearance: none;
+  }
+  input::placeholder { color: var(--stone-400); }
+  input:focus, select:focus { outline: 2px solid var(--sunset); outline-offset: 1px; border-color: transparent; }
+
+  .hint { font-size: 12px; color: var(--stone-400); margin-top: 5px; line-height: 1.4; }
+
+  .consents { border-top: 1px solid rgba(255,255,255,.1); margin-top: 20px; padding-top: 18px; }
+  .consent { display: flex; gap: 11px; align-items: flex-start; margin-bottom: 14px; }
+  .consent input { margin: 2px 0 0; width: 19px; height: 19px; flex: none; accent-color: var(--sunset); }
+  .consent span { font-size: 13px; line-height: 1.45; color: var(--stone-200); }
+  .optional { color: var(--stone-400); font-size: 11px; text-transform: uppercase; letter-spacing: .06em; }
+
+  button {
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: inherit;
+    padding: 14px;
+    border-radius: 9px;
+    border: 0;
+    background: var(--sunset);
+    color: #fff;
+    cursor: pointer;
+    margin-top: 6px;
+  }
+  button:disabled { opacity: .55; cursor: default; }
+
+  .status { font-size: 14px; line-height: 1.5; margin-top: 14px; padding: 11px 13px; border-radius: 9px; display: none; }
+  .status.show { display: block; }
+  .status.error { background: rgba(220,38,38,.15); color: #fca5a5; }
+  .status.info { background: rgba(255,255,255,.08); color: var(--stone-200); }
+  .status.ok { background: rgba(22,163,74,.15); color: #86efac; }
+
+  .center { text-align: center; }
+  .big { font-size: 40px; line-height: 1; margin-bottom: 14px; }
+  .muted { font-size: 13px; color: var(--stone-400); margin-top: 18px; line-height: 1.5; }
+  .footer { font-size: 11px; color: var(--stone-400); text-align: center; margin-top: 20px; line-height: 1.5; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<main class="card">
+
+  <!-- Boot state: deciding whether this device is already known. -->
+  <section id="view-loading" class="center">
+    <div class="brand">Dostel Vattakanal</div>
+    <h1>Getting you online…</h1>
+    <p class="sub">One moment.</p>
+  </section>
+
+  <!-- New device. -->
+  <section id="view-form" hidden>
+    <div class="brand">Dostel Vattakanal</div>
+    <h1>Connect to WiFi</h1>
+    <p class="sub">Tell us who you are and you're on. This also makes you a Dosteller — our community membership. It's free.</p>
+
+    <form id="signup" novalidate>
+      <div class="field">
+        <label for="fullName">Your name</label>
+        <input type="text" id="fullName" name="fullName" autocomplete="name" required>
+      </div>
+
+      <div class="field">
+        <label for="phone">Phone</label>
+        <input type="tel" id="phone" name="phone" autocomplete="tel" inputmode="tel" placeholder="98765 43210">
+        <p class="hint">Or use email below if you'd rather not share a number.</p>
+      </div>
+
+      <div class="field">
+        <label for="email">Email <span class="optional">optional</span></label>
+        <input type="email" id="email" name="email" autocomplete="email" inputmode="email">
+      </div>
+
+      <div class="field">
+        <label for="country">Where are you from? <span class="optional">optional</span></label>
+        <input type="text" id="country" name="country" autocomplete="country-name">
+      </div>
+
+      <div class="field">
+        <label for="stayPurpose">What brings you here? <span class="optional">optional</span></label>
+        <select id="stayPurpose" name="stayPurpose">
+          <option value="">Prefer not to say</option>
+          <option value="backpacker">Backpacking / travelling</option>
+          <option value="remote_worker">Working remotely</option>
+          <option value="group">Here with a group</option>
+          <option value="other">Something else</option>
+        </select>
+      </div>
+
+      <div class="consents">
+        <!--
+          DPDP Act 2023: consent must be specific and freely given. Only the
+          network terms gate access. The other two are unchecked by default and
+          declining them must not affect getting online.
+        -->
+        <div class="consent">
+          <input type="checkbox" id="c-network" required>
+          <label for="c-network" style="margin:0"><span>I accept the <strong>WiFi terms of use</strong> and house rules.</span></label>
+        </div>
+        <div class="consent">
+          <input type="checkbox" id="c-marketing">
+          <label for="c-marketing" style="margin:0"><span>Send me Dostel offers and news. <span class="optional">optional</span></span></label>
+        </div>
+        <div class="consent">
+          <input type="checkbox" id="c-whatsapp">
+          <label for="c-whatsapp" style="margin:0"><span>Add me to the Dostellers WhatsApp community. <span class="optional">optional</span></span></label>
+        </div>
+      </div>
+
+      <button type="submit" id="submit">Connect me</button>
+      <div id="form-status" class="status" role="alert" aria-live="polite"></div>
+      <p class="footer">You can change your mind any time from your Dosteller dashboard.</p>
+    </form>
+  </section>
+
+  <!-- Known device: no form, straight online. -->
+  <section id="view-returning" hidden class="center">
+    <div class="brand">Dostel Vattakanal</div>
+    <div class="big">👋</div>
+    <h1 id="welcome-back">Welcome back</h1>
+    <p class="sub">We recognised your device. Connecting you now.</p>
+    <div id="returning-status" class="status info show" role="status" aria-live="polite">Connecting…</div>
+  </section>
+
+  <!-- Online. -->
+  <section id="view-done" hidden class="center">
+    <div class="brand">Dostel Vattakanal</div>
+    <div class="big">✓</div>
+    <h1>You're online</h1>
+    <p class="sub" id="done-message">Welcome to the house.</p>
+    <p class="muted">Events, perks and your membership live in the Dosteller dashboard — have a look once you're settled.</p>
+  </section>
+
+  <!-- Backend unreachable: submission is queued, guest is not stuck. -->
+  <section id="view-queued" hidden class="center">
+    <div class="brand">Dostel Vattakanal</div>
+    <div class="big">⏳</div>
+    <h1>Saved</h1>
+    <p class="sub">We couldn't reach our system just now — mountain internet. Your details are saved on this device and will go through automatically.</p>
+    <p class="muted">If you still can't get online in a few minutes, please ask at reception.</p>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var QUEUE_KEY = 'dostel.portal.queue.v1';
+  var RETRY_MS = 15000;
+
+  var params = new URLSearchParams(window.location.search);
+
+  // The backend may not sit on the same port as this page. Allow the router to
+  // pass it explicitly; otherwise assume port 4000 on the host serving us.
+  var apiBase = params.get('apiBase') || (window.location.protocol + '//' + window.location.hostname + ':4000');
+  var authorizeUrl = params.get('authorizeUrl') || null;
+  var originalUrl = params.get('url') || null;
+
+  var ctx = {
+    mac: params.get('mac') || '',
+    ap: params.get('ap') || '',
+    ssid: params.get('ssid') || ''
+  };
+
+  function $(id) { return document.getElementById(id); }
+
+  function show(view) {
+    ['view-loading', 'view-form', 'view-returning', 'view-done', 'view-queued'].forEach(function (id) {
+      $(id).hidden = (id !== view);
+    });
+  }
+
+  function setStatus(el, message, kind) {
+    el.textContent = message;
+    el.className = 'status show ' + (kind || 'info');
+  }
+
+  // Storage is unreliable inside captive-portal webviews (private mode, quota,
+  // Apple's CNA). Every access is guarded and failure is non-fatal — the guest
+  // just loses the offline retry, not their connection.
+  function readQueue() {
+    try {
+      var raw = window.localStorage.getItem(QUEUE_KEY);
+      return raw ? JSON.parse(raw) : [];
+    } catch (e) { return []; }
+  }
+
+  function writeQueue(items) {
+    try {
+      window.localStorage.setItem(QUEUE_KEY, JSON.stringify(items));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  function enqueue(payload) {
+    var items = readQueue();
+    // Deduplicate on submissionKey so a reload does not double-queue.
+    for (var i = 0; i < items.length; i++) {
+      if (items[i].submissionKey === payload.submissionKey) return true;
+    }
+    items.push(payload);
+    return writeQueue(items);
+  }
+
+  function dequeue(submissionKey) {
+    writeQueue(readQueue().filter(function (item) { return item.submissionKey !== submissionKey; }));
+  }
+
+  function uuid() {
+    try {
+      if (window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+      if (window.crypto && window.crypto.getRandomValues) {
+        var b = new Uint8Array(16);
+        window.crypto.getRandomValues(b);
+        return Array.prototype.map.call(b, function (x) {
+          return ('0' + x.toString(16)).slice(-2);
+        }).join('');
+      }
+    } catch (e) { /* fall through */ }
+    return 'k' + Date.now() + Math.random().toString(16).slice(2);
+  }
+
+  function api(path, options) {
+    var opts = options || {};
+    // Timeout so a half-open connection on flaky mountain uplink cannot leave
+    // the guest staring at a spinner forever.
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = controller ? setTimeout(function () { controller.abort(); }, 12000) : null;
+
+    return fetch(apiBase + path, {
+      method: opts.method || 'GET',
+      headers: opts.body ? { 'Content-Type': 'application/json' } : undefined,
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      signal: controller ? controller.signal : undefined
+    }).then(function (res) {
+      if (timer) clearTimeout(timer);
+      return res.json().catch(function () { return {}; }).then(function (data) {
+        if (!res.ok) {
+          var err = new Error(data.error || ('Request failed (' + res.status + ')'));
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      });
+    }, function (err) {
+      if (timer) clearTimeout(timer);
+      throw err;
+    });
+  }
+
+  /**
+   * Hand the signed grant to the router. The router verifies it server-side via
+   * POST /api/portal/authorize before opening the walled garden, so this
+   * redirect is a handoff and not the authorization itself.
+   */
+  function applyGrant(grant) {
+    if (!authorizeUrl) {
+      show('view-done');
+      return;
+    }
+    var sep = authorizeUrl.indexOf('?') === -1 ? '?' : '&';
+    var target = authorizeUrl + sep +
+      'sessionId=' + encodeURIComponent(grant.sessionId) +
+      '&signature=' + encodeURIComponent(grant.signature) +
+      (originalUrl ? '&url=' + encodeURIComponent(originalUrl) : '');
+    window.location.href = target;
+  }
+
+  function collectForm() {
+    var phone = $('phone').value.trim();
+    var email = $('email').value.trim();
+
+    return {
+      submissionKey: uuid(),
+      sessionId: window.__portalSessionId || null,
+      macAddress: ctx.mac || null,
+      fullName: $('fullName').value.trim(),
+      phone: phone || null,
+      email: email || null,
+      country: $('country').value.trim() || null,
+      stayPurpose: $('stayPurpose').value || null,
+      referralCode: params.get('ref') || null,
+      consents: {
+        network_terms: $('c-network').checked,
+        marketing: $('c-marketing').checked,
+        whatsapp_community: $('c-whatsapp').checked
+      }
+    };
+  }
+
+  function submitPayload(payload) {
+    var qs = ctx.mac ? ('?mac=' + encodeURIComponent(ctx.mac)) : '';
+    return api('/api/portal/session' + qs, { method: 'POST', body: payload });
+  }
+
+  function flushQueue() {
+    var items = readQueue();
+    if (!items.length) return;
+    items.forEach(function (item) {
+      submitPayload(item).then(function (result) {
+        dequeue(item.submissionKey);
+        if (result && result.grant) applyGrant(result.grant);
+      }).catch(function (err) {
+        // A 409 means the server already has it — stop retrying.
+        if (err && err.status === 409) dequeue(item.submissionKey);
+      });
+    });
+  }
+
+  function onSubmit(event) {
+    event.preventDefault();
+
+    var statusEl = $('form-status');
+    var button = $('submit');
+
+    var name = $('fullName').value.trim();
+    var phone = $('phone').value.trim();
+    var email = $('email').value.trim();
+
+    if (!name) return setStatus(statusEl, 'Please tell us your name.', 'error');
+    if (!phone && !email) return setStatus(statusEl, 'Please give us either a phone number or an email.', 'error');
+    if (!$('c-network').checked) return setStatus(statusEl, 'Please accept the WiFi terms to connect.', 'error');
+
+    button.disabled = true;
+    setStatus(statusEl, 'Connecting…', 'info');
+
+    var payload = collectForm();
+
+    submitPayload(payload).then(function (result) {
+      setStatus(statusEl, "You're in.", 'ok');
+      if (result && result.grant) {
+        applyGrant(result.grant);
+      } else {
+        show('view-done');
+      }
+    }).catch(function (err) {
+      // Network failure: keep the guest's details and retry rather than
+      // making them type it all again.
+      if (!err.status) {
+        enqueue(payload);
+        show('view-queued');
+        setTimeout(flushQueue, RETRY_MS);
+        return;
+      }
+      button.disabled = false;
+      setStatus(statusEl, err.message || 'Something went wrong. Please ask at reception.', 'error');
+    });
+  }
+
+  function start() {
+    var qs = [];
+    if (ctx.mac) qs.push('mac=' + encodeURIComponent(ctx.mac));
+    if (ctx.ap) qs.push('ap=' + encodeURIComponent(ctx.ap));
+    if (ctx.ssid) qs.push('ssid=' + encodeURIComponent(ctx.ssid));
+
+    api('/api/portal/session' + (qs.length ? '?' + qs.join('&') : '')).then(function (data) {
+      window.__portalSessionId = data.sessionId;
+
+      if (data.returning && data.grant) {
+        show('view-returning');
+        if (data.greetingName) {
+          $('welcome-back').textContent = 'Welcome back, ' + data.greetingName.split(' ')[0];
+        }
+        setTimeout(function () { applyGrant(data.grant); }, 700);
+        return;
+      }
+
+      show('view-form');
+      flushQueue();
+    }).catch(function () {
+      // Backend down: still show the form. The submission queues locally and
+      // goes through when the backend returns.
+      show('view-form');
+      setStatus($('form-status'), "Our system is slow right now — fill this in and we'll sort it out.", 'info');
+    });
+  }
+
+  $('signup').addEventListener('submit', onSubmit);
+  window.addEventListener('online', flushQueue);
+
+  start();
+})();
+</script>
+
+</body>
+</html>

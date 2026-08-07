@@ -341,4 +341,134 @@ router.patch('/:id/loyalty-points', async (req, res) => {
     }
 });
 
+// ---------------------------------------------------------------------------
+// Guest memory (DOS-502)
+//
+// Staff-side surfacing of what the house knows about a guest. Unlike the
+// guest-facing GraphQL fields, these use the 'staff' audience and so include
+// caution notes.
+// ---------------------------------------------------------------------------
+
+// GET /api/admin/customers/:id/guest-facts — what to know before greeting them
+router.get('/:id/guest-facts', async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.params.id).select('fullName guestFacts');
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        const active = customer.activeGuestFacts('staff');
+
+        res.json({
+            customerId: String(customer._id),
+            fullName: customer.fullName,
+            // Grouped so a staff member reads dietary and accessibility first
+            // rather than scanning a flat list at the desk.
+            facts: active.map(formatFact),
+            byCategory: active.reduce((acc, fact) => {
+                (acc[fact.category] = acc[fact.category] || []).push(formatFact(fact));
+                return acc;
+            }, {}),
+            pendingReviewCount: (customer.guestFacts || []).filter(f => f.reviewStatus === 'pending').length
+        });
+    } catch (error) {
+        console.error('Error fetching guest facts:', error);
+        res.status(500).json({ message: 'Failed to fetch guest facts', error: error.message });
+    }
+});
+
+// GET /api/admin/customers/guest-facts/review-queue — low-confidence extractions
+// and every caution, waiting on a human before they can surface anywhere.
+router.get('/guest-facts/review-queue', async (req, res) => {
+    try {
+        const customers = await Customer.find({ 'guestFacts.reviewStatus': 'pending' })
+            .select('fullName guestFacts')
+            .limit(parseInt(req.query.limit || '50', 10));
+
+        const queue = [];
+        customers.forEach(customer => {
+            (customer.guestFacts || [])
+                .filter(fact => fact.reviewStatus === 'pending')
+                .forEach(fact => queue.push({
+                    customerId: String(customer._id),
+                    fullName: customer.fullName,
+                    ...formatFact(fact),
+                    sourceExcerpt: fact.sourceExcerpt || null
+                }));
+        });
+
+        queue.sort((a, b) => new Date(b.capturedAt) - new Date(a.capturedAt));
+        res.json({ total: queue.length, queue });
+    } catch (error) {
+        console.error('Error fetching review queue:', error);
+        res.status(500).json({ message: 'Failed to fetch review queue', error: error.message });
+    }
+});
+
+// PATCH /api/admin/customers/:id/guest-facts/:factId — approve or reject
+router.patch('/:id/guest-facts/:factId', async (req, res) => {
+    try {
+        const { reviewStatus } = req.body || {};
+        if (!['approved', 'rejected'].includes(reviewStatus)) {
+            return res.status(400).json({ message: 'reviewStatus must be "approved" or "rejected"' });
+        }
+
+        const customer = await Customer.findById(req.params.id).select('guestFacts');
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        const fact = customer.guestFacts.id(req.params.factId);
+        if (!fact) {
+            return res.status(404).json({ message: 'Guest fact not found' });
+        }
+
+        fact.reviewStatus = reviewStatus;
+        await customer.save();
+
+        res.json({ customerId: String(customer._id), fact: formatFact(fact) });
+    } catch (error) {
+        console.error('Error reviewing guest fact:', error);
+        res.status(500).json({ message: 'Failed to review guest fact', error: error.message });
+    }
+});
+
+// DELETE /api/admin/customers/:id/guest-facts/:factId — remove outright, for a
+// guest exercising erasure over the desk rather than through the dashboard.
+router.delete('/:id/guest-facts/:factId', async (req, res) => {
+    try {
+        const customer = await Customer.findById(req.params.id).select('guestFacts');
+        if (!customer) {
+            return res.status(404).json({ message: 'Customer not found' });
+        }
+
+        const fact = customer.guestFacts.id(req.params.factId);
+        if (!fact) {
+            return res.status(404).json({ message: 'Guest fact not found' });
+        }
+
+        fact.remove();
+        await customer.save();
+        res.json({ message: 'Guest fact deleted' });
+    } catch (error) {
+        console.error('Error deleting guest fact:', error);
+        res.status(500).json({ message: 'Failed to delete guest fact', error: error.message });
+    }
+});
+
+function formatFact(fact) {
+    return {
+        id: String(fact._id),
+        text: fact.text,
+        category: fact.category,
+        capturedBy: fact.capturedBy,
+        capturedAt: fact.capturedAt,
+        source: fact.source,
+        confidence: fact.confidence,
+        reviewStatus: fact.reviewStatus,
+        visibility: fact.visibility,
+        expiresAt: fact.expiresAt || null
+    };
+}
+
 module.exports = router;

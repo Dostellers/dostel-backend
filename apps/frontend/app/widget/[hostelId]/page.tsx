@@ -37,7 +37,7 @@ const CREATE_BOOKING_MUTATION = gql`
 export default function BookingWidget() {
   const router = useRouter();
   const params = useParams();
-  const hostelIdFromUrl = params.hostelId as string || "";
+  const hostelIdFromUrl = params?.hostelId as string || "";
 
   // Form state
   const [hostelId, setHostelId] = useState(hostelIdFromUrl);

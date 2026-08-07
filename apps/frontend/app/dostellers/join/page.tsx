@@ -8,7 +8,7 @@ import { dostellerTiers } from "@/lib/data";
 function JoinForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const defaultTier = searchParams.get("tier") || "bronze";
+  const defaultTier = searchParams?.get("tier") || "bronze";
   const [selectedTier, setSelectedTier] = useState(defaultTier);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");

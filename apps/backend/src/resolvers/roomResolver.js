@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Room = require('../models/room');
 const RoomType = require('../models/RoomType');
 const Hostel = require('../models/hostel');
@@ -6,7 +7,8 @@ const populateRoom = query => query
     .populate('amenities')
     .populate('images')
     .populate('hostel')
-    .populate('roomType');
+    .populate('roomType')
+    .select('-__v');
 
 const populateRoomType = query => query.populate('hostel');
 
@@ -25,16 +27,27 @@ const parseAvailabilityRange = (checkIn, checkOut) => {
 const isRoomAvailable = (room, start, end) => !['maintenance', 'out_of_order'].includes(room.status)
     && !(room.reservations || []).some(reservation => reservation.startDate < end && reservation.endDate > start);
 
-const roomTypeKey = room => room.roomType?.id?.toString() || room.type || room.id.toString();
+const serializeRoom = (room) => ({
+    ...room.toObject(),
+    id: room._id.toString(),
+    roomType: room.roomType ? {
+        id: room.roomType._id.toString(),
+        name: room.roomType.name,
+        category: room.roomType.category,
+        basePrice: room.roomType.basePrice,
+        hostel: room.roomType.hostel ? room.roomType.hostel._id.toString() : null
+    } : null,
+    hostel: room.hostel ? room.hostel._id.toString() : null
+});
 
 const buildRoomAvailability = (rooms, checkIn, checkOut) => {
     const { start, end } = parseAvailabilityRange(checkIn, checkOut);
     const groups = new Map();
 
     rooms.forEach(room => {
-        const key = roomTypeKey(room);
-        const roomType = room.roomType?.name || room.type || 'Room';
-        const price = room.roomType?.basePrice ?? room.price ?? 0;
+        const key = room.roomType ? room.roomType._id.toString() : null;
+        const roomType = room.roomType ? room.roomType.name : room.type || 'Room';
+        const price = room.roomType ? room.roomType.basePrice : room.price || 0;
         const current = groups.get(key) || {
             roomType,
             totalRooms: 0,
@@ -105,12 +118,19 @@ const roomResolvers = {
         },
         roomAvailability: async (_, { hostelId, checkIn, checkOut }) => {
             parseAvailabilityRange(checkIn, checkOut);
-            const rooms = await Room.find({ hostel: hostelId }).populate('roomType');
-            return buildRoomAvailability(rooms, checkIn, checkOut);
+            try {
+                const hostelObjectId = new mongoose.Types.ObjectId(hostelId);
+                const rooms = await Room.find({ hostel: hostelObjectId }).populate('roomType');
+                return buildRoomAvailability(rooms, checkIn, checkOut);
+            } catch (error) {
+                // If hostelId is not a valid ObjectId, return empty array
+                return [];
+            }
         }
     },
     Mutation: {
         createRoomType: async (_, { input }) => {
+            if (input.hostel) input.hostel = new mongoose.Types.ObjectId(input.hostel);
             const roomType = await new RoomType(input).save();
             return await populateRoomType(RoomType.findById(roomType.id));
         },

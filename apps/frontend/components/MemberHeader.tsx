@@ -10,7 +10,7 @@ export default function MemberHeader({ name, tier, avatar }: MemberHeaderProps) 
   return (
     <div className="flex items-center gap-4">
       <div className="flex h-14 w-14 items-center justify-center rounded-full bg-forest-100 text-2xl">
-        {avatar || "👤"}
+        {avatar || "D"}
       </div>
       <div>
         <h1 className="font-heading text-xl font-semibold text-forest-900">Welcome back, {name.split(" ")[0]}</h1>

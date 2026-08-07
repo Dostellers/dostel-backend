@@ -41,7 +41,7 @@ export default function LongStayToggle({
       </div>
       {active && (
         <p className="mt-2 text-xs text-forest-700">
-          🎉 You&apos;re saving ₹— with long-stay pricing. Join Dostellers for even bigger discounts.
+          You&apos;re saving ₹— with long-stay pricing. Join Dostellers for even bigger discounts.
         </p>
       )}
     </div>

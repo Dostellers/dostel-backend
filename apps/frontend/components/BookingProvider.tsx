@@ -83,10 +83,10 @@ function BookingHydrator({ onHydrate }: { onHydrate: (state: BookingState) => vo
   const searchParams = useSearchParams();
   useEffect(() => {
     const initial = initializeFromStorage();
-    const dest = searchParams.get("destination");
-    const checkIn = searchParams.get("checkIn");
-    const checkOut = searchParams.get("checkOut");
-    const guests = searchParams.get("guests");
+    const dest = searchParams?.get("destination");
+    const checkIn = searchParams?.get("checkIn");
+    const checkOut = searchParams?.get("checkOut");
+    const guests = searchParams?.get("guests");
     if (dest || checkIn || checkOut || guests) {
       onHydrate({
         ...initial,

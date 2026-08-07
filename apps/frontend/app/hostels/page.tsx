@@ -67,9 +67,9 @@ function HostelsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [selected, setSelected] = useState(searchParams.get("category") || "all");
-  const [query, setQuery] = useState(searchParams.get("destination") || "");
-  const [sortBy, setSortBy] = useState(searchParams.get("sort") || "popular");
+  const [selected, setSelected] = useState(searchParams?.get("category") || "all");
+  const [query, setQuery] = useState(searchParams?.get("destination") || "");
+  const [sortBy, setSortBy] = useState(searchParams?.get("sort") || "popular");
   const [view, setView] = useState<"grid" | "list">("grid");
 
   const { data, loading, error } = useQuery<{ hostels: HostelSummary[] }>(GET_HOSTELS);

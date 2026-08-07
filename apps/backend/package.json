@@ -14,6 +14,7 @@
   "author": "Sushil Singh",
   "license": "ISC",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@apollo/server": "^5.0.0",
     "@apollo/utils.keyvaluecache": "1.0.1",
     "@apollo/utils.logger": "1.0.0",

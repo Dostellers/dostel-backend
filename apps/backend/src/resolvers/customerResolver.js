@@ -1,7 +1,30 @@
 
+const Customer = require('../models/customer');
 const ReceiptAuditLog = require('../models/receiptAuditLog');
 
+/**
+ * The signed-in guest, or an error (DOS-502).
+ *
+ * `authenticate` puts either a Customer or a staff User on the context, so the
+ * type check matters: a staff token must not resolve to "my" guest facts, and an
+ * unauthenticated request must not fall through to somebody's record.
+ */
+function requireCustomer(context) {
+    const user = context && context.user;
+    if (!user || user.__type !== 'Customer') {
+        throw new Error('You must be signed in as a guest to do that.');
+    }
+    return user;
+}
+
 const customerResolvers = {
+    GuestFact: {
+        // Mongoose subdocuments expose _id, not id.
+        id: fact => String(fact._id),
+        capturedAt: fact => (fact.capturedAt ? fact.capturedAt.toISOString() : null),
+        expiresAt: fact => (fact.expiresAt ? fact.expiresAt.toISOString() : null)
+    },
+
     Query: {
         customers: async () => {
             return await Customer.find()
@@ -63,9 +86,38 @@ const customerResolvers = {
             return await ReceiptAuditLog.find({ receipt: receiptId })
                 .populate('actionBy', 'fullName email')
                 .sort({ createdAt: -1 });
+        },
+
+        myGuestFacts: async (_, __, context) => {
+            const signedIn = requireCustomer(context);
+
+            // Re-read rather than trusting the context copy: `authenticate`
+            // selects a projection, and this needs the live fact list.
+            const customer = await Customer.findById(signedIn._id).select('guestFacts');
+            if (!customer) return [];
+
+            // 'guest' audience — approved, unexpired, and never staff-only.
+            return customer.activeGuestFacts('guest');
         }
     },
     Mutation: {
+        deleteMyGuestFact: async (_, { factId }, context) => {
+            const signedIn = requireCustomer(context);
+
+            const customer = await Customer.findById(signedIn._id).select('guestFacts');
+            if (!customer) return false;
+
+            const fact = customer.guestFacts.id(factId);
+            // A guest may only delete facts on their own record, and only ones
+            // they can actually see — a staff-only note is not theirs to remove,
+            // and confirming it exists would leak that it does.
+            if (!fact || fact.visibility !== 'guest_visible') return false;
+
+            fact.remove();
+            await customer.save();
+            return true;
+        },
+
         createCustomer: async (_, { input }) => {
             const existing = await Customer.findOne({ email: input.email });
             if (existing) {

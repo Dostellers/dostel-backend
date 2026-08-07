@@ -76,12 +76,14 @@
 **USP framing:** "#MyDostel itinerary add-on" — book stay + event in one flow.
 **Ship order:** After staying + check-in features stable.
 
-### 9. Hyperlocal Content / SEO Storytelling
-**Impact:** M | **Effort:** L
-**Why:** Organic growth via community voices vs corporate content.
-**Competitive gap:** Zostel/The Hosteller destination pages; Cloudbeds resources.
-**USP framing:** "Authentic community stories driving local discovery."
-**Ship order:** Ongoing content production cadence.
+### 9. Community-Driven Content Engine
+**Impact:** M | **Effort:** M
+**Why:** Organic growth via community voices vs corporate content; affiliate monetization + skill-share credit incentives.
+**Competitive gap:** Zostel blog has static stories + quest gamification; Hosteller event taxonomy pages; Cloudbeds B2B resources. None enable community-curated, monetizable content.
+**USP framing:** "Community stories driving local discovery — written by Dostellers, monetized by affiliate & skill-share."
+**Ship order:** After CMS scaffold (DOS-415) + Dosteller onboarding.
+**Paperclip reference:** [DOS-415] PM — CMS scaffold + editorial workflow; [DOS-416] CMO — community storytelling & SEO content brief.
+**Sources:** https://www.zostel.com/blog · https://www.thehosteller.com/events/ · https://www.cloudbeds.com/resource-center/
 
 ## P4 - Optimization (Impact: LOW-MEDIUM | Effort: LOW)
 
@@ -100,7 +102,22 @@
 
 ## Sources
 - Zostel: https://www.zostel.com/
+- Zostel blog: https://www.zostel.com/blog
 - The Hosteller: https://www.thehosteller.com/
+- The Hosteller events: https://www.thehosteller.com/events/
 - Cloudbeds: https://www.cloudbeds.com/
+- Cloudbeds Resource Center: https://www.cloudbeds.com/resource-center/
 - Product gap baseline: ./product-gap-analysis.md
+### 8. Local Expert Network
+
+**Impact:** H | **Effort:** M
+
+**Why:** Introduce a Dosteller Verified Local Experts program that verifies community hosts by reputation, offers skill-share workshops, and provides revenue-share and credit incentives.
+
+**USP framing:** Dosteller Verified Local Experts – vetted hosts deliver workshops (photography, cooking, trekking) and earn skill’s share credit and revenue from referrals.
+
+**Ship order:** Develop schema & verification workflow → Build marketplace & credit system → Launch pilot with local expert onboarding.
+
+**Paperclip reference:** [DOS-680](/DOS/issues/DOS-680) (PM) and [DOS-681](/DOS/issues/DOS-681) (CMO)
+
 ## Last updated: August 1, 2026

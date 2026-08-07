@@ -2,6 +2,65 @@
 const { gql } = require('apollo-server-express');
 
 const hostelTypeDefs = gql`
+  """
+  Measured uptime for one thing over one window (DOS-503).
+
+  \`uptimePct\` is a share of *observed* time, not of the window — when the
+  property loses power the sensor usually loses power too, so a gap means
+  "unknown", never "up". Always read it alongside \`coveragePct\`: 100% uptime at
+  40% coverage is the sensor's silence, not a claim. \`publishable\` is false when
+  coverage is too low to stand behind.
+  """
+  type ReliabilityUptime {
+    upMinutes: Float
+    downMinutes: Float
+    degradedMinutes: Float
+    unknownMinutes: Float
+    uptimePct: Float
+    coveragePct: Float
+    publishable: Boolean!
+  }
+
+  """
+  Measured connectivity. Reports the median and the worst decile rather than a
+  mean — someone deciding whether they can work here cares about the bad evening,
+  which a mean is very good at hiding.
+  """
+  type ReliabilityWifi {
+    samples: Int!
+    medianDownloadMbps: Float
+    worstDecileDownloadMbps: Float
+    avgPacketLossPct: Float
+  }
+
+  type ReliabilityWindow {
+    power: ReliabilityUptime!
+    hotWater: ReliabilityUptime!
+    wifi: ReliabilityWifi!
+  }
+
+  """
+  Hot water availability at a given hour, because "is there hot water at 6am" is
+  the actual question and a daily average a hot afternoon carries does not answer it.
+  """
+  type ReliabilityHourly {
+    hour: Int!
+    observations: Int!
+    availabilityPct: Float
+  }
+
+  type HostelReliability {
+    computedAt: String!
+    measurementWindows: [String!]!
+    minPublishableCoveragePct: Float!
+    maxGapMinutes: Int!
+    last7d: ReliabilityWindow!
+    last30d: ReliabilityWindow!
+    last90d: ReliabilityWindow!
+    hotWaterByHour: [ReliabilityHourly!]!
+    totalObservations: Int!
+  }
+
   type Hostel {
     id: ID!
     slug: String!
@@ -29,6 +88,12 @@ const hostelTypeDefs = gql`
     faqs: [FAQ]
     blogs: [Blog]
     rooms: [Room!]!
+    """
+    The measured reliability record (DOS-503). Computed from raw telemetry on
+    request, so it is always current. Null when nothing has ever been reported
+    for this property — an absent record reads as absent, not as perfect.
+    """
+    reliability: HostelReliability
     createdAt: Date!
     updatedAt: Date
   }

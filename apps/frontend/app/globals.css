@@ -1,65 +1,269 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Dostel Design System v2.0
+   Brand platform: .paperclip/design/brand-platform.md
+   Palette derived from apps/frontend/public/logo.png
+   Regenerate + re-verify: .paperclip/design/system/palette.py
+
+   RULE 1  Coral leads. Yellow is an accent, never a dominant
+           surface — The Hosteller owns yellow-on-black.
+   RULE 2  Logo colours are graphic colours. #F54E4E is 3.40:1
+           on paper: fills/borders/large type only, never body
+           text. #FCCC00 is ~1.7:1: fill only, ink on top.
+   ============================================================ */
+
 @theme inline {
-  --color-forest-900: #0f1a14;
-  --color-forest-700: #1a3328;
-  --color-forest-500: #2d6a4f;
-  --color-forest-100: #d8f3dc;
-  --color-sunset: #e07a2f;
-  --color-sunset-700: #9a4511;
-  --color-sky: #2b6cb0;
-  --color-earth: #d4a373;
-  --color-snow: #fefcf5;
-  --color-white: #ffffff;
-  --color-stone-200: #e6e0d8;
-  --color-stone-400: #a89f94;
-  --color-stone-600: #6b6258;
-  --color-error: #dc2626;
-  --color-success: #16a34a;
+  /* ---- Coral — brand, primary action, links ---- */
+  --color-coral-50:  #FFDBD3;
+  --color-coral-100: #FFCBC2;
+  --color-coral-200: #FFB1A8;
+  --color-coral-300: #FF8D85;
+  --color-coral-400: #FF615E;
+  --color-coral-500: #F14A4A;
+  --color-coral-600: #D42A32;  /* white text 5.03:1 — primary CTA */
+  --color-coral-700: #AD1120;  /* on paper 7.18:1 — links, brand text */
+  --color-coral-800: #860A16;
+  --color-coral-900: #60050D;
+  --color-coral-950: #3A0205;
 
-  --color-bronze: #9a4e18;
-  --color-silver: #5f6670;
-  --color-gold: #8a5a08;
-  --color-points: #2b6cb0;
-  --color-discount: #16724a;
+  /* The mark's exact coral. Graphic use only — fails body text. */
+  --color-coral-logo: #F54E4E;
 
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
+  /* ---- Yellow — the tag. 50–500 are FILLS ONLY (ink on top) ---- */
+  --color-yellow-50:  #FFF7B5;
+  --color-yellow-100: #FFF0A7;
+  --color-yellow-200: #FFE391;
+  --color-yellow-300: #F6D678;
+  --color-yellow-400: #EFCD65;  /* ink 12.73:1 — accent CTA */
+  --color-yellow-500: #E7C34F;
+  --color-yellow-600: #CC9D00;
+  --color-yellow-700: #A57700;  /* first text-safe step, 4.01:1 */
+  --color-yellow-800: #835900;
+  --color-yellow-900: #634200;
+  --color-yellow-950: #3C2700;
 
-  --animate-marquee: marquee 28s linear infinite;
+  /* The mark's exact yellow. Fill only, never text, never a surface. */
+  --color-yellow-logo: #FCCC00;
+
+  /* ---- Ink — neutrals carry a trace of coral hue, never dead grey ---- */
+  --color-ink-0:    #FFFFFF;
+  --color-ink-50:   #FEF8F8;
+  --color-ink-100:  #F5F0EF;
+  --color-ink-200:  #E6E0E0;
+  --color-ink-300:  #D1CCCB;
+  --color-ink-400:  #AEA9A9;
+  --color-ink-500:  #908B8A;
+  --color-ink-600:  #726D6D;  /* 5.01:1 — muted text */
+  --color-ink-700:  #555050;  /* 7.93:1 — body text */
+  --color-ink-800:  #383434;
+  --color-ink-900:  #1F1B1B;  /* 16.79:1 */
+  --color-ink-1000: #0B0B0C;  /* 19.36:1 — display. Never pure #000 */
+
+  --color-paper: #FFFDF9;     /* warm ground */
+
+  /* ---- Semantic ----
+     Error sits 3.9° from brand coral in hue — with a red brand it
+     CANNOT be distinguished by colour alone. Error states must ship
+     an icon and a text label, always. Coral is never destructive. */
+  --color-error:   #A02B18;   /* 7.24:1 on paper, white 7.4:1 */
+  --color-success: #0F7A4A;   /* 5.30:1 on paper */
+  --color-warning: #835900;   /* 6.09:1 — brand yellow, text-safe */
+  --color-info:    #1F5FA8;   /* 6.34:1 */
+
+  /* ---- Dostellers loyalty ---- */
+  --color-bronze:   #8A4B12;
+  --color-silver:   #5F6670;
+  --color-gold:     #835900;  /* brand yellow, not casino gold */
+  --color-points:   #1F5FA8;
+  --color-discount: #0F7A4A;
+
+  /* ---- Legacy aliases (v1.0 Forest/Sunset) ----
+     36 components still reference these. Remapping rather than
+     deleting means the rebrand lands across all 23 routes without a
+     36-file rewrite. Migrate per-component, then delete this block. */
+  --color-forest-900: #0B0B0C;
+  --color-forest-700: #383434;
+  --color-forest-500: #AD1120;
+  --color-forest-100: #FFDBD3;
+  --color-sunset:     #D42A32;
+  --color-sunset-700: #AD1120;
+  --color-sky:        #1F5FA8;
+  --color-earth:      #FFE391;
+  --color-snow:       #FFFDF9;
+  --color-white:      #FFFFFF;
+  --color-stone-200:  #E6E0E0;
+  --color-stone-400:  #908B8A;
+  --color-stone-600:  #555050;
+
+  /* ---- Type ---- */
+  --font-display: var(--font-display);
+  --font-body:    var(--font-body);
+  --font-data:    var(--font-data);
+  --font-deva:    var(--font-deva);
+  --font-heading: var(--font-display);  /* legacy alias */
+
+  /* ---- Motion ---- */
+  --animate-marquee:      marquee 28s linear infinite;
   --animate-marquee-slow: marquee 50s linear infinite;
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 @keyframes marquee {
-  0% { transform: translateX(0); }
+  0%   { transform: translateX(0); }
   100% { transform: translateX(-33.333%); }
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+/* "Pin" — cards settling onto a board surface. Entry only, never hover. */
+@keyframes pin-settle {
+  0%   { transform: rotate(var(--pin-angle, 1deg)) translateY(-6px); opacity: 0; }
+  100% { transform: rotate(var(--pin-angle, 1deg)) translateY(0);    opacity: 1; }
 }
 
-html {
-  scroll-behavior: smooth;
+/* MUST stay inside @layer base. Unlayered rules outrank every Tailwind
+   utility (@layer utilities), so an unlayered `h1..h6 { color }` silently
+   beats `text-white` and makes every heading on a dark section invisible. */
+@layer base {
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-700);
+    font-family: var(--font-body), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display), system-ui, sans-serif;
+    color: var(--color-ink-1000);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
 }
 
-body {
-  background: var(--color-snow);
-  color: var(--color-stone-600);
-  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Proof primitives read as instrument output, not marketing copy. */
+.data, .tabular {
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading), serif;
-  color: var(--color-forest-900);
-  line-height: 1.2;
+:is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-coral-600);
+  outline-offset: 2px;
+  border-radius: 2px;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* ---- Concept primitives: stamp, tag, board ---- */
+
+/* The Stamp — proof something was checked. Logo, badges, verified cards. */
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1.5px solid currentColor;
+  border-radius: 9999px;
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
+
+/* The Tag — a label tied to a thing. Yellow lives here. */
+.tag {
+  display: inline-block;
+  padding: 0.1875rem 0.5rem;
+  background: var(--color-yellow-300);
+  color: var(--color-ink-1000);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 50%, 100% 100%, 0 100%);
+  padding-right: 0.875rem;
+}
+
+/* The Board — cards pinned by hand. Rotation caps at 1.5deg. */
+.board-card {
+  animation: pin-settle 320ms var(--ease-out-soft) both;
+}
+.board-card:nth-child(3n+1) { --pin-angle: -0.6deg; }
+.board-card:nth-child(3n+2) { --pin-angle:  0.5deg; }
+.board-card:nth-child(3n+3) { --pin-angle: -0.3deg; }
+
+/* ---- Split-flap departure board (landing signature) ---- */
+
+.board-frame {
+  background: var(--color-ink-1000);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  box-shadow: 0 24px 60px -28px rgba(11, 11, 12, 0.75);
+  overflow: hidden;
+}
+
+.flap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.85rem;
+  height: 1.4rem;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #24211f 0%, #171514 48%, #100e0e 52%, #1b1918 100%);
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1;
+  color: #F3EFEA;
+  /* the hairline is the physical seam between the two halves of a real flap */
+  background-image: linear-gradient(rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.55));
+  background-size: 100% 1px;
+  background-position: 0 50%;
+  background-repeat: no-repeat;
+}
+
+.flap-live .flap { color: var(--color-yellow-logo); }
+.flap-muted .flap { color: rgba(243, 239, 234, 0.5); }
+
+.board-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--color-success);
+  box-shadow: 0 0 0 0 rgba(15, 122, 74, 0.6);
+  animation: board-pulse 2.4s ease-out infinite;
+}
+
+@keyframes board-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0.55); }
+  70%  { box-shadow: 0 0 0 7px rgba(15, 122, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0); }
+}
+
+/* ---- Scroll reveal ----
+   Content starts hidden and IntersectionObserver reveals it. That means no
+   JS = no content, so layout.tsx ships a <noscript> override that forces
+   every .reveal visible. Never remove one without the other. */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 620ms var(--ease-out-soft), transform 620ms var(--ease-out-soft);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.reveal[data-shown='true'] {
+  opacity: 1;
+  transform: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -77,26 +281,9 @@ h1, h2, h3, h4, h5, h6 {
   width: max-content;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-1 {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
+.line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -104,7 +291,8 @@ h1, h2, h3, h4, h5, h6 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
-  html {
-    scroll-behavior: auto;
-  }
+  .board-card { animation: none; transform: none; }
+  .board-pulse { animation: none; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  html { scroll-behavior: auto; }
 }

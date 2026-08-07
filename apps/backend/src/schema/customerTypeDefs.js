@@ -22,11 +22,27 @@ const customerTypeDefs = gql`
     facebook: String
   }
 
+  """
+  Something the house knows about a guest (DOS-502).
+  """
+  type GuestFact {
+    id: ID!
+    text: String!
+    category: String!
+    capturedBy: String!
+    capturedAt: String!
+    source: String!
+    confidence: String!
+    expiresAt: String
+  }
+
   type Customer {
     id: ID!
     fullName: String!
     alias: String
-    email: String!
+    # Nullable: captive-portal signups (DOS-501) are phone-first, so a customer
+    # may legitimately have no email. Was String! until portal capture landed.
+    email: String
     phone: String!
     password: String!
     dateOfBirth: Date
@@ -141,6 +157,13 @@ const customerTypeDefs = gql`
     tokenReceipts(customerId: ID!): [TokenReceipt!]!
     tokenReceiptsAll(page: Int, limit: Int): [TokenReceipt!]!
     receiptLogs(receiptId: ID!): [ReceiptAuditLog!]!
+
+    """
+    The facts the house holds about the signed-in guest — their DPDP Act right of
+    access. Returns only guest-visible, approved, unexpired facts; staff-only
+    notes are never exposed here.
+    """
+    myGuestFacts: [GuestFact!]!
   }
 
   extend type Mutation {
@@ -163,6 +186,12 @@ const customerTypeDefs = gql`
     restoreTokenReceipt(id: ID!, field: String!, value: String!): TokenReceipt!
     updateTokenReceipt(id: ID!, input: TokenReceiptInput!): TokenReceipt!
     awardReferralReward(customerId: ID!): Customer!
+
+    """
+    Delete one of the signed-in guest's own facts — their DPDP Act right of
+    erasure. A guest can only ever delete facts on their own record.
+    """
+    deleteMyGuestFact(factId: ID!): Boolean!
   }
 `;
 

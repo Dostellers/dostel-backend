@@ -22,7 +22,7 @@ const GET_BOOKING_DETAILS = gql(
 
 const BookingConfirmation: React.FC = () => {
   const searchParams = useSearchParams();
-  const bookingId = searchParams.get('id') || '';
+  const bookingId = searchParams?.get('id') || '';
   const { data: bookingData, loading, error, refetch } = useQuery(GET_BOOKING_DETAILS, {
     variables: { id: bookingId },
     skip: !bookingId,

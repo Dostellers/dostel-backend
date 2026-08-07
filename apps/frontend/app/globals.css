@@ -213,13 +213,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 0.85rem;
-  height: 1.4rem;
+  width: 0.72rem;
+  height: 1.35rem;
   border-radius: 2px;
   background: linear-gradient(180deg, #24211f 0%, #171514 48%, #100e0e 52%, #1b1918 100%);
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.05);
   font-family: var(--font-data), ui-monospace, monospace;
-  font-size: 0.75rem;
+  font-size: 0.6875rem;
   font-weight: 500;
   line-height: 1;
   color: #F3EFEA;
@@ -248,19 +248,21 @@
   100% { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0); }
 }
 
-/* ---- Scroll reveal ----
-   Content starts hidden and IntersectionObserver reveals it. That means no
-   JS = no content, so layout.tsx ships a <noscript> override that forces
-   every .reveal visible. Never remove one without the other. */
-.reveal {
+/* ---- Scroll reveal (fail-open) ----
+   Default state carries NO hiding styles: server-rendered content is always
+   visible. JS opts an element into 'pending' after hydration, so a dead
+   bundle can never blank the page. */
+.reveal[data-reveal='pending'] {
   opacity: 0;
   transform: translateY(18px);
-  transition: opacity 620ms var(--ease-out-soft), transform 620ms var(--ease-out-soft);
-  transition-delay: var(--reveal-delay, 0ms);
 }
-.reveal[data-shown='true'] {
-  opacity: 1;
-  transform: none;
+.reveal[data-reveal='shown'] {
+  animation: reveal-in 620ms var(--ease-out-soft) both;
+  animation-delay: var(--reveal-delay, 0ms);
+}
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
 }
 
 .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -281,6 +283,13 @@
   width: max-content;
 }
 
+/* A marquee you can't stop is decoration; one that pauses under the cursor
+   is content you're allowed to read. */
+.animate-marquee:hover,
+.animate-marquee-slow:hover {
+  animation-play-state: paused;
+}
+
 .line-clamp-1 { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
@@ -293,6 +302,6 @@
   }
   .board-card { animation: none; transform: none; }
   .board-pulse { animation: none; }
-  .reveal { opacity: 1; transform: none; transition: none; }
+  .reveal[data-reveal] { opacity: 1 !important; transform: none !important; animation: none !important; }
   html { scroll-behavior: auto; }
 }

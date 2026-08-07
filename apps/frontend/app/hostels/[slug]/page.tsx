@@ -9,6 +9,7 @@ import StickyBottomBar from '@/components/StickyBottomBar';
 import { useBooking } from '@/components/BookingProvider';
 import { hostels } from '@/lib/data';
 import { GET_HOSTEL_DETAILS } from '@/lib/queries';
+import { getProofConfig } from '@/lib/proof';
 
 type ApiHostel = {
   id: string;
@@ -88,70 +89,27 @@ const Check = ({ className }: IconProps) => (
   </svg>
 );
 
-/* ---------------------------------------------------------------
-   Verified Hill-Stay Card (USP #1, DOS-503).
+const Transit = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill={svg} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M6 4h12a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2zM4 11h16M8 21l2-4M16 21l-2-4" /><circle cx="8.5" cy="14" r="1" fill="currentColor" stroke="none" /><circle cx="15.5" cy="14" r="1" fill="currentColor" stroke="none" />
+  </svg>
+);
+const Water = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill={svg} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 3s6 6.6 6 10.5a6 6 0 0 1-12 0C6 9.6 12 3 12 3z" />
+  </svg>
+);
+const Noise = ({ className }: IconProps) => (
+  <svg className={className} viewBox="0 0 24 24" fill={svg} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v2" />
+  </svg>
+);
 
-   `checkedAt: null` renders as "Not measured" rather than a number,
-   per lib/reliability-display.ts: a number we cannot stand behind is
-   never rendered as a number. Nothing here is invented — the two
-   items with no operator-validated reading say so.
-   --------------------------------------------------------------- */
-const reliability = [
-  {
-    id: 'wifi',
-    Icon: Wifi,
-    label: 'Wi-Fi',
-    reading: null as string | null,
-    checkedAt: null as string | null,
-    method: 'Median of 3 speed tests at the common-room router, non-peak (10:00 IST).',
-    body: 'Fiber line to the property. Evening peak dips but stays usable for calls.',
-  },
-  {
-    id: 'power',
-    Icon: Bolt,
-    label: 'Power backup',
-    reading: null,
-    checkedAt: null,
-    method: 'Generator auto-switch coverage for common areas, router and kitchen.',
-    body: 'Hot water runs on a separate heater, so a load-shedding window does not take it out.',
-  },
-  {
-    id: 'signal',
-    Icon: Signal,
-    label: 'Mobile signal',
-    reading: 'Jio · Airtel reliable',
-    checkedAt: 'BSNL patchy · Vodafone unreliable above 1,800 m',
-    method: 'Observed at reception on 4G LTE. Varies by room and building.',
-    body: 'Carry two SIMs if you depend on mobile data as a backup.',
-  },
-  {
-    id: 'weather',
-    Icon: Cloud,
-    label: 'Weather',
-    reading: '10–25 °C year-round',
-    checkedAt: 'Cool and misty. Clearest views in the morning.',
-    method: 'Seasonal range for Kodaikanal, not a live reading.',
-    body: 'Afternoon rain is common. Bring a raincoat; umbrellas lose to the wind here.',
-  },
-  {
-    id: 'access',
-    Icon: Boot,
-    label: 'Getting here',
-    reading: '5 min downhill to the village',
-    checkedAt: '15 min by auto to Kodaikanal bus stand',
-    method: 'Walked and timed by staff.',
-    body: 'No car needed unless you are heading to the lake or a far viewpoint.',
-  },
-  {
-    id: 'host',
-    Icon: User,
-    label: 'Who is on site',
-    reading: 'Staffed 24/7',
-    checkedAt: 'People who live here, not a night desk',
-    method: 'Permanent on-site team.',
-    body: 'They know every trail and the good bonfire spots. Ask at any hour.',
-  },
-];
+/* Proof-card icons, keyed to lib/proof.ts. */
+const PROOF_ICONS = {
+  wifi: Wifi, bolt: Bolt, signal: Signal, cloud: Cloud,
+  boot: Boot, user: User, transit: Transit, water: Water, noise: Noise,
+} as const;
 
 /* The Board — the guest graph made visible (DOS-500).
    Consent-gated and anonymised; shows nothing a guest has not opted into. */
@@ -229,6 +187,11 @@ export default function HostelDetailPage() {
   // in place. Gating the whole page on a client-side query meant SSR shipped a
   // spinner: no content for crawlers, and a blank hold on slow connections.
   // Only block when there is genuinely nothing to show.
+  // The proof card speaks the terrain's language: "know before you climb" is
+  // right for Vattakanal and absurd for Delhi Airport. See lib/proof.ts.
+  const proof = getProofConfig(fallback?.category);
+  const unmeasured = proof.checks.filter((c) => c.reading === null).length;
+
   if (loading && !fallback) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
@@ -275,8 +238,10 @@ export default function HostelDetailPage() {
               role="img"
               aria-label={`${hostel.name}, ${location}`}
             />
+            {/* "Since 1985" is only true of Vattakanal — the rest of the
+                network gets its terrain, which is true everywhere. */}
             <span className="absolute -bottom-3 -left-3 bg-coral-600 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-white">
-              Since 1985
+              {slug === 'dostel-vattakanal' ? 'Since 1985' : proof.eyebrow}
             </span>
           </div>
         </div>
@@ -307,45 +272,46 @@ export default function HostelDetailPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-2xl">
-              <span className="stamp text-yellow-300">Verified hill-stay</span>
-              <h2 className="mt-4 text-3xl text-white sm:text-4xl">Know before you climb</h2>
-              <p className="mt-4 text-lg leading-8 text-white/70">
-                Mountains break things. Rather than list amenities, we publish how each one was
-                checked — and say plainly where we do not yet have a reading.
-              </p>
+              <span className="stamp text-yellow-300">{proof.eyebrow}</span>
+              <h2 className="mt-4 text-3xl text-white sm:text-4xl">{proof.headline}</h2>
+              <p className="mt-4 text-lg leading-8 text-white/70">{proof.intro}</p>
             </div>
           </div>
 
           <div className="mt-10 grid gap-px overflow-hidden rounded-sm border border-white/15 bg-white/15 sm:grid-cols-2 lg:grid-cols-3">
-            {reliability.map(({ id, Icon, label, reading, checkedAt, method, body }) => (
-              <article key={id} className="bg-ink-1000 p-6">
-                <div className="flex items-center gap-2.5 text-yellow-300">
-                  <Icon className="h-5 w-5" />
-                  <h3 className="data text-xs font-medium uppercase tracking-[0.14em] text-white/70">{label}</h3>
-                </div>
+            {proof.checks.map(({ id, icon, label, reading, detail, method, body }) => {
+              const Icon = PROOF_ICONS[icon];
+              return (
+                <article key={id} className="bg-ink-1000 p-6">
+                  <div className="flex items-center gap-2.5 text-yellow-300">
+                    <Icon className="h-5 w-5" />
+                    <h3 className="data text-xs font-medium uppercase tracking-[0.14em] text-white/70">{label}</h3>
+                  </div>
 
-                {reading ? (
-                  <>
-                    <p className="mt-4 text-lg font-semibold leading-6 text-white">{reading}</p>
-                    {checkedAt && <p className="mt-1.5 text-sm leading-6 text-white/60">{checkedAt}</p>}
-                  </>
-                ) : (
-                  <p className="data mt-4 inline-flex items-center gap-2 border border-white/25 px-2.5 py-1 text-xs uppercase tracking-[0.1em] text-white/60">
-                    Not measured yet
+                  {reading ? (
+                    <>
+                      <p className="mt-4 text-lg font-semibold leading-6 text-white">{reading}</p>
+                      {detail && <p className="mt-1.5 text-sm leading-6 text-white/60">{detail}</p>}
+                    </>
+                  ) : (
+                    <p className="data mt-4 inline-flex items-center gap-2 border border-white/25 px-2.5 py-1 text-xs uppercase tracking-[0.1em] text-white/60">
+                      Not measured yet
+                    </p>
+                  )}
+
+                  <p className="mt-4 text-sm leading-6 text-white/70">{body}</p>
+                  <p className="data mt-4 border-t border-white/10 pt-3 text-[0.6875rem] leading-5 text-white/45">
+                    {method}
                   </p>
-                )}
-
-                <p className="mt-4 text-sm leading-6 text-white/70">{body}</p>
-                <p className="data mt-4 border-t border-white/10 pt-3 text-[0.6875rem] leading-5 text-white/45">
-                  {method}
-                </p>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
 
           <p className="data mt-6 text-xs leading-5 text-white/45">
-            Wi-Fi and power have no operator-validated reading yet, so no figure is shown.
-            Publishing a number we cannot stand behind would defeat the point of the card.
+            {unmeasured} of {proof.checks.length} checks have no operator-validated reading yet,
+            so no figure is shown for them. Publishing a number we cannot stand behind would
+            defeat the point of the card.
           </p>
         </div>
       </section>

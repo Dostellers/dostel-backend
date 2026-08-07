@@ -3,13 +3,16 @@
 import { useEffect, useRef, useState, type ElementType, type ReactNode } from 'react';
 
 /**
- * Scroll-triggered reveal. One shared primitive so motion stays consistent
- * instead of every section inventing its own entrance.
+ * Scroll-triggered reveal that FAILS OPEN.
  *
- * Reveals once and then stops observing — content that re-animates every time
- * it re-enters the viewport reads as a gimmick on a long marketing page.
- * `prefers-reduced-motion` is handled in CSS, so the element is always visible
- * even if this never runs.
+ * The server renders content fully visible. Only after hydration do below-fold
+ * elements get hidden and observed; above-fold elements are never touched.
+ * If client JS never runs — blocked dev origin, failed chunk, crawler, JS off —
+ * the page stays completely readable.
+ *
+ * The previous version did the opposite (CSS hid everything, JS un-hid it) and
+ * shipped a blank page to a real browser the moment hydration failed. Never
+ * reintroduce a pattern where broken JS means missing content.
  */
 export default function Reveal({
   children,
@@ -23,22 +26,21 @@ export default function Reveal({
   className?: string;
 }) {
   const ref = useRef<HTMLElement | null>(null);
-  const [shown, setShown] = useState(false);
+  // 'visible' (SSR default, no styles) -> 'pending' (hidden, observed) -> 'shown'
+  const [state, setState] = useState<'visible' | 'pending' | 'shown'>('visible');
 
   useEffect(() => {
     const node = ref.current;
     if (!node) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    // Above the fold: never hide what the visitor may already be reading.
+    if (node.getBoundingClientRect().top < window.innerHeight * 0.9) return;
 
-    // Already in view on load (above the fold) — show immediately, no flash.
-    if (node.getBoundingClientRect().top < window.innerHeight * 0.9) {
-      setShown(true);
-      return;
-    }
-
+    setState('pending');
     const io = new IntersectionObserver(
       (entries) => {
         if (entries.some((e) => e.isIntersecting)) {
-          setShown(true);
+          setState('shown');
           io.disconnect();
         }
       },
@@ -52,7 +54,7 @@ export default function Reveal({
     <Tag
       ref={ref}
       className={`reveal ${className}`}
-      data-shown={shown ? 'true' : 'false'}
+      data-reveal={state}
       style={{ '--reveal-delay': `${delay}ms` } as React.CSSProperties}
     >
       {children}

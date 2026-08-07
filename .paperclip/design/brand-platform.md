@@ -20,6 +20,19 @@ The name is the one thing no competitor can take. Everything below is downstream
 
 **Brand line:** *Every hostel sells you a bed. Dostel introduces you to the room.*
 
+### What Dostel is
+
+A **network of hostels across India** — 8 properties today: Vattakanal and Dharamshala
+in the hills, Anjuna and Gokarna on the coast, Delhi Airport, Bangalore HSR, Jaipur
+MI Road, Coorg rainforest. The `Hostel` model carries an `owner` ref and an
+`isVerified` flag, and `/list-property` recruits partners — so this is a network with
+per-property owners, not a single hostel and not an open marketplace.
+
+**Design consequence:** every promise has to survive being made at eight very different
+addresses. A proof primitive that only speaks about mountains, or a hero locked to one
+property's events, is a single-property design wearing a network's clothes. The
+terrain-aware proof card in §4a exists because of this.
+
 ---
 
 ## 2. Counter-positioning
@@ -66,6 +79,29 @@ artwork before the system existed.
 **Why this wins awards and sells beds at the same time:** it is the only visual system
 in the category that is native to backpacking rather than borrowed from hotel booking,
 and every artifact maps to a real product surface we already have in the backlog.
+
+---
+
+## 4a. The proof card is terrain-aware
+
+The Verified Stay Card is the network's core trust primitive, so it cannot be written in
+mountain language. "Know before you climb" and a carrier-signal row are right for
+Vattakanal and absurd for Delhi Airport.
+
+One component, one contract — *what was checked, when, by what method, and where we have
+no reading* — with the checks and the headline resolved from the property's terrain:
+
+| Terrain | Headline | What gets measured |
+|---|---|---|
+| Mountains | Know before you climb | Wi-Fi · power backup · carrier signal · weather · access on foot |
+| Beach | Know before you go | Wi-Fi · power backup · fresh water · sand/salt exposure · walk to the beach |
+| City | Know before you land | Wi-Fi · power backup · transit links · street noise · late check-in |
+| Jungle | Know before you go in | Wi-Fi · power backup · carrier signal · rain · road condition |
+| Heritage | Know before you arrive | Wi-Fi · power backup · transit links · street noise · old-city access |
+
+Implemented in `apps/frontend/lib/proof.ts`. The honesty rule from
+`lib/reliability-display.ts` holds at every terrain: a reading we cannot stand behind
+renders as "not measured", never as a number.
 
 ---
 
@@ -184,9 +220,17 @@ the concept:
 2. **Page fade** — `opacity 0→1`, continuity
 3. **Press** — `scale(0.97)`, tactile feedback
 4. **Pin** — a ≤1.5° settle on cards entering a board surface. Once, on entry, never on hover.
+5. **Reveal** — an 18px rise on scroll entry, once per element, never re-firing (`Reveal.tsx`)
+6. **Split-flap** — the landing signature (`SplitFlapBoard.tsx`). The only elaborate
+   motion in the system, and it is permitted because the animation *is* the content:
+   a board resolving is what a departure board does. Nothing else gets this budget.
 
 All respect `prefers-reduced-motion`. Rotation caps at 1.5°: past that it reads as a
 gimmick and it breaks text rendering on low-DPI screens.
+
+**Scroll-reveal caveat:** `.reveal` starts at `opacity: 0`, so with JS disabled the page
+would be blank. `layout.tsx` ships a `<noscript>` override forcing every `.reveal`
+visible. Never remove one without the other.
 
 ---
 

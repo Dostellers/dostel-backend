@@ -1,157 +1,186 @@
-import Image from "next/image";
-import Link from "next/link";
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { hostels } from '@/lib/data';
+import { getProofConfig } from '@/lib/proof';
+import Reveal from '@/components/Reveal';
 
-const workationFeatures = [
+export const metadata: Metadata = {
+  title: 'Workations — Dostel',
+  description:
+    'Work from the network. Wi-Fi that is measured instead of claimed, quiet hours that are enforced, and an honest list of what is not included.',
+};
+
+/* Work-suitability is a claim, so it is scoped: these are the properties we
+   are prepared to say you can do a real work week from, and why. The old page
+   promised "dedicated fiber" and ergonomic chairs nobody has verified. */
+const WORK_SLUGS = ['dostel-bangalore-hsr', 'dostel-vattakanal', 'dostel-coorg-rainforest'];
+
+const WORK_PITCH: Record<string, string> = {
+  'dostel-bangalore-hsr': 'City base. Normal weekday rhythm, best transit of the three.',
+  'dostel-vattakanal': 'The Workweek runs here — 5 nights, meals, and a skill-share.',
+  'dostel-coorg-rainforest': 'Deep-work mode. Expect to be offline on the trails, on purpose.',
+};
+
+const deskTruths = [
   {
-    icon: "⚡",
-    title: 'Real WiFi, not "WiFi"',
-    desc: "Dedicated fiber connections for Zoom calls, uploads, and late-night coding sessions.",
+    head: 'The connection is a reading, not a promise',
+    body: 'Every property publishes its Wi-Fi check — method, time, result. Where we have no operator-validated reading yet, the stay card says “not measured” instead of inventing a number. You deserve to know before you bet a work week on it.',
   },
   {
-    icon: "🖥️",
-    title: "A desk that's actually comfortable",
-    desc: "Co-work spaces with monitors, ergonomic chairs, and meeting room access.",
+    head: 'Quiet hours are policy, not vibes',
+    body: '23:00 in dorms and common areas, enforced. Calls after hours move to the deck. A hostel that wants your laptop money owes you a night of sleep.',
   },
   {
-    icon: "☕",
-    title: "Coffee that fuels more than caffeine",
-    desc: "On-site cafe where Dostellers gather, debate, and plan the next trek.",
-  },
-  {
-    icon: "🌄",
-    title: "Work ends when the trail begins",
-    desc: "Sunset hikes, waterfall swims, bonfire chats — because burnout is not a benefit.",
+    head: 'A desk means a socket within reach',
+    body: 'We count seats with power, not “vibrant co-working energy”. The count per property joins its stay card as it gets measured.',
   },
 ];
 
-const workationDestinations = [
-  {
-    name: "Vattakanal, Kodaikanal",
-    bestFor: "Deep work + mountain community",
-    price: "From ₹327/night (dorm) / ₹999/night (private)",
-    tagline: "Mist, coffee, and a desk with a view",
-    href: "/hostels/dostel-kasol-parvati-valley",
-  },
-  {
-    name: "Bangalore, HSR Layout",
-    bestFor: "City energy + startup crowd",
-    price: "From ₹519/night",
-    tagline: "Work, wander, repeat",
-    href: "/hostels/dostel-bangalore-hsr",
-  },
-  {
-    name: "Coorg, Madikeri",
-    bestFor: "Plantation silence + forest walks",
-    price: "From ₹589/night",
-    tagline: "Coffee breaks at the source",
-    href: "/hostels/dostel-coorg-rainforest",
-  },
+const notIncluded = [
+  'A meeting room — the cafe works for 1:1s',
+  'A printed lanyard, a community manager, or productivity theatre',
+  'Guaranteed video-call quality during evening peak — check the reading',
 ];
 
 export default function WorkationsPage() {
+  const workHouses = WORK_SLUGS.map((s) => hostels.find((h) => h.slug === s)).filter(
+    (h): h is NonNullable<typeof h> => Boolean(h),
+  );
+
   return (
-    <div className="min-h-screen">
-      <div className="relative bg-[var(--color-brand-teal)] text-white overflow-hidden">
-        <div className="absolute inset-0">
-          <Image
-            src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1920&q=80"
-            alt="Co-working"
-            fill
-            className="object-cover opacity-20"
-          />
+    <div className="min-h-screen bg-paper pb-16 lg:pb-0">
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <section className="bg-ink-1000 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+          <Reveal>
+            <span className="stamp text-yellow-300">Workations</span>
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 className="mt-5 max-w-3xl text-[2.5rem] leading-[0.98] tracking-[-0.035em] text-white sm:text-6xl">
+              Bring the laptop.<br />We&apos;ll prove the Wi-Fi.
+            </h1>
+          </Reveal>
+          <Reveal delay={160}>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-white/70">
+              Most workation pages promise “blazing connectivity”. Ours publishes the
+              speed test — and admits where we haven&apos;t run it yet.
+            </p>
+          </Reveal>
         </div>
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <span className="inline-block px-4 py-1.5 bg-white/20 rounded-full text-sm font-medium mb-4">
-            💻 Remote work, mountain life
-          </span>
-          <h1 className="text-4xl sm:text-5xl font-extrabold mb-4">
-            Your commute just got greener
-          </h1>
-          <p className="text-white/80 text-lg max-w-2xl mx-auto mb-8">
-            High-speed WiFi, co-work spaces, and trails for lunch breaks. Dostel workations
-            are built for remote workers who want productivity by day and community by night.
-          </p>
-          <Link
-            href="/hostels?filter=workation"
-            className="inline-flex items-center gap-2 px-8 py-4 bg-[var(--color-brand-lime)] text-gray-900 text-base font-bold rounded-xl hover:opacity-90 transition-opacity"
-          >
-            Find a workation
-          </Link>
-        </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-brand-primary)] text-center mb-12">
-          Everything you need to do your best work (and live a little)
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {workationFeatures.map((feat) => (
-            <div key={feat.title} className="p-6 bg-[var(--color-brand-light)] rounded-2xl">
-              <span className="text-4xl">{feat.icon}</span>
-              <h3 className="font-bold text-lg mt-4 mb-2 text-[var(--color-brand-primary)]">
-                {feat.title}
-              </h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{feat.desc}</p>
-            </div>
+      {/* ── The desk truths ──────────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="grid gap-x-10 gap-y-12 md:grid-cols-3">
+          {deskTruths.map((t, i) => (
+            <Reveal key={t.head} delay={i * 100}>
+              <div>
+                <p className="data text-xs uppercase tracking-[0.16em] text-coral-700">
+                  {String(i + 1).padStart(2, '0')}
+                </p>
+                <h2 className="mt-3 text-xl text-ink-1000">{t.head}</h2>
+                <p className="mt-3 leading-7 text-ink-700">{t.body}</p>
+              </div>
+            </Reveal>
           ))}
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-        <h2 className="text-2xl sm:text-3xl font-bold text-[var(--color-brand-primary)] mb-8">
-          Where do you want to work from this month?
-        </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {workationDestinations.map((destination, index) => (
-            <Link
-              key={destination.name}
-              href={destination.href}
-              className={`block rounded-2xl border p-6 transition-transform hover:-translate-y-1 ${
-                index === 0
-                  ? "border-[var(--color-brand-teal)] bg-[var(--color-brand-light)]"
-                  : "border-gray-200 bg-white"
-              }`}
-            >
-              {index === 0 && (
-                <span className="inline-block rounded-full bg-[var(--color-brand-teal)] px-3 py-1 text-xs font-bold text-white mb-4">
-                  Primary destination
-                </span>
-              )}
-              <h3 className="text-xl font-bold text-[var(--color-brand-primary)]">
-                {destination.name}
-              </h3>
-              <p className="mt-3 text-sm font-medium text-gray-700">
-                ⭐ Best for: {destination.bestFor}
-              </p>
-              <p className="mt-2 text-sm font-bold text-[var(--color-brand-teal)]">
-                {destination.price}
-              </p>
-              <p className="mt-4 text-gray-500">“{destination.tagline}”</p>
-            </Link>
-          ))}
+      {/* ── Where to work from ───────────────────────────────── */}
+      <section className="border-t border-ink-200 bg-coral-50 py-16 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <h2 className="text-3xl text-ink-1000 sm:text-4xl">Where a work week actually works</h2>
+            <p className="mt-3 max-w-xl leading-7 text-ink-700">
+              Three of the eight, chosen deliberately — not every hostel in the network is
+              a good office, and we would rather say so.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {workHouses.map((h, i) => {
+              const pc = getProofConfig(h.category);
+              const measured = pc.checks.filter((c) => c.reading !== null).length;
+              return (
+                <Reveal key={h.slug} delay={i * 100}>
+                  <Link
+                    href={`/hostels/${h.slug}`}
+                    className="group flex h-full flex-col overflow-hidden rounded-sm border border-ink-200 bg-white transition-transform duration-150 hover:-translate-y-0.5"
+                  >
+                    <div
+                      className="aspect-[16/10] w-full bg-ink-100 bg-cover bg-center"
+                      style={{ backgroundImage: `url(${h.image})` }}
+                      role="presentation"
+                    />
+                    <div className="flex flex-1 flex-col p-5">
+                      <h3 className="text-lg text-ink-1000">{h.name}</h3>
+                      <p className="mt-1 flex-1 text-sm leading-6 text-ink-700">{WORK_PITCH[h.slug]}</p>
+                      <p className="data mt-3 flex items-center gap-1.5 text-[0.6875rem] uppercase tracking-[0.1em] text-ink-600">
+                        <svg className="h-3 w-3 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="m4 12.5 5 5L20 6.5" />
+                        </svg>
+                        {measured} of {pc.checks.length} checks measured
+                      </p>
+                      <div className="mt-4 flex items-end justify-between border-t border-ink-200 pt-4">
+                        <div>
+                          <span className="data text-xl font-semibold text-ink-1000">₹{h.price}</span>
+                          <span className="ml-1 text-xs text-ink-600">/ night</span>
+                        </div>
+                        <span className="tag">Long-stay rates</span>
+                      </div>
+                    </div>
+                  </Link>
+                </Reveal>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-[var(--color-brand-primary)] px-4 py-16 text-center text-white">
-        <h2 className="text-3xl sm:text-4xl font-extrabold">Try a week. Stay a month.</h2>
-        <p className="mx-auto mt-4 max-w-2xl text-lg text-white/80">
-          The first week is on us if you&apos;re not productive — but most people never want to leave.
-        </p>
-        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4">
-          <Link
-            href="/hostels?filter=workation"
-            className="inline-flex justify-center rounded-xl bg-[var(--color-brand-lime)] px-8 py-4 font-bold text-gray-900 hover:opacity-90 transition-opacity"
-          >
-            Find your workation
-          </Link>
-          <Link
-            href="mailto:hello@dostel.in"
-            className="inline-flex justify-center rounded-xl border border-white/40 px-8 py-4 font-bold text-white hover:bg-white/10 transition-colors"
-          >
-            Talk to a Dosteller
-          </Link>
+      {/* ── The Workweek + honesty box ───────────────────────── */}
+      <section className="bg-ink-1000 py-16 text-white lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+            <Reveal>
+              <div>
+                <span className="stamp text-yellow-300">The Workweek</span>
+                <h2 className="mt-4 text-3xl text-white sm:text-4xl">
+                  Five nights of focus, fire and community
+                </h2>
+                <p className="mt-4 max-w-xl leading-8 text-white/70">
+                  Sunday to Thursday at Vattakanal: a quiet room, three meals a day at
+                  Altaf&apos;s, one group trek, one bonfire, and a 90-minute skill-share
+                  taught by whoever in the room knows something worth teaching.
+                </p>
+                <Link
+                  href="/hostels/dostel-vattakanal?workweek=true"
+                  className="mt-7 inline-flex h-12 items-center rounded-sm bg-coral-600 px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-500 active:scale-[0.97]"
+                >
+                  See Workweek rates
+                </Link>
+              </div>
+            </Reveal>
+            <Reveal delay={120}>
+              <div className="rounded-sm border border-white/15 p-6">
+                <h3 className="data text-xs uppercase tracking-[0.16em] text-white/50">
+                  What&apos;s not included
+                </h3>
+                <ul className="mt-4 space-y-3">
+                  {notIncluded.map((x) => (
+                    <li key={x} className="flex items-start gap-2.5 text-sm leading-6 text-white/70">
+                      <span aria-hidden="true" className="mt-2.5 h-px w-3 shrink-0 bg-white/40" />
+                      {x}
+                    </li>
+                  ))}
+                </ul>
+                <p className="data mt-5 border-t border-white/10 pt-4 text-[0.6875rem] leading-5 text-white/40">
+                  Rates, meal inclusions and internet readings require operator validation
+                  before publishing. Nothing on this page is a measured claim yet.
+                </p>
+              </div>
+            </Reveal>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

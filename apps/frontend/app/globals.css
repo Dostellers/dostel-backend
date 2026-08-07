@@ -43,7 +43,8 @@
   --color-yellow-900: #634200;
   --color-yellow-950: #3C2700;
 
-  /* The mark's exact yellow. Fill only, never text, never a surface. */
+  /* The mark's exact yellow. On light grounds: fill only, never text
+     (1.7:1). On ink-1000 it is 15:1 — display-size text there is fine. */
   --color-yellow-logo: #FCCC00;
 
   /* ---- Ink — neutrals carry a trace of coral hue, never dead grey ---- */

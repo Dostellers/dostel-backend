@@ -1,143 +1,181 @@
-"use client";
-import { useState } from "react";
-import Link from "next/link";
-import TierCard from "@/components/TierCard";
-import { dostellerTiers, dostellerTestimonials, dostellerEvents } from "@/lib/data";
+import Link from 'next/link';
+import type { Metadata } from 'next';
+import { dostellerTiers } from '@/lib/data';
+import Reveal from '@/components/Reveal';
+
+export const metadata: Metadata = {
+  title: 'Dostellers — Dostel',
+  description:
+    'No points, no wallet, no quests. Stay long enough and the network knows you — that is the whole mechanic.',
+};
+
+/* The anti-casino. Zostel gamifies with $Zo currency and quests; Dostellers'
+   counter-position is that being known is not a score. Tier metallics stay
+   accents on tints, never text backgrounds (design-tokens: not-casino rule). */
+
+const graph = [
+  {
+    head: 'Your name checks in before you do',
+    body: 'Check out of Vattakanal, walk into Gokarna: they know your chai order, that you sleep light, and that you fixed the guitar last time. Staff memory, made a system — with your consent, and only what you chose to share.',
+  },
+  {
+    head: 'Recognition is earned, not bought',
+    body: 'There is no wallet to top up and no quest log. Nights stayed and things done — a skill-share taught, a trek led — are the only ledger.',
+  },
+  {
+    head: 'Leave whenever. It keeps.',
+    body: 'Come back after a year and you are not a stranger. The graph does not expire, and deleting it takes one message — it is yours.',
+  },
+];
+
+const TIER_ACCENT: Record<string, string> = {
+  bronze: 'var(--color-bronze)',
+  silver: 'var(--color-silver)',
+  gold: 'var(--color-gold)',
+};
 
 export default function DostellersPage() {
-  const [selectedTier, setSelectedTier] = useState("bronze");
-
   return (
-    <div className="min-h-screen bg-snow">
-      <section className="relative overflow-hidden bg-gradient-to-b from-forest-900 to-forest-700 px-4 py-24 text-center text-white sm:py-32">
-        <div className="relative mx-auto max-w-3xl">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white/90 backdrop-blur-sm mb-6">
-            🏔️ Built for long stays
-          </span>
-          <h1 className="font-heading text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
-            Stay longer.
-            <br />
-            <span className="text-sunset">Go deeper.</span>
-          </h1>
-          <p className="mx-auto mt-4 max-w-xl text-base text-white/80 sm:text-lg">
-            Dostellers isn&apos;t a loyalty program — it&apos;s a community. Save up to 40% on long stays, unlock events, and connect with travellers who stay.
-          </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              href="/dostellers/join"
-              className="inline-flex h-11 items-center justify-center rounded-lg bg-sunset px-8 text-sm font-semibold text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
-            >
-              Join Dostellers — Free
-            </Link>
-            <a
-              href="#tiers"
-              className="inline-flex h-11 items-center justify-center rounded-lg border border-white/20 bg-white/10 px-8 text-sm font-semibold text-white backdrop-blur-sm transition-all duration-150 hover:bg-white/20 active:scale-[0.97]"
-            >
-              See membership plans
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {[
-            { icon: "💰", title: "Save up to 40%", desc: "On weekly & monthly stays" },
-            { icon: "🎉", title: "Free events", desc: "Trekking, workshops & more" },
-            { icon: "👥", title: "Community", desc: "Find your travel tribe" },
-            { icon: "⭐", title: "Earn rewards", desc: "Points → free nights" },
-          ].map((b) => (
-            <div key={b.title} className="flex flex-col items-center rounded-xl bg-white p-5 text-center shadow-sm border border-stone-200">
-              <span className="text-3xl mb-2">{b.icon}</span>
-              <h3 className="text-sm font-semibold text-forest-900">{b.title}</h3>
-              <p className="text-xs text-stone-400 mt-0.5">{b.desc}</p>
+    <div className="min-h-screen bg-paper pb-16 lg:pb-0">
+      {/* ── Hero ─────────────────────────────────────────────── */}
+      <section className="bg-ink-1000 text-white">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+          <Reveal>
+            <span className="stamp text-yellow-300">Dostellers</span>
+          </Reveal>
+          <Reveal delay={80}>
+            <h1 className="mt-5 max-w-3xl text-[2.75rem] leading-[0.95] tracking-[-0.035em] text-white sm:text-7xl">
+              No points.<br />No wallet.<br />
+              <span className="text-yellow-logo">You&apos;re known.</span>
+            </h1>
+          </Reveal>
+          <Reveal delay={160}>
+            <p className="mt-6 max-w-xl text-lg leading-8 text-white/70">
+              Every loyalty program turns you into a balance. Dostellers turns eight
+              hostels into places where somebody remembers you.
+            </p>
+          </Reveal>
+          <Reveal delay={240}>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/dostellers/join"
+                className="inline-flex h-12 items-center justify-center rounded-sm bg-coral-600 px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-500 active:scale-[0.97]"
+              >
+                Join — free at Bronze
+              </Link>
+              <Link
+                href="/dashboard"
+                className="inline-flex h-12 items-center justify-center rounded-sm border border-white/25 px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-white/10 active:scale-[0.97]"
+              >
+                Already a Dosteller
+              </Link>
             </div>
-          ))}
+          </Reveal>
         </div>
       </section>
 
-      <section id="tiers" className="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        <div className="text-center mb-10">
-          <h2 className="font-heading text-3xl font-semibold text-forest-900 sm:text-4xl">Choose your membership</h2>
-          <p className="mt-2 text-stone-400">Start free. Upgrade when you&apos;re ready to go deeper.</p>
-        </div>
-        <div className="flex flex-col gap-4 lg:flex-row">
-          {dostellerTiers.map((tier) => (
-            <TierCard
-              key={tier.id}
-              tier={tier}
-              selected={selectedTier === tier.id}
-              onSelect={() => setSelectedTier(tier.id)}
-            />
-          ))}
-        </div>
-        <div className="mt-8 text-center">
-          <Link
-            href={`/dostellers/join?tier=${selectedTier}`}
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-forest-500 px-10 text-sm font-semibold text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
-          >
-            {selectedTier === "bronze" ? "Join Dostellers — Free" : `Join as ${selectedTier === "silver" ? "Silver" : "Gold"} — ₹${selectedTier === "silver" ? "999" : "2499"}/yr`}
-          </Link>
-        </div>
-      </section>
-
-      <section className="bg-stone-200/30 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <h2 className="font-heading text-3xl font-semibold text-forest-900 text-center mb-10">Real Dostellers, real stories</h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-            {dostellerTestimonials.map((t) => (
-              <div key={t.name} className="rounded-xl border border-stone-200 bg-white p-6">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="text-2xl">{t.avatar}</span>
-                  <div>
-                    <p className="text-sm font-semibold text-forest-900">{t.name}</p>
-                    <p className="text-xs text-stone-400">{t.location} · {t.tier} member</p>
-                  </div>
-                </div>
-                <p className="text-sm text-stone-600 leading-relaxed">&ldquo;{t.text}&rdquo;</p>
+      {/* ── The graph, plainly ───────────────────────────────── */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div className="grid gap-x-10 gap-y-12 md:grid-cols-3">
+          {graph.map((g, i) => (
+            <Reveal key={g.head} delay={i * 100}>
+              <div>
+                <p className="data text-xs uppercase tracking-[0.16em] text-coral-700">
+                  {String(i + 1).padStart(2, '0')}
+                </p>
+                <h2 className="mt-3 text-xl text-ink-1000">{g.head}</h2>
+                <p className="mt-3 leading-7 text-ink-700">{g.body}</p>
               </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Tiers ────────────────────────────────────────────── */}
+      <section className="border-t border-ink-200 bg-coral-50 py-16 lg:py-24">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <Reveal>
+            <h2 className="text-3xl text-ink-1000 sm:text-4xl">Three tiers, no grinding</h2>
+            <p className="mt-3 max-w-xl leading-7 text-ink-700">
+              Bronze is free forever. The paid tiers are a discount you can do the maths
+              on, not a status game.
+            </p>
+          </Reveal>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {dostellerTiers.map((tier, i) => (
+              <Reveal key={tier.id} delay={i * 100}>
+                <div
+                  className={`flex h-full flex-col rounded-sm border bg-white p-6 ${
+                    tier.highlighted ? 'border-coral-600 shadow-[0_16px_40px_-24px_rgba(212,42,50,0.45)]' : 'border-ink-200'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span
+                      className="stamp"
+                      style={{ color: TIER_ACCENT[tier.id] || 'var(--color-ink-600)' }}
+                    >
+                      {tier.name}
+                    </span>
+                    {tier.highlighted && <span className="tag">Most joined</span>}
+                  </div>
+                  <p className="mt-5">
+                    <span className="data text-3xl font-semibold text-ink-1000">
+                      {tier.price === 0 ? 'Free' : `₹${tier.price.toLocaleString('en-IN')}`}
+                    </span>
+                    {tier.price > 0 && <span className="ml-1 text-sm text-ink-600">{tier.period}</span>}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-ink-700">{tier.description}</p>
+                  <ul className="mt-5 flex-1 space-y-2.5">
+                    {tier.benefits.map((b) => (
+                      <li key={b} className="flex items-start gap-2.5 text-sm leading-6 text-ink-900">
+                        <svg className="mt-1 h-3.5 w-3.5 shrink-0 text-success" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                          <path d="m4 12.5 5 5L20 6.5" />
+                        </svg>
+                        {b}
+                      </li>
+                    ))}
+                  </ul>
+                  <Link
+                    href={`/dostellers/join?tier=${tier.id}`}
+                    className={`mt-6 inline-flex h-11 items-center justify-center rounded-sm px-6 text-sm font-semibold transition-all duration-150 active:scale-[0.97] ${
+                      tier.highlighted
+                        ? 'bg-coral-600 text-white hover:bg-coral-700'
+                        : 'border border-ink-300 text-ink-900 hover:border-ink-1000'
+                    }`}
+                  >
+                    {tier.ctaLabel}
+                  </Link>
+                </div>
+              </Reveal>
             ))}
           </div>
+          <Reveal delay={150}>
+            <p className="data mt-8 text-xs leading-5 text-ink-600">
+              Or skip all of this: stay 14+ nights in a month anywhere on the network and
+              Bronze finds you on its own.
+            </p>
+          </Reveal>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-        <h2 className="font-heading text-3xl font-semibold text-forest-900 text-center mb-10">Member events</h2>
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-          {dostellerEvents.map((e) => (
-            <div key={e.slug} className="group rounded-xl border border-stone-200 bg-white overflow-hidden transition-all duration-250 hover:shadow-md hover:-translate-y-0.5">
-              <div className="aspect-[16/9] relative overflow-hidden bg-stone-100">
-                <img src={e.image} alt={e.title} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" />
-              </div>
-              <div className="p-4 space-y-2">
-                <h3 className="text-sm font-semibold text-forest-900">{e.title}</h3>
-                <p className="text-xs text-stone-400">{e.date} · {e.location}</p>
-                <div className="flex items-center justify-between pt-2">
-                  <div>
-                    <span className="text-sm font-bold text-forest-500">₹{e.memberPrice}</span>
-                    {e.regularPrice > 0 && <span className="text-xs text-stone-400 line-through ml-1.5">₹{e.regularPrice}</span>}
-                    <p className="text-[10px] text-stone-400">Member price</p>
-                  </div>
-                  <span className="rounded-full bg-forest-100 px-2.5 py-0.5 text-[10px] font-medium text-forest-700">
-                    {e.spotsLeft} left
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="bg-forest-900 py-20">
-        <div className="mx-auto max-w-3xl px-4 text-center text-white sm:px-6 lg:px-8">
-          <h2 className="font-heading text-3xl font-semibold sm:text-4xl mb-4">Ready to become a Dosteller?</h2>
-          <p className="text-white/80 mb-8">Join 2,000+ travellers who&apos;ve made Dostel their home away from home.</p>
-          <Link
-            href="/dostellers/join"
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-sunset px-10 text-sm font-semibold text-white transition-all duration-150 hover:brightness-95 active:scale-[0.97]"
-          >
-            Join Dostellers — Free
-          </Link>
+      {/* ── Close ────────────────────────────────────────────── */}
+      <section className="bg-ink-1000 py-16 text-white lg:py-24">
+        <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">
+          <Reveal>
+            <h2 className="text-3xl text-white sm:text-5xl">
+              The next hostel already knows you
+            </h2>
+            <p className="mx-auto mt-5 max-w-xl leading-8 text-white/70">
+              That&apos;s the whole product. Everything you share is opt-in, first names
+              only on public boards, cleared whenever you say so.
+            </p>
+            <Link
+              href="/dostellers/join"
+              className="mt-8 inline-flex h-12 items-center rounded-sm bg-coral-600 px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-500 active:scale-[0.97]"
+            >
+              Become a Dosteller
+            </Link>
+          </Reveal>
         </div>
       </section>
     </div>

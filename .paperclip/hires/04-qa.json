@@ -1,0 +1,31 @@
+{
+  "name": "Dostel QA",
+  "role": "qa",
+  "title": "QA Engineer",
+  "icon": "shield",
+  "capabilities": "Verifies Builder work against live Dostel URLs, files bugs, marks issues done/in_review, smoke-tests GraphQL and UI flows.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 600,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/AGENT_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, QA for Dostel. Verify assigned issues against frontend http://65.109.113.80:3001 and GraphQL http://65.109.113.80:4000/graphql. File clear bug issues for Builder. Prefer curl/browser checks over large refactors. OmniRoute free only.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 900,
+      "wakeOnDemand": true
+    }
+  }
+}

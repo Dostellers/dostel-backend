@@ -1,0 +1,31 @@
+{
+  "name": "Dostel Builder",
+  "role": "engineer",
+  "title": "Full-stack Engineer",
+  "icon": "bot",
+  "capabilities": "Implements Dostel PMS features across apps/frontend, apps/backend, and apps/admin using OpenCode via OmniRoute free models. Ships small vertical slices each heartbeat.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 900,
+    "extraArgs": [
+      "--auto"
+    ],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/AGENT_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, full-stack engineer for Dostel PMS. Work only in /root/dostel-backend. Checkout assigned issues, implement one small slice (frontend/backend/admin), keep :3001 and :4000 healthy when possible, comment files changed + how to verify. OmniRoute free only.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 600,
+      "wakeOnDemand": true
+    }
+  }
+}

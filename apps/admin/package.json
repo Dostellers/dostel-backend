@@ -1,0 +1,28 @@
+{
+  "name": "dostel-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev --port 3002",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@apollo/client": "^4.2.9",
+    "autoprefixer": "^10.5.4",
+    "graphql-request": "^7.4.0",
+    "next": "^15.5.22",
+    "postcss": "^8.4.31",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "tailwindcss": "^4.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.4",
+    "@types/react": "^18.3.17",
+    "eslint": "^9.23.0",
+    "eslint-config-next": "15.4.4",
+    "typescript": "5.8.2"
+  }
+}

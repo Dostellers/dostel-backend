@@ -1,0 +1,30 @@
+{
+  "name": "Dostel UI Engineer",
+  "role": "engineer",
+  "title": "UI / Design Systems Engineer",
+  "icon": "code",
+  "reportsTo": "cb6613a7-d2c4-400d-8d47-295646a9022f",
+  "capabilities": "Implements design system in Next.js/Tailwind (and Stylus modules when needed). Builds reusable components, motion, a11y for guest + admin to enterprise quality.",
+  "adapterType": "opencode_local",
+  "adapterConfig": {
+    "cwd": "/root/dostel-backend",
+    "model": "opencode-omniroute/auto/best-coding",
+    "command": "opencode",
+    "timeoutSec": 900,
+    "extraArgs": [],
+    "instructionsFilePath": "/root/dostel-backend/.paperclip/DESIGN_INSTRUCTIONS.md",
+    "promptTemplate": "You are {{agent.name}}, UI Engineer for Dostel. Implement design-system components and high-craft interactions in apps/frontend and apps/admin from .paperclip/design/ specs. Partner with Design Systems Designer and Builder. OmniRoute free only. Prefer RSC-friendly patterns; ship polished, accessible UI slices.",
+    "env": {
+      "OMNIROUTE_API_KEY": "local-dev",
+      "OPENAI_API_KEY": "local-dev",
+      "OPENAI_BASE_URL": "http://127.0.0.1:20128/v1"
+    }
+  },
+  "runtimeConfig": {
+    "heartbeat": {
+      "enabled": true,
+      "intervalSec": 900,
+      "wakeOnDemand": true
+    }
+  }
+}

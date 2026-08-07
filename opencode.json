@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "permission": {
+    "external_directory": {
+      "/root/dostel-backend/.paperclip/**": "allow",
+      "/root/dostel-backend/.paperclip/marketing/**": "allow",
+      "/root/dostel-backend/.paperclip/research/**": "allow"
+    }
+  }
+}

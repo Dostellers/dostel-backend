@@ -158,6 +158,52 @@ export default function DostellersPage() {
         </div>
       </section>
 
+      {/* ── On the bench ─────────────────────────────────────
+          A public roadmap is a promise made where users can hold us to
+          it — the opposite of shipping fake UI. Each card maps to a real
+          spec in .paperclip/issues; nothing here pretends to work yet. */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <Reveal>
+          <span className="stamp text-coral-700">On the bench</span>
+          <h2 className="mt-4 text-3xl text-ink-1000 sm:text-4xl">
+            What we&apos;re building next. Hold us to it.
+          </h2>
+          <p className="mt-3 max-w-xl leading-7 text-ink-700">
+            These ship when the guest graph lands. Marked plainly as in design —
+            we would rather show the plan than fake the feature.
+          </p>
+        </Reveal>
+        <div className="mt-10 grid gap-5 md:grid-cols-3">
+          {[
+            {
+              ref: 'DOS-505',
+              head: 'Paths crossed',
+              body: 'Shared a dorm in March? Get a nudge when they check in one town over — names revealed only when you both say yes, silence if either says no.',
+            },
+            {
+              ref: 'DOS-506',
+              head: 'Your names for people',
+              body: '“Guitar Guy · Vattakanal, March.” Private nicknames only you can see, because nobody remembers hostel friends by their legal name.',
+            },
+            {
+              ref: 'DOS-507',
+              head: 'First-night buddy & the strangers’ table',
+              body: 'Arrive alone, never eat alone — a table where sitting down means “talk to me”, and a buddy who was new here yesterday. With a quiet signal for the nights you’d rather read.',
+            },
+          ].map((item, i) => (
+            <Reveal key={item.ref} delay={i * 100}>
+              <div className="flex h-full flex-col rounded-sm border border-dashed border-ink-300 bg-white p-6">
+                <p className="data text-[0.625rem] uppercase tracking-[0.18em] text-ink-500">
+                  In design · {item.ref}
+                </p>
+                <h3 className="mt-3 text-xl text-ink-1000">{item.head}</h3>
+                <p className="mt-3 flex-1 leading-7 text-ink-700">{item.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
       {/* ── Close ────────────────────────────────────────────── */}
       <section className="bg-ink-1000 py-16 text-white lg:py-24">
         <div className="mx-auto max-w-3xl px-4 text-center sm:px-6">

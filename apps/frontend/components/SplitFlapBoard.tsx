@@ -81,7 +81,17 @@ function Word({ text, width, offset, run }: { text: string; width: number; offse
   );
 }
 
-export default function SplitFlapBoard({ rows }: { rows: BoardRow[] }) {
+export default function SplitFlapBoard({
+  rows,
+  title = 'Vattakanal · this week',
+  columns = ['What', 'Where', 'When', 'Status'],
+  caption = 'What is happening across the Dostel network',
+}: {
+  rows: BoardRow[];
+  title?: string;
+  columns?: [string, string, string, string];
+  caption?: string;
+}) {
   const [run, setRun] = useState(0);
   const [started, setStarted] = useState(false);
   const hostRef = useRef<HTMLDivElement | null>(null);
@@ -116,7 +126,7 @@ export default function SplitFlapBoard({ rows }: { rows: BoardRow[] }) {
     <div ref={hostRef} className="board-frame">
       <div className="flex items-center justify-between border-b border-white/15 px-4 py-3 sm:px-6">
         <p className="data text-[0.6875rem] uppercase tracking-[0.28em] text-yellow-300">
-          Vattakanal · this week
+          {title}
         </p>
         <span className="flex items-center gap-2">
           <span className="board-pulse" aria-hidden="true" />
@@ -126,9 +136,9 @@ export default function SplitFlapBoard({ rows }: { rows: BoardRow[] }) {
 
       {/* Screen readers get the real table; the flaps are decorative. */}
       <table className="sr-only">
-        <caption>What is happening at Dostel Vattakanal this week</caption>
+        <caption>{caption}</caption>
         <thead>
-          <tr><th>What</th><th>Where</th><th>When</th><th>Status</th></tr>
+          <tr>{columns.map((c) => <th key={c}>{c}</th>)}</tr>
         </thead>
         <tbody>
           {rows.map((r) => (
@@ -138,21 +148,21 @@ export default function SplitFlapBoard({ rows }: { rows: BoardRow[] }) {
       </table>
 
       <div className="overflow-x-auto scrollbar-hide">
-        <div className="min-w-[45rem] px-4 py-4 sm:px-6 sm:py-5">
-          <div className="data mb-3 grid grid-cols-[13rem_13rem_4.5rem_1fr] gap-3 text-[0.625rem] uppercase tracking-[0.2em] text-white/35">
-            <span>What</span><span>Where</span><span>When</span><span>Status</span>
+        <div className="min-w-[35rem] px-4 py-4 sm:px-6 sm:py-5">
+          <div className="data mb-3 grid grid-cols-[9.25rem_11.75rem_4.25rem_1fr] gap-3 text-[0.625rem] uppercase tracking-[0.2em] text-white/35">
+            {columns.map((c) => <span key={c}>{c}</span>)}
           </div>
 
           {rows.map((row, r) => (
             <div
               key={row.what}
-              className="grid grid-cols-[13rem_13rem_4.5rem_1fr] items-center gap-3 border-t border-white/10 py-2.5"
+              className="grid grid-cols-[9.25rem_11.75rem_4.25rem_1fr] items-center gap-3 border-t border-white/10 py-2.5"
             >
-              <Word text={row.what} width={14} offset={r * 3} run={run} />
+              <Word text={row.what} width={11} offset={r * 3} run={run} />
               <Word text={row.where} width={14} offset={r * 3 + 5} run={run} />
               <Word text={row.when} width={5} offset={r * 3 + 9} run={run} />
               <span className={row.live ? 'flap-live' : 'flap-muted'}>
-                <Word text={row.status} width={10} offset={r * 3 + 12} run={run} />
+                <Word text={row.status} width={7} offset={r * 3 + 12} run={run} />
               </span>
             </div>
           ))}

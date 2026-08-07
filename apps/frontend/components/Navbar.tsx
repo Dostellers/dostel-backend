@@ -4,22 +4,27 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+/* The listing reads ?category= and ?filter= — these hrefs are a contract with
+   app/hostels/page.tsx, not decoration. The old menu sent ?cat= (read by
+   nothing) and advertised Kasol/Manali, where the network has no beds. */
 const hostelNav = [
-  { label: "Trending", href: "/hostels?filter=trending" },
-  { label: "New Launches", href: "/hostels?filter=new" },
-  { label: "Mountain", href: "/hostels?cat=mountains" },
-  { label: "Beach", href: "/hostels?cat=beach" },
-  { label: "City", href: "/hostels?cat=city" },
-  { label: "Workation", href: "/hostels?cat=workation" },
+  { label: "Filling fast", href: "/hostels?filter=trending" },
+  { label: "Just opened", href: "/hostels?filter=new" },
+  { label: "Mountains", href: "/hostels?category=mountains" },
+  { label: "Coast", href: "/hostels?category=beach" },
+  { label: "City", href: "/hostels?category=city" },
+  { label: "Work stay", href: "/hostels?category=workation" },
 ];
 
 const destinationNav = [
-  { label: "Kasol", href: "/destinations/kasol" },
-  { label: "Goa", href: "/destinations/goa" },
-  { label: "Manali", href: "/destinations/manali" },
-  { label: "Jaipur", href: "/destinations/jaipur" },
-  { label: "Coorg", href: "/destinations/coorg" },
+  { label: "Kodaikanal", href: "/destinations/kodaikanal" },
   { label: "Dharamshala", href: "/destinations/dharamshala" },
+  { label: "Goa", href: "/destinations/goa" },
+  { label: "Gokarna", href: "/destinations/gokarna" },
+  { label: "Coorg", href: "/destinations/coorg" },
+  { label: "Jaipur", href: "/destinations/jaipur" },
+  { label: "Delhi", href: "/destinations/delhi" },
+  { label: "Bangalore", href: "/destinations/bangalore" },
 ];
 
 const navItems: ({ label: string; href: string; dropdown?: undefined } | { label: string; dropdown: { label: string; href: string }[]; href?: undefined })[] = [
@@ -45,7 +50,7 @@ const icons = {
 const mobileNavItems = [
   { label: "Home", href: "/", icon: icons.home },
   { label: "Hostel", href: "/hostels", icon: icons.bed },
-  { label: "Trips", href: "/dashboard", icon: icons.trips },
+  { label: "Trips", href: "/trips", icon: icons.trips },
   { label: "Event", href: "/events", icon: icons.event },
   { label: "Dostellers", href: "/dostellers", icon: icons.peak },
 ];
@@ -125,13 +130,13 @@ export default function Navbar() {
                 <Link href="/trips" className={linkBase}>My Trips</Link>
                 <Link href="/dashboard" className={linkBase}>Dashboard</Link>
                 <Link
-                  href="/login"
+                  href="/auth/login"
                   className="rounded-sm px-3 py-2 text-sm font-semibold text-coral-700 transition-colors duration-150 hover:bg-coral-50"
                 >
                   Log in
                 </Link>
                 <Link
-                  href="/signup"
+                  href="/auth/signup"
                   className="rounded-sm bg-coral-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-700 active:scale-[0.97]"
                 >
                   Sign up
@@ -198,8 +203,8 @@ export default function Navbar() {
                 <Link href="/trips" onClick={() => setMenuOpen(false)} className="block min-h-11 rounded-sm px-4 py-3 text-sm font-medium text-ink-700 hover:bg-ink-100">My Trips</Link>
                 <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block min-h-11 rounded-sm px-4 py-3 text-sm font-medium text-ink-700 hover:bg-ink-100">Dashboard</Link>
                 <div className="flex gap-3 pt-2">
-                  <Link href="/login" onClick={() => setMenuOpen(false)} className="flex-1 rounded-sm border border-ink-200 px-4 py-3 text-center text-sm font-semibold text-ink-700 hover:bg-ink-100">Log in</Link>
-                  <Link href="/signup" onClick={() => setMenuOpen(false)} className="flex-1 rounded-sm bg-coral-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-coral-700">Sign up</Link>
+                  <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="flex-1 rounded-sm border border-ink-200 px-4 py-3 text-center text-sm font-semibold text-ink-700 hover:bg-ink-100">Log in</Link>
+                  <Link href="/auth/signup" onClick={() => setMenuOpen(false)} className="flex-1 rounded-sm bg-coral-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-coral-700">Sign up</Link>
                 </div>
               </div>
             </div>

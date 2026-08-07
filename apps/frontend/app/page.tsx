@@ -2,21 +2,25 @@ import Link from 'next/link';
 import SearchBar from '@/components/SearchBar';
 import SplitFlapBoard, { type BoardRow } from '@/components/SplitFlapBoard';
 import Reveal from '@/components/Reveal';
+import CircuitMap from '@/components/CircuitMap';
+import { hostels } from '@/lib/data';
+import { KNOWN_FOR } from '@/lib/circuits';
 
-/* What is actually happening at the property. The board is only worth having
-   if it carries real content — a decorative departure board is a gimmick. */
-const boardRows: BoardRow[] = [
-  { what: 'Sunrise trek', where: "Dolphin's Nose", when: '05:30', status: '4 spots', live: true },
-  { what: 'Bonfire', where: 'Common deck', when: '19:30', status: 'Open', live: true },
-  { what: 'Skill share', where: "Altaf's cafe", when: '20:00', status: '2 spots', live: true },
-  { what: 'Market run', where: 'Kodaikanal', when: '09:00', status: 'Full' },
-  { what: 'Quiet hours', where: 'Whole house', when: '23:00', status: 'Daily' },
-];
+/* Dostel is a network of eight properties, so the board is a departure board
+   for the whole country rather than one property's noticeboard — which is what
+   a split-flap board actually is. Rows are derived from real inventory. */
+const network = hostels.filter((h) => h.slug.startsWith('dostel-'));
 
-/* Only the hill/hostel frames from the curated set. The Goa beach and the
-   generic hotel-room stock that were here read as any-travel-brand filler —
-   a Kodaikanal hostel showing a tropical beach is the "generic photos"
-   anti-pattern. These still need replacing with real Vattakanal photography. */
+const boardRows: BoardRow[] = network.slice(0, 6).map((h) => ({
+  what: h.location.split(',')[0]?.trim() || h.name,
+  where: KNOWN_FOR[h.slug] || h.category,
+  when: `₹${h.price}`,
+  status: h.isTrending ? 'Filling' : 'Open',
+  live: h.isTrending,
+}));
+
+/* Only frames that match the terrain we actually operate in. Still stock —
+   real photography of these eight properties is the outstanding gap. */
 const stripPhotos = [
   'https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?w=900&q=80',
   'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=900&q=80',
@@ -24,28 +28,27 @@ const stripPhotos = [
   'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=900&q=80',
 ];
 
-/* Typographic panels between the photos: facts about the place carry more
-   than another stock frame, and they keep the strip honest where our
-   photography is still thin. */
+/* Facts about the network, not about one hill. */
 const stripFacts = [
-  ['2,100 m', 'above sea level'],
-  ['Shola forest', 'and the mist that lives in it'],
-  ['5 min', 'downhill to the village'],
-  ['Since 1985', 'Bob & Tanya restored this land'],
+  ['8 hostels', 'hills, coast, and old cities'],
+  ['From ₹327', 'a night, all in'],
+  ['Since 1985', 'the first one, in Vattakanal'],
+  ['One standard', 'measured the same way everywhere'],
 ];
 
-const rooms = [
-  { name: 'Dorms', slug: 'dostel-vattakanal', copy: 'Six beds, a locker each, and a curtain when you want out of the conversation.', price: 327, dosteller: 294 },
-  { name: 'Couple rooms', slug: 'dostel-vattakanal', copy: 'A door that closes, an attached bath, and the valley out the window.', price: 1299, dosteller: 1169 },
-  { name: 'Private suites', slug: 'dostel-vattakanal', copy: 'Room to unpack properly if you are staying past the weekend.', price: 1799, dosteller: 1619 },
-];
+const terrainLabel: Record<string, string> = {
+  mountains: 'Mountains',
+  beach: 'Coast',
+  city: 'City',
+  jungle: 'Forest',
+  heritage: 'Old city',
+  workation: 'Work stay',
+};
 
 export default function HomePage() {
   return (
     <div className="bg-paper">
-      {/* ── Hero ────────────────────────────────────────────────
-          The board is the thesis: a hostel is a place things are
-          happening, not a grid of beds. */}
+      {/* ── Hero ────────────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-ink-1000 text-white">
         <div
           aria-hidden="true"
@@ -54,7 +57,7 @@ export default function HomePage() {
         />
         <div className="relative mx-auto max-w-7xl px-4 pb-16 pt-14 sm:px-6 lg:px-8 lg:pb-24 lg:pt-20">
           {/* min-w-0 on both columns is load-bearing: grid children default to
-              min-width:auto, so the board's min-w-[45rem] would stretch the
+              min-width:auto, so the board’s min-w-[35rem] would stretch the
               column to 720px and the section's overflow-hidden would silently
               clip the headline copy on mobile instead of wrapping it. */}
           <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.02fr] lg:gap-16">
@@ -73,34 +76,36 @@ export default function HomePage() {
 
               <Reveal delay={160}>
                 <p className="mt-6 max-w-lg text-lg leading-8 text-white/70">
-                  A hostel in the Kodaikanal hills where the staff remember your name, the
-                  Wi-Fi speed is measured instead of claimed, and you can see who is in the
-                  room before you book.
+                  {`${network.length} hostels across India`} — staff who learn your name,
+                  Wi-Fi that&apos;s measured instead of claimed, and a board that shows
+                  who&apos;s in the room before you book.
                 </p>
               </Reveal>
 
+              {/* Search lives inside the reading path — name, claim, act — not in
+                  a floating light-mode card orphaned below the composition. */}
+              <Reveal delay={240} className="mt-9 max-w-xl">
+                <SearchBar variant="home" dark />
+                <p className="data mt-4 text-xs uppercase tracking-[0.16em] text-white/40">
+                  From ₹327 a night · Free cancellation 48h
+                </p>
+              </Reveal>
             </div>
 
             <Reveal delay={200} className="min-w-0">
-              <SplitFlapBoard rows={boardRows} />
+              <SplitFlapBoard
+                rows={boardRows}
+                title="Departures · tonight"
+                columns={['Where', 'Known for', 'From', 'Tonight']}
+                caption="Dostel properties across India, nightly rate and availability"
+              />
             </Reveal>
           </div>
-
-          {/* Search gets its own full-width band. Sharing a column with the
-              board made it overflow its container and collide with the flaps. */}
-          <Reveal delay={300} className="mt-14 lg:mt-16">
-            <SearchBar variant="home" />
-            <p className="data mt-4 text-center text-xs uppercase tracking-[0.16em] text-white/40">
-              From ₹327 a night · Free cancellation 48h
-            </p>
-          </Reveal>
         </div>
       </section>
 
-      {/* ── The place, moving ─────────────────────────────────
-          Photos alternating with typographic panels: a fact about the
-          place earns its slot more than another stock frame does. */}
-      <section className="overflow-hidden border-y border-ink-200 bg-ink-1000 py-3" aria-label="Vattakanal at a glance">
+      {/* ── The network, moving ─────────────────────────────── */}
+      <section className="overflow-hidden border-y border-ink-200 bg-ink-1000 py-3" aria-label="The Dostel network at a glance">
         <div className="animate-marquee-slow gap-3">
           {[0, 1, 2].map((pass) =>
             stripPhotos.map((src, i) => (
@@ -137,19 +142,19 @@ export default function HomePage() {
           {[
             {
               head: 'Measured, not claimed',
-              body: 'Wi-Fi speed, power backup and carrier signal are published with the time and method of the check — and marked “not measured” when we have no reading we can stand behind.',
-              href: '/hostels/dostel-vattakanal',
-              cta: 'See the hill-stay card',
+              body: 'Every property publishes what was checked, when, and by what method — and marks it “not measured” where we have no reading we can stand behind. The checks change with the terrain; the standard does not.',
+              href: '/hostels',
+              cta: 'See a stay card',
             },
             {
               head: 'Know the room first',
               body: 'Guests choose what to share before they arrive: who is trekking Friday, who is working India hours, who is teaching something on Saturday. Opt-in, first names, cleared at checkout.',
-              href: '/hostels/dostel-vattakanal',
-              cta: "See who's here",
+              href: '/hostels',
+              cta: 'Browse the network',
             },
             {
               head: 'No points, no wallet',
-              body: 'Dostellers is not a currency you grind for. Stay long enough and the people here know how you take your chai. That is the whole mechanic.',
+              body: 'Dostellers is not a currency you grind for. Stay across the network and the people at the next one already know how you take your chai. That is the whole mechanic.',
               href: '/dostellers',
               cta: 'About Dostellers',
             },
@@ -173,41 +178,34 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── Rooms ───────────────────────────────────────────── */}
-      <section className="border-t border-ink-200 bg-coral-50 py-20 sm:py-28">
+      {/* ── The circuits ─────────────────────────────────────
+          A traveller plans a direction, not a stay. The map is the
+          aggregator's native artifact: routes between the houses, real
+          transport legs, and one identity that travels the line with you.
+          The landing does not duplicate /hostels — the grid lives there. */}
+      <section className="border-t border-ink-200 bg-ink-1000 py-20 text-white sm:py-28">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Reveal>
             <div className="flex flex-wrap items-end justify-between gap-4">
-              <h2 className="text-[2.25rem] leading-[1.06] tracking-[-0.03em] text-ink-1000 sm:text-5xl">
-                Three ways to stay
-              </h2>
-              <Link href="/hostels" className="text-sm font-semibold text-coral-700 underline-offset-4 hover:underline">
-                All hostels
+              <div className="max-w-2xl">
+                <span className="stamp text-yellow-300">The circuits</span>
+                <h2 className="mt-4 text-[2.25rem] leading-[1.06] tracking-[-0.03em] text-white sm:text-5xl">
+                  Plan the route,<br />not the room.
+                </h2>
+                <p className="mt-5 text-lg leading-8 text-white/70">
+                  Nobody backpacks one address. Three circuits link the eight houses —
+                  and because it&apos;s one network, the next hostel already knows your
+                  name when you walk in.
+                </p>
+              </div>
+              <Link href="/hostels" className="text-sm font-semibold text-yellow-300 underline-offset-4 hover:underline">
+                Or browse all {network.length}
               </Link>
             </div>
           </Reveal>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {rooms.map((room, i) => (
-              <Reveal key={room.name} delay={i * 110}>
-                <Link
-                  href={`/hostels/${room.slug}`}
-                  className="group flex h-full flex-col justify-between rounded-sm border border-ink-200 bg-white p-7 transition-transform duration-150 hover:-translate-y-0.5"
-                >
-                  <div>
-                    <h3 className="text-2xl text-ink-1000">{room.name}</h3>
-                    <p className="mt-3 leading-7 text-ink-700">{room.copy}</p>
-                  </div>
-                  <div className="mt-8 flex items-end justify-between gap-3">
-                    <div>
-                      <span className="data text-2xl font-semibold text-ink-1000">₹{room.price}</span>
-                      <span className="ml-1 text-sm text-ink-600">/ night</span>
-                    </div>
-                    <span className="tag">Dosteller ₹{room.dosteller}</span>
-                  </div>
-                </Link>
-              </Reveal>
-            ))}
+          <div className="mt-12">
+            <CircuitMap />
           </div>
         </div>
       </section>
@@ -223,17 +221,17 @@ export default function HomePage() {
           </Reveal>
           <Reveal delay={90}>
             <p className="mx-auto mt-6 max-w-xl leading-8 text-white/70">
-              Vattakanal, in the Kodaikanal hills. A weekend or a month — there is a bed, a
-              fire, and people who will know your name by the second morning.
+              Hills, coast, or the middle of a city. A weekend or a month — there is a bed,
+              a fire, and people who will know your name by the second morning.
             </p>
           </Reveal>
           <Reveal delay={170}>
             <div className="mt-10 flex flex-col justify-center gap-3 sm:flex-row">
               <Link
-                href="/hostels/dostel-vattakanal"
+                href="/hostels"
                 className="inline-flex h-12 items-center justify-center rounded-sm bg-coral-600 px-7 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-500 active:scale-[0.97]"
               >
-                Check availability
+                Find a bed
               </Link>
               <Link
                 href="/dostellers"

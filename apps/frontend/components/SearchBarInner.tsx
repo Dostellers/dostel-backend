@@ -14,6 +14,7 @@ interface SearchBarProps {
 
 export default function SearchBarInner({
   variant = "home",
+  dark = false,
   placeholder,
   value: _value,
 }: SearchBarProps) {
@@ -72,6 +73,64 @@ export default function SearchBarInner({
           <span className="text-stone-400">· {guests} {Number(guests) === 1 ? "guest" : "guests"}</span>
         </button>
       </div>
+    );
+  }
+
+  /* Dark variant composes into a dark hero column: two stacked rows instead of
+     one wide bar, translucent shell, and `color-scheme: dark` so the NATIVE
+     date controls render dark chrome. Custom datepickers are an a11y tarpit
+     and worse than native on mobile — we restyle the shell, never the control. */
+  if (dark) {
+    return (
+      <form onSubmit={handleSearch} className="w-full">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2.5 rounded-sm border border-white/15 bg-white/[0.07] px-3 backdrop-blur-sm transition-colors focus-within:border-white/40">
+            <svg className="h-5 w-5 shrink-0 text-white/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+              placeholder={placeholder || "Where to?"}
+              className="min-w-0 flex-1 bg-transparent py-3 text-sm text-white outline-none placeholder:text-white/45"
+              aria-label="Destination"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <input
+              type="date"
+              value={checkIn}
+              onChange={(e) => setCheckIn(e.target.value)}
+              className="min-w-0 flex-1 rounded-sm border border-white/15 bg-white/[0.07] px-2.5 py-2.5 text-sm text-white [color-scheme:dark]"
+              aria-label="Check-in date"
+            />
+            <input
+              type="date"
+              value={checkOut}
+              onChange={(e) => setCheckOut(e.target.value)}
+              className="min-w-0 flex-1 rounded-sm border border-white/15 bg-white/[0.07] px-2.5 py-2.5 text-sm text-white [color-scheme:dark]"
+              aria-label="Check-out date"
+            />
+            <select
+              value={guests}
+              onChange={(e) => setGuests(e.target.value)}
+              className="min-w-0 shrink-0 rounded-sm border border-white/15 bg-white/[0.07] px-2 py-2.5 text-sm text-white [color-scheme:dark]"
+              aria-label="Number of guests"
+            >
+              {[1, 2, 3, 4, 5, 6].map((n) => (
+                <option key={n} value={n}>{n} {n === 1 ? "guest" : "guests"}</option>
+              ))}
+            </select>
+            <button
+              type="submit"
+              className="flex h-11 shrink-0 items-center justify-center rounded-sm bg-coral-600 px-6 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-500 active:scale-[0.97]"
+            >
+              Search
+            </button>
+          </div>
+        </div>
+      </form>
     );
   }
 

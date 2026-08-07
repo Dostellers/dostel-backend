@@ -55,13 +55,6 @@ export default function RootLayout({
       lang="en"
       className={`${bricolage.variable} ${inter.variable} ${jetbrainsMono.variable} ${notoDevanagari.variable}`}
     >
-      <head>
-        {/* Scroll-reveal hides content until IntersectionObserver fires. With
-            JS off that would leave the page blank, so force it all visible. */}
-        <noscript>
-          <style>{`.reveal{opacity:1 !important;transform:none !important}`}</style>
-        </noscript>
-      </head>
       <body className="min-h-screen flex flex-col">
         <BookingProvider>
           <ApolloProviderWrapper>

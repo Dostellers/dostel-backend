@@ -152,7 +152,7 @@ const customerSchema = new mongoose.Schema({
     consents: [{
         purpose: {
             type: String,
-            enum: ['network_terms', 'marketing', 'whatsapp_community'],
+            enum: ['network_terms', 'marketing', 'whatsapp_community', 'guest_graph_crossings'],
             required: true
         },
         granted: { type: Boolean, required: true },

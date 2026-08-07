@@ -22,6 +22,7 @@ const roleTypeDefs = require('./roleTypeDefs.js');
 const couponTypeDefs = require('./couponTypeDefs.js');
 const healthTypeDefs = require('./healthTypeDefs.js');
 const membershipTypeDefs = require('./membershipTypeDefs.js');
+const crossingTypeDefs = require('./crossingTypeDefs.js');
 
 const mergedTypeDefs = mergeTypeDefs([
     amenityTypeDefs,
@@ -45,7 +46,8 @@ const mergedTypeDefs = mergeTypeDefs([
     roleTypeDefs,
     couponTypeDefs,
     healthTypeDefs,
-    membershipTypeDefs
+    membershipTypeDefs,
+    crossingTypeDefs
 ]);
 
 module.exports = mergedTypeDefs;

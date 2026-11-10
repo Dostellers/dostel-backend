@@ -13,3 +13,15 @@ mutation CreateBooking($bookingData: BookingInput!) {
     }
   }
 }
+
+mutation ProcessPayment($bookingId: ID!, $paymentInput: PaymentInput!) {
+  processPayment(id: $bookingId, input: $paymentInput) {
+    id
+    status
+    payment {
+      status
+      transactionId
+      amount
+    }
+  }
+}

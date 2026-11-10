@@ -1,4 +1,84 @@
+# Dependencies
 node_modules/
-logs/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
+# Env / secrets
 .env
+.env.*
+!.env.example
+!.env*.example
+*.pem
+*.key
+credentials.json
+**/secrets/
+
+# Next.js / build
+.next/
+.next-*/
+out/
+build/
+dist/
+coverage/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Logs / runtime
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+scheduler.log
+failed_restarts.log
+port_3002_conflict.log
+create-issue-output.txt
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local agent / tool state
+.claude/
+.omniroute/
+.paperclip/
+.handoff_complete
+.task_status
+opencode.json
+
+# Accidental / junk paths
+--experimental/
+--name/
+.d.ts/
+...
+/1
+Connection
+HTTP
+
+# Vercel / deploy
+.vercel
+
+# Test / temp
+tmp/
+temp/
+*.bak
+*.backup
+*.tsbuildinfo
+
+# Local ops notes / research dumps (not product source)
+/issues/
+/research/
+/backend/
+AGENTS_SKILLS.md
+COORDINATION.md

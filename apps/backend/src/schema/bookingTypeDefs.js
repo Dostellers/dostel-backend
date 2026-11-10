@@ -5,6 +5,15 @@ const GraphQLJSON = require('graphql-type-json'); // Import the library
 
 const bookingTypeDefs = gql`
   scalar JSON
+
+  enum BookingStatus {
+    Draft
+    Confirmed
+    CheckedIn
+    CheckedOut
+    Completed
+    Abandoned
+  }
    
   type SourceDetail {
     name: String
@@ -29,11 +38,13 @@ const bookingTypeDefs = gql`
     payment: PaymentInfo!
     specialRequests: String
     source: SourceDetail
+    loyaltyPointsToUse: Int
     loyaltyPointsRedeemed: Int
     discount: DiscountInfo
-    status: String!
-    createdAt: Date!
-    updatedAt: Date!
+    status: BookingStatus
+    paymentMethod: String!
+    transactionId: String!
+    chargeId: String!
   }
    
   type AdminBookingsResult {
@@ -56,22 +67,26 @@ const bookingTypeDefs = gql`
     applied: Float!
   }
    
-  input BookingInput {
-    reference: String!
-    customerId: ID!
-    hostelId: ID!
-    roomType: String!
-    checkInDate: Date!
-    checkOutDate: Date!
-    guests: Int!
-    totalAmount: Float!
-    payment: PaymentInput!
-    specialRequests: String
-    source: SourceInput
-    loyaltyPointsRedeemed: Int
-    discount: DiscountInput
-    status: String
-  }
+input BookingInput {
+     reference: String!
+     customerId: ID!
+     hostelId: ID!
+     roomType: String!
+     checkInDate: Date!
+     checkOutDate: Date!
+     guests: Int!
+     totalAmount: Float!
+     payment: PaymentInput!
+     specialRequests: String
+     source: SourceInput
+     loyaltyPointsToUse: Int
+     loyaltyPointsRedeemed: Int
+     discount: DiscountInput
+     status: BookingStatus
+     paymentMethod: String!
+     transactionId: String!
+     chargeId: String!
+   }
    
   input PaymentInput {
     status: String!
@@ -111,16 +126,17 @@ const bookingTypeDefs = gql`
     ): AdminBookingsResult!
   }
    
-  extend type Mutation {
+extend type Mutation {
     createBooking(input: BookingInput!): Booking!
     updateBooking(id: ID!, input: BookingInput!): Booking!
-    deleteBooking(id: ID!): Boolean!
+    deleteBooking(id: [ID!]!): Boolean!
     applyCouponToBooking(bookingId: ID!, couponId: ID!): Booking!
     confirmBooking(id: ID!): Booking!
     completeBooking(id: ID!): Booking!
     abandonBooking(id: ID!): Booking!
     reactivateBooking(id: ID!): Booking!
     changeBookingStatus(id: ID!, status: String!): Booking!
+    processBookingPayment(id: ID!, input: PaymentInput!): Booking!
   }
 `;
 

@@ -61,6 +61,12 @@ const hostelTypeDefs = gql`
     totalObservations: Int!
   }
 
+  type Image {
+    id: ID!
+    url: String!
+    alt: String
+  }
+
 type Hostel {
     id: ID!
     slug: String!
@@ -140,11 +146,21 @@ type Hostel {
     keywords: String
   }
 
-  type HostelImages {
+type HostelImages {
     hero: Image
     main: Image
     thumbnail: Image
     others: [Image]
+  }
+
+  type Room {
+    id: ID!
+    number: String!
+    roomType: RoomType!
+    price: Float!
+    description: String!
+    features: [String!]
+    capacity: Int!
   }
 
   type HostelOtherInfo {
@@ -153,7 +169,7 @@ type Hostel {
     iconUrl: String
   }
 
-  type HostelPolicies {
+type HostelPolicies {
     general: [String]
     pet: [String]
     covid: [String]

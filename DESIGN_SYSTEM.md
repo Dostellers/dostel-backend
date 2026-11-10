@@ -17,12 +17,13 @@ Visual identity: `.paperclip/design/visual-identity.md` · Tokens: `.paperclip/d
 
 ## Design principles
 
-1. **Mountain-grounded** — forest greens (`#2d6a4f`), sunset amber (`#e07a2f`), warm earth — not generic SaaS purple
-2. **Community soul** — Playfair Display (headings) + Inter (body), warm off-white backgrounds (`#fefcf5`), social proof as trust signal
-3. **Mobile-first, thumb-friendly** — sticky bottom bars (72px), 44px touch targets, single-column <768px, native inputs
-4. **Accessible by default** — WCAG AA verified per token, focus rings (sky `#2b6cb0`), semantic forms, `prefers-reduced-motion`
-5. **3 animations only** — card lift (`translateY(-2px)`), page fade-in (`opacity 0→1`), button press (`scale(0.97)`) — no motion noise
-6. **Warm not trendy** — no purple gradients, no dashboard-in-hero, no cream+terracotta brochure defaults
+1. **Coral-led brand** — Coral (`#F54E4E`) as primary brand, yellow as accent only — not generic SaaS purple or Hosteller yellow-on-black
+2. **Noticeboard concept** — Structural logic of stamp, tag, board, guestbook executed with modern precision
+3. **Community soul** — Bricolage Grotesque (headings) + Inter (body), warm paper background (`#FFFDF9`), social proof as trust signal
+4. **Mobile-first, thumb-friendly** — sticky bottom bars (72px), 44px touch targets, single-column <768px, native inputs
+5. **Accessible by default** — WCAG AA verified per token, focus rings (2px solid coral-600), semantic forms, `prefers-reduced-motion`
+6. **Motion with purpose** — 4 prescribed animations: card lift, page fade, button press, pin settle — plus reveal and split-flap for content
+7. **Warm not trendy** — no purple gradients, no dashboard-in-hero, no cream+terracotta brochure defaults, yellow as accent only
 
 ---
 
@@ -47,8 +48,8 @@ All tokens spec: `.paperclip/design/system/design-tokens.md`
 
 | Flow | File | Version | Key deliverables |
 |---|---|---|---|
-| Guest booking (7-step) | `.paperclip/design/flows/booking-flow.md` | v3.0 | Search→Listing→Detail+Rooms→Guest Details→Review→Payment→Confirmation |
-| Dostellers journey (5-step) | `.paperclip/design/flows/dostellers-journey.md` | v2.1 | Discover→Join→Dashboard→Long-stay Book→Badges; UI contracts |
+| Guest booking (7-step) | `.paperclip/design/flows/booking-flow.md` | v5.0 | Search→Listing→Detail+Rooms→Guest Details→Review→Payment→Confirmation |
+| Dostellers journey (5-step) | `.paperclip/design/flows/dostellers-journey.md` | v3.1 | Discover→Join→Dashboard→Long-stay Book→Badges; UI contracts |
 | Property decision & arrival | `.paperclip/design/flows/property-decision-arrival.md` | v1.0 | Decision strip, room choices, access guide, arrival plan |
 | Admin/PMS enterprise shell | `.paperclip/design/flows/admin-shell.md` | v1.0 | Operational IA, dense tables, filters, detail drawers, status and audit contracts |
 | Search & listing flow | `.paperclip/design/flows/search-listing-flow.md` | v1.0 | SearchBar URL sync, HostelCard with social proof/policy pills, sticky bar |
@@ -73,11 +74,20 @@ Dostel wins on:
 
 | Ticket | For | Priority | Status | What |
 |--------|-----|----------|--------|------|
-| DOS-248 | Design Systems | P0 | Todo | Finalize design system tokens and visual identity guidelines |
-| DOS-249 | Product Designer | P0 | Todo | Refine booking flow user journeys and micro-interactions |
+| DOS-248 | Design Systems | P0 | In Progress | Finalize design system tokens and visual identity guidelines |
+| DOS-249 | Product Designer | P0 | Completed | Produced booking flow and Dostellers journey specs with acceptance criteria and component contracts |
 | DOS-250 | UI Engineer | P0 | Todo | Build design token system and component prototypes |
 
-### Shipped tickets (July 30)
+---
+
+## Design Flow Specs
+
+| Flow | File | Version | Key Deliverables |
+|------|------|---------|------------------|
+| Dostellers Journey | `.paperclip/design/flows/dostellers-journey-refined.md` | v3.1 | TierCard, PointsBar, BadgeGrid, LongStayToggle, SocialProof, PolicyPills, StickyBottomBar |
+| Booking Flow | `.paperclip/design/flows/booking-flow-optimized.md` | v5.0 | 7-step flow with session persistence, inline room selection, trust signals |
+
+## Active tickets (new issues)
 
 | Ticket | For | Priority | Status | What |
 |--------|-----|----------|--------|------|
@@ -165,3 +175,6 @@ All tickets saved to `.paperclip/design/tickets/`.
 - [ ] Loads < 2s on 3G
 - [ ] No layout shift (CLS < 0.1)
 - [ ] Animations smooth on low-end devices
+- [ ] Loyalty components render without layout shift
+- [ ] Points counter updates smoothly with proper animation
+- [ ] Tier badge transitions use prescribed motion

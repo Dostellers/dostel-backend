@@ -1,55 +1,115 @@
-const Booking = require('../models/booking');
-const Customer = require('../models/customer');
-const ReminderLog = require('../models/reminderLog');
-const { sendEmail } = require('./emailService');
-const logger = require('../config/logger');
+const mongoose = require('mongoose');
+const cron = require('node-cron');
+const path = require('path');
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
-const daysBetween = (d1, d2) => {
-  const diff = new Date(d2) - new Date(d1);
-  return Math.ceil(diff / (1000 * 60 * 60 * 24));
-};
+const { Booking } = require('./models');
 
-const sendReminder = async (customer, booking, daysLeft) => {
-  const subject = `Dostel: Balance Reminder - ${daysLeft} day(s) until check-in`;
-  const html = `<p>Dear ${customer.fullName || customer.email},</p><p>This is a reminder that you have a booking at Dostel (Ref: ${booking.reference}) with ${daysLeft} day(s) until check-in on ${booking.checkInDate.toDateString()}.</p><p>Balance due: ₹${booking.balanceDue}</p><p>Pay online: <a href="https://dostel.com/pay">dostel.com/pay</a></p><p>Thank you for choosing Dostel!</p>`;
+// Initialize database connection
+async function initDB() {
   try {
-    await sendEmail(customer.email, subject, html);
-    await ReminderLog.create({
-      booking: booking._id,
-      customer: customer._id,
-      daysBefore: daysLeft,
-      status: 'sent',
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/dostel', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
     });
-    logger.info(`Sent ${daysLeft}-day reminder to ${customer.email} for booking ${booking.reference}`);
-  } catch (err) {
-    await ReminderLog.create({
-      booking: booking._id,
-      customer: customer._id,
-      daysBefore: daysLeft,
-      status: 'failed',
-      error: err.message,
-    });
-    logger.error(`Failed to send ${daysLeft}-day reminder to ${customer.email}:`, err);
+    console.log('Reminder Service: Connected to MongoDB');
+  } catch (error) {
+    console.error('Reminder Service: MongoDB connection failed:', error);
+    process.exit(1);
   }
-};
+}
 
-const checkReminders = async () => {
-  const today = new Date();
+async function checkAndSendReminders() {
   try {
+    const now = new Date();
+    
+    // Find confirmed bookings
     const bookings = await Booking.find({
-      sequenceStatus: { $ne: 'Completed' },
-      checkInDate: { $gte: today }
-    }).populate('customer');
-
+      sequenceStatus: 'Confirmed',
+      'payment.status': 'Pending'
+    }).populate('customer', 'name phone email').populate('hostel', 'name');
+    
+    if (!bookings || bookings.length === 0) {
+      return;
+    }
+    
     for (const booking of bookings) {
-      const daysLeft = daysBetween(today, booking.checkInDate);
-      if ([7, 3, 1].includes(daysLeft)) {
-        await sendReminder(booking.customer, booking, daysLeft);
+      // Check if deposit is due in 7 days
+      const depositDueDate = new Date(booking.createdAt);
+      depositDueDate.setDate(depositDueDate.getDate() + 7);
+      
+      if (isDueDate(depositDueDate, now)) {
+        await sendReminder(booking, 7, 'Deposit due in 7 days');
+      }
+      
+      // Check if deposit is due in 1 day
+      depositDueDate.setDate(depositDueDate.getDate() - 6);
+      if (isDueDate(depositDueDate, now)) {
+        await sendReminder(booking, 1, 'Deposit due in 1 day');
       }
     }
-  } catch (err) {
-    logger.error('Error in reminder check:', err);
+  } catch (error) {
+    console.error('Reminder Service: Error checking bookings:', error);
   }
-};
+}
 
-module.exports = { checkReminders };
+function isDueDate(dueDate, now) {
+  return dueDate.toDateString() === now.toDateString();
+}
+
+async function sendReminder(booking, days, message) {
+  try {
+    const { customer, hostel, roomType, checkInDate, checkOutDate } = booking;
+    const amount = booking.depositRequired || 0;
+    
+    const reminderMessage = `
+    Reminder: ${message}
+    Booking Reference: ${booking.reference || 'N/A'}
+    Room Type: ${roomType}
+    Check-in: ${checkInDate}
+    Check-out: ${checkOutDate}
+    Amount Due: ${amount}
+    Hostel: ${hostel.name}
+    
+    Please complete your ${booking.payment.depositPercentage || 25}% deposit payment.
+    `;
+    
+    console.log(`Reminder Service: ${reminderMessage}
+Customer: ${customer.name} (${customer.email})`);
+    
+    // TODO: Implement actual SMS sending when Twilio is configured
+    // const twilioClient = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+    // await twilioClient.messages.create({
+    //   body: reminderMessage,
+    //   to: customer.phone,
+    //   from: process.env.TWILIO_PHONE_NUMBER
+    // });
+    
+  } catch (error) {
+    console.error('Reminder Service: Failed to send reminder:', error);
+  }
+}
+
+async function startReminderService() {
+  await initDB();
+  
+  // Run every hour to check for reminders
+  cron.schedule('0 * * * *', async () => {
+    console.log('Reminder Service: Checking for due reminders...');
+    await checkAndSendReminders();
+  });
+  
+  // Initial run
+  await checkAndSendReminders();
+  
+  console.log('Reminder Service: Started successfully');
+}
+
+// Graceful shutdown
+process.on('SIGINT', async () => {
+  console.log('Reminder Service: Shutting down gracefully');
+  mongoose.disconnect();
+  process.exit(0);
+});
+
+module.exports = { startReminderService };

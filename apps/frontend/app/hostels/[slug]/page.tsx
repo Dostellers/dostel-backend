@@ -10,6 +10,7 @@ import { useBooking } from '@/components/BookingProvider';
 import { hostels } from '@/lib/data';
 import { GET_HOSTEL_DETAILS } from '@/lib/queries';
 import { getProofConfig } from '@/lib/proof';
+import { useIsDosteller } from '@/lib/hooks/useIsDosteller';
 
 type ApiHostel = {
   id: string;

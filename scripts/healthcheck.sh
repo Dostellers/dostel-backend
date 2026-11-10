@@ -31,9 +31,9 @@ check_graphql() {
 }
 
 check_http "Paperclip" "http://127.0.0.1:3100/" "2xx"
-check_http "Guest frontend" "http://127.0.0.1:3001/" "2xx"
-check_http "Admin PMS" "http://127.0.0.1:3002/" "2xx"
-check_graphql "GraphQL" "http://127.0.0.1:4000/graphql"
+check_http "Guest frontend" "http://${PUBLIC_IP}:3001/" "2xx"
+check_http "Admin PMS" "http://${PUBLIC_IP}:3002/" "2xx"
+check_graphql "GraphQL" "http://${PUBLIC_IP}:4000/graphql"
 check_http "OmniRoute" "http://127.0.0.1:20128/v1/models" "2xx"
 
 printf "%b" "$REPORT"

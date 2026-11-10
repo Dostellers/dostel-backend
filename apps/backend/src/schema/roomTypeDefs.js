@@ -48,6 +48,7 @@ const roomTypeDefs = gql`
     restrictions: [String]
     images: [Image!]!
     reservations: [RoomReservation!]!
+    bookings: [Booking!]!
     hostel: Hostel!
     createdAt: Date!
     updatedAt: Date
@@ -139,6 +140,36 @@ const roomTypeDefs = gql`
     status: RoomStatus
   }
 
+  enum RoomBookingStatus {
+    confirmed
+    pending
+    cancelled
+    checked_in
+    checked_out
+  }
+
+  input RoomBookingInput {
+    guestName: String!
+    guestEmail: String!
+    guestPhone: String
+    checkIn: Date!
+    checkOut: Date!
+    status: RoomBookingStatus
+    totalPrice: Float
+    specialRequests: String
+  }
+
+  input RoomBookingUpdateInput {
+    guestName: String
+    guestEmail: String
+    guestPhone: String
+    checkIn: Date
+    checkOut: Date
+    status: RoomBookingStatus
+    totalPrice: Float
+    specialRequests: String
+  }
+
   input RoomReservationInput {
     startDate: Date!
     endDate: Date!
@@ -165,6 +196,10 @@ const roomTypeDefs = gql`
     updateRoomStatus(id: ID!, status: RoomStatus!): Room!
     deleteRoom(id: ID!): Boolean!
     reserveRoom(roomId: ID!, reservation: RoomReservationInput!): Room!
+    createRoomBooking(roomId: ID!, input: RoomBookingInput!): Room!
+    updateRoomBooking(roomId: ID!, bookingId: ID!, input: RoomBookingUpdateInput!): Room!
+    cancelRoomBooking(roomId: ID!, bookingId: ID!): Room!
+    deleteRoomBooking(roomId: ID!, bookingId: ID!): Boolean!
   }
 `;
 

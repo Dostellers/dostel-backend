@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Room = require('../models/room');
 const RoomType = require('../models/RoomType');
 const Hostel = require('../models/hostel');
+const roomAvailabilityResolver = require('./roomAvailabilityResolver');
 
 const populateRoom = query => query
     .populate('amenities')
@@ -24,8 +25,18 @@ const parseAvailabilityRange = (checkIn, checkOut) => {
     return { start, end };
 };
 
-const isRoomAvailable = (room, start, end) => !['maintenance', 'out_of_order'].includes(room.status)
-    && !(room.reservations || []).some(reservation => reservation.startDate < end && reservation.endDate > start);
+const isRoomAvailable = (room, start, end) => {
+    if (['maintenance', 'out_of_order'].includes(room.status)) return false;
+    
+    // Use new bookings array if available, fallback to reservations for backward compatibility
+    const bookings = room.bookings || room.reservations || [];
+    
+    return !bookings.some(booking => {
+        const bookingStart = new Date(booking.checkIn || booking.startDate).getTime();
+        const bookingEnd = new Date(booking.checkOut || booking.endDate).getTime();
+        return bookingStart < end.getTime() && bookingEnd > start.getTime();
+    });
+};
 
 const serializeRoom = (room) => ({
     ...room.toObject(),
@@ -186,6 +197,61 @@ const roomResolvers = {
             room.reservations.push(reservation);
             await room.save();
             return await populateRoom(Room.findById(room.id));
+        },
+        createRoomBooking: async (_, { roomId, input }) => {
+            const room = requireDocument(await Room.findById(roomId), 'Room');
+            const booking = {
+                guestName: input.guestName,
+                guestEmail: input.guestEmail,
+                guestPhone: input.guestPhone || null,
+                checkIn: input.checkIn,
+                checkOut: input.checkOut,
+                status: input.status || 'confirmed',
+                totalPrice: input.totalPrice || null,
+                specialRequests: input.specialRequests || null,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            };
+            room.bookings.push(booking);
+            await room.save();
+            return await populateRoom(Room.findById(room.id));
+        },
+        updateRoomBooking: async (_, { roomId, bookingId, input }) => {
+            const room = requireDocument(await Room.findById(roomId), 'Room');
+            const booking = room.bookings.id(bookingId);
+            if (!booking) {
+                throw new Error('Booking not found');
+            }
+            if (input.guestName !== undefined) booking.guestName = input.guestName;
+            if (input.guestEmail !== undefined) booking.guestEmail = input.guestEmail;
+            if (input.guestPhone !== undefined) booking.guestPhone = input.guestPhone;
+            if (input.checkIn !== undefined) booking.checkIn = input.checkIn;
+            if (input.checkOut !== undefined) booking.checkOut = input.checkOut;
+            if (input.status !== undefined) booking.status = input.status;
+            if (input.totalPrice !== undefined) booking.totalPrice = input.totalPrice;
+            if (input.specialRequests !== undefined) booking.specialRequests = input.specialRequests;
+            booking.updatedAt = new Date();
+            await room.save();
+            return await populateRoom(Room.findById(room.id));
+        },
+        cancelRoomBooking: async (_, { roomId, bookingId }) => {
+            const room = requireDocument(await Room.findById(roomId), 'Room');
+            const booking = room.bookings.id(bookingId);
+            if (!booking) {
+                throw new Error('Booking not found');
+            }
+            booking.status = 'cancelled';
+            await room.save();
+            return await populateRoom(Room.findById(room.id));
+        },
+        deleteRoomBooking: async (_, { roomId, bookingId }) => {
+            const room = requireDocument(await Room.findById(roomId), 'Room');
+            const result = room.bookings.pull(bookingId);
+            if (!result) {
+                throw new Error('Booking not found');
+            }
+            await room.save();
+            return true;
         }
     }
 };

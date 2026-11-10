@@ -1,5 +1,7 @@
 "use client";
 
+import { useBooking } from "./BookingProvider";
+
 interface StickyBottomBarProps {
   price: number;
   total: number;
@@ -21,6 +23,9 @@ export default function StickyBottomBar({
   show = true,
   currency = "₹",
 }: StickyBottomBarProps) {
+  const { state } = useBooking();
+  const { workweekDiscount } = state;
+
   return (
     <div
       className={`fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-stone-200 transition-transform duration-250 ease-out lg:static lg:border-none ${
@@ -36,6 +41,11 @@ export default function StickyBottomBar({
           <span className="text-xs text-stone-400">
             {currency}{total} total{subtitle ? ` · ${subtitle}` : ""}
           </span>
+          {workweekDiscount && (
+            <span className="text-xs text-green-600">
+              Save {currency}{workweekDiscount} on room price
+            </span>
+          )}
         </div>
         <button
           type="button"

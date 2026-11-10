@@ -2,6 +2,12 @@
 
 import { createContext, useContext, useCallback, useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
+import {
+  buildRateOffers,
+  getRatePlan,
+  resolvePaymentSchedule,
+  type RateType,
+} from "@/lib/rate-plans";
 
 interface RoomSelection {
   roomId: string;
@@ -29,6 +35,16 @@ export interface BookingState {
   paymentMethod?: string;
   paymentIntentId?: string;
   paymentStatus?: 'pending' | 'processing' | 'succeeded' | 'failed';
+  rateType: RateType;
+  depositPercentage: number;
+  depositDue: number;
+  balanceDue: number;
+  payAtProperty: number;
+  balanceCollection: 'AT_PROPERTY' | 'PREPAID';
+  refundable: boolean;
+  cancellationDeadlineHours: number;
+  rateLabel: string;
+  rateDescription: string;
 }
 
 export interface BookingActions {
@@ -37,6 +53,7 @@ export interface BookingActions {
   selectRoom: (room: RoomSelection) => void;
   removeRoom: (roomId: string) => void;
   updateGuestInfo: (info: BookingState["guestInfo"]) => void;
+  selectRate: (rateType: RateType) => void;
   confirmBooking: () => void;
   resetBooking: () => void;
   setPaymentMethod: (method: string) => void;
@@ -45,9 +62,21 @@ export interface BookingActions {
   processPayment: (paymentData: { method: string; transactionId: string; chargeId: string }) => Promise<void>;
 }
 
+const defaultPlan = getRatePlan('FREE_CANCELLATION');
+
 const initialState: BookingState = {
   destination: "", checkIn: "", checkOut: "", guests: 1, hostel: null, selectedRooms: [],
   subtotal: 0, taxes: 0, serviceFee: 0, total: 0, nights: 0,
+  rateType: defaultPlan.id,
+  depositPercentage: defaultPlan.depositPercentage,
+  depositDue: 0,
+  balanceDue: 0,
+  payAtProperty: 0,
+  balanceCollection: defaultPlan.balanceCollection,
+  refundable: defaultPlan.refundable,
+  cancellationDeadlineHours: defaultPlan.cancellationDeadlineHours,
+  rateLabel: defaultPlan.label,
+  rateDescription: defaultPlan.description,
 };
 
 const BookingContext = createContext<{ state: BookingState; actions: BookingActions } | null>(null);
@@ -57,17 +86,40 @@ function computeNights(checkIn: string, checkOut: string): number {
   return Math.max(0, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000));
 }
 
-function computeFinancials(rooms: RoomSelection[], nights: number, isWorkweek = false) {
+function computeFinancials(
+  rooms: RoomSelection[],
+  nights: number,
+  isWorkweek = false,
+  rateType: RateType = 'FREE_CANCELLATION',
+  paymentMethod?: string,
+) {
   const subtotal = rooms.reduce((sum, r) => sum + r.total, 0);
   const workweekDiscount = isWorkweek ? Math.round(subtotal * 0.2) : 0;
   const discountedSubtotal = subtotal - workweekDiscount;
-  return { 
-    subtotal: discountedSubtotal, 
-    taxes: Math.round(discountedSubtotal * 0.12), 
-    serviceFee: discountedSubtotal > 0 ? 49 : 0, 
-    total: discountedSubtotal + Math.round(discountedSubtotal * 0.12) + (discountedSubtotal > 0 ? 49 : 0),
+  const taxes = Math.round(discountedSubtotal * 0.12);
+  const serviceFee = discountedSubtotal > 0 ? 49 : 0;
+  const baseTotal = discountedSubtotal + taxes + serviceFee;
+  const offers = buildRateOffers(baseTotal);
+  const offer = offers.find((o) => o.rateType === rateType) || offers[0];
+  const schedule = resolvePaymentSchedule(rateType, offer.totalAmount, paymentMethod);
+
+  return {
+    subtotal: discountedSubtotal,
+    taxes,
+    serviceFee,
+    total: offer.totalAmount,
     workweekDiscount,
-    originalSubtotal: subtotal
+    originalSubtotal: subtotal,
+    rateType: schedule.rateType,
+    depositPercentage: schedule.depositPercentage,
+    depositDue: schedule.depositRequired,
+    balanceDue: schedule.balanceDue,
+    payAtProperty: schedule.payAtProperty,
+    balanceCollection: schedule.balanceCollection,
+    refundable: schedule.refundable,
+    cancellationDeadlineHours: schedule.cancellationDeadlineHours,
+    rateLabel: schedule.label,
+    rateDescription: schedule.description,
   };
 }
 
@@ -134,7 +186,11 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     const next = { ...prev, ...params };
     const n = computeNights(next.checkIn, next.checkOut);
     const isWorkweek = Boolean(next.checkIn && next.checkOut && n >= 5);
-    return { ...next, nights: n, ...computeFinancials(next.selectedRooms, n, isWorkweek) };
+    return {
+      ...next,
+      nights: n,
+      ...computeFinancials(next.selectedRooms, n, isWorkweek, next.rateType, next.paymentMethod),
+    };
   }), []);
   const setHostel = useCallback((hostel) => setState((prev) => ({ ...prev, hostel })), []);
   const selectRoom = useCallback((room) => setState((prev) => {
@@ -142,15 +198,31 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     const selectedRooms = exists ? prev.selectedRooms.map((r) => r.roomId === room.roomId ? room : r) : [...prev.selectedRooms, room];
     const n = computeNights(prev.checkIn, prev.checkOut);
     const isWorkweek = Boolean(prev.checkIn && prev.checkOut && n >= 5);
-    return { ...prev, selectedRooms, ...computeFinancials(selectedRooms, prev.nights, isWorkweek) };
+    return {
+      ...prev,
+      selectedRooms,
+      ...computeFinancials(selectedRooms, n, isWorkweek, prev.rateType, prev.paymentMethod),
+    };
   }), []);
   const removeRoom = useCallback((roomId) => setState((prev) => {
     const selectedRooms = prev.selectedRooms.filter((r) => r.roomId !== roomId);
     const n = computeNights(prev.checkIn, prev.checkOut);
     const isWorkweek = Boolean(prev.checkIn && prev.checkOut && n >= 5);
-    return { ...prev, selectedRooms, ...computeFinancials(selectedRooms, prev.nights, isWorkweek) };
+    return {
+      ...prev,
+      selectedRooms,
+      ...computeFinancials(selectedRooms, n, isWorkweek, prev.rateType, prev.paymentMethod),
+    };
   }), []);
   const updateGuestInfo = useCallback((info) => setState((prev) => ({ ...prev, guestInfo: info })), []);
+  const selectRate = useCallback((rateType: RateType) => setState((prev) => {
+    const n = computeNights(prev.checkIn, prev.checkOut);
+    const isWorkweek = Boolean(prev.checkIn && prev.checkOut && n >= 5);
+    return {
+      ...prev,
+      ...computeFinancials(prev.selectedRooms, n, isWorkweek, rateType, prev.paymentMethod),
+    };
+  }), []);
   const confirmBooking = useCallback(() => {
     setState((prev) => {
       localStorage.setItem(CONFIRMATION_KEY, JSON.stringify(prev));
@@ -159,7 +231,15 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
   const resetBooking = useCallback(() => { localStorage.removeItem(STORAGE_KEY); setState(initialState); }, []);
-  const setPaymentMethod = useCallback((method) => setState((prev) => ({ ...prev, paymentMethod: method })), []);
+  const setPaymentMethod = useCallback((method) => setState((prev) => {
+    const n = computeNights(prev.checkIn, prev.checkOut);
+    const isWorkweek = Boolean(prev.checkIn && prev.checkOut && n >= 5);
+    return {
+      ...prev,
+      paymentMethod: method,
+      ...computeFinancials(prev.selectedRooms, n, isWorkweek, prev.rateType, method),
+    };
+  }), []);
   const setPaymentIntent = useCallback((intentId) => setState((prev) => ({ ...prev, paymentIntentId: intentId })), []);
   const updatePaymentStatus = useCallback((status) => setState((prev) => ({ ...prev, paymentStatus: status })), []);
   const processPayment = useCallback(async (paymentData) => {
@@ -175,12 +255,12 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
 
     localStorage.setItem(CONFIRMATION_KEY, JSON.stringify(paymentState));
     localStorage.removeItem(STORAGE_KEY);
-    setState(prev=>({...prev,paymentStatus:'succeeded'}));
+    setState(prev => ({ ...prev, paymentStatus: 'succeeded' }));
   }, [state]);
   const actions: BookingActions = useMemo(() => ({
-    updateSearch, setHostel, selectRoom, removeRoom, updateGuestInfo, confirmBooking,
+    updateSearch, setHostel, selectRoom, removeRoom, updateGuestInfo, selectRate, confirmBooking,
     resetBooking, setPaymentMethod, setPaymentIntent, updatePaymentStatus, processPayment
-  }), [updateSearch, setHostel, selectRoom, removeRoom, updateGuestInfo, confirmBooking, resetBooking, setPaymentMethod, setPaymentIntent, updatePaymentStatus, processPayment]);
+  }), [updateSearch, setHostel, selectRoom, removeRoom, updateGuestInfo, selectRate, confirmBooking, resetBooking, setPaymentMethod, setPaymentIntent, updatePaymentStatus, processPayment]);
 
   return (
     <BookingContext.Provider value={{ state, actions }}>

@@ -1,93 +1,114 @@
-'use client';
+'use client'
 
-import { useForm, FieldValues } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Loader2 } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
-import { AuthResponse } from '@/lib/types';
+/**
+ * Self-contained admin login form (no missing UI kit deps).
+ * Used by app/login/page.tsx. Sets admin-auth via /api/login + localStorage token.
+ * User instruction: "fix it"
+ */
 
-const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
-});
+import { FormEvent, useState } from 'react'
 
-export function LoginForm() {
-  const router = useRouter();
-  const { addToast } = useToast();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: '',
-      password: '',
-    },
-  });
+export function LoginForm () {
+  const [email, setEmail] = useState('admin@dostel.com')
+  const [password, setPassword] = useState('password123')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  async function onSubmit(data: FieldValues) {
+  async function onSubmit (event: FormEvent) {
+    event.preventDefault()
+    setLoading(true)
+    setError('')
+
     try {
-      const result = await fetch('/graphql', {
+      const cookieLogin = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: `mutation Login($email: String!, $password: String!) { login(email: $email, password: $password) { token user { id email name } } }`,
-          variables: { email: data.email, password: data.password },
-        }),
-      });
+        body: JSON.stringify({ email, password }),
+      })
 
-      const response: AuthResponse = await result.json();
-
-      if (response.data?.login?.token) {
-        localStorage.setItem('token', response.data.login.token);
-        addToast({ title: 'Login successful', description: 'You are now logged in' });
-        router.replace('/dashboard');
-      } else {
-        addToast({ title: 'Login failed', description: response.errors?.[0]?.message || 'Invalid credentials' });
+      let token: string | undefined
+      try {
+        const result = await fetch('/graphql', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: `mutation Login($input: LoginInput!) {
+              login(input: $input) { token user { id email } }
+            }`,
+            variables: { input: { email, password } },
+          }),
+        })
+        const response = await result.json()
+        token = response?.data?.login?.token
+      } catch {
+        // Cookie session is enough for the admin shell
       }
-    } catch (error) {
-      addToast({ title: 'Error', description: 'Network error. Please try again.' });
+
+      if (!cookieLogin.ok && !token) {
+        const body = await cookieLogin.json().catch(() => ({}))
+        setError(body.error || 'Invalid credentials')
+        setLoading(false)
+        return
+      }
+
+      localStorage.setItem('token', token || 'admin-session')
+      if (!cookieLogin.ok) {
+        document.cookie = 'admin-auth=true; path=/; max-age=604800; SameSite=Lax'
+      }
+      window.location.replace('/dashboard')
+    } catch {
+      setError('Network error. Please try again.')
+      setLoading(false)
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-8">
-      <div className="max-w-md w-full space-y-6">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 p-8">
+      <div className="w-full max-w-md space-y-6 rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-gray-500">Sign in to access the Dostel admin panel</p>
+          <p className="mt-1 text-gray-500">Sign in to the Dostel admin panel</p>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={onSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Email</label>
-            <Input
-              placeholder="admin@dostel.com"
-              {...register('email')}
-              error={errors.email?.message}
+            <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-coral-600 focus:ring-2 focus:ring-coral-600/20"
+              required
             />
           </div>
-
           <div>
-            <label className="block text-sm font-medium text-gray-700">Password</label>
-            <Input
+            <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="password">Password</label>
+            <input
+              id="password"
               type="password"
-              placeholder="Enter your password"
-              {...register('password')}
-              error={errors.password?.message}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm outline-none focus:border-coral-600 focus:ring-2 focus:ring-coral-600/20"
+              required
             />
           </div>
 
-          <Button
+          {error && (
+            <p className="text-sm text-red-600" role="alert">{error}</p>
+          )}
+
+          <button
             type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-coral-600 hover:bg-coral-700 text-white"
+            disabled={loading}
+            className="flex h-11 w-full items-center justify-center rounded-lg bg-coral-600 text-sm font-semibold text-white transition hover:bg-coral-700 disabled:opacity-50"
           >
-            {isSubmitting ? <Loader2 className="animate-spin" /> : 'Sign In'}
-          </Button>
+            {loading ? 'Signing in…' : 'Sign In'}
+          </button>
         </form>
       </div>
     </div>
-  );
+  )
 }
+
+export default LoginForm

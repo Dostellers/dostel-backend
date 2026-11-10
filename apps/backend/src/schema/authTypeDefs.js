@@ -16,7 +16,6 @@ const authTypeDefs = gql`
 
   extend type Mutation {
     signup(input: SignupInput!): AuthPayload!
-    login(email: String!, password: String!): AuthPayload!
   }
 
   extend type Query {

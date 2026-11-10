@@ -525,8 +525,8 @@ export default function HostelDetailPage() {
         <StickyBottomBar
           price={state.subtotal / state.nights || 0}
           total={state.total}
-          ctaLabel="Continue to guest details"
-          onCtaClick={() => router.push(`/booking/${slug}/guest`)}
+          ctaLabel="Check availability"
+          onCtaClick={() => router.push(`/booking/${slug}/dates`)}
           show
         />
       )}

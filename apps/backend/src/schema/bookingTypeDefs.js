@@ -14,6 +14,18 @@ const bookingTypeDefs = gql`
     Completed
     Abandoned
   }
+
+  enum RateType {
+    FREE_CANCELLATION
+    FLEXIBLE
+    NON_REFUNDABLE
+    PAY_NOW
+  }
+
+  enum BalanceCollection {
+    AT_PROPERTY
+    PREPAID
+  }
    
   type SourceDetail {
     name: String
@@ -35,6 +47,13 @@ const bookingTypeDefs = gql`
     depositRequired: Float!
     amountPaid: Float!
     balanceDue: Float!
+    rateType: RateType
+    balanceCollection: BalanceCollection
+    payAtProperty: Float
+    refundable: Boolean
+    refundAs: String
+    cancellationDeadlineHours: Int
+    cancellationPolicy: String
     payment: PaymentInfo!
     specialRequests: String
     source: SourceDetail
@@ -77,6 +96,7 @@ input BookingInput {
      guests: Int!
      totalAmount: Float!
      payment: PaymentInput!
+     rateType: RateType
      specialRequests: String
      source: SourceInput
      loyaltyPointsToUse: Int
@@ -93,6 +113,7 @@ input BookingInput {
     method: String
     transactionId: String
     amount: Float!
+    depositPercentage: Float
   }
    
   input DiscountInput {

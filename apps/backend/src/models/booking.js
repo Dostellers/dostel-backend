@@ -24,6 +24,26 @@ const bookingSchema = new mongoose.Schema({
   amountPaid: { type: Number, default: 0 },
   balanceDue: { type: Number, default: 0 },
 
+  // Hostelworld-inspired rate / two-stage payment (used by bookingResolver + paymentService)
+  rateType: {
+    type: String,
+    enum: ['FREE_CANCELLATION', 'FLEXIBLE', 'NON_REFUNDABLE', 'PAY_NOW'],
+    default: 'FREE_CANCELLATION',
+  },
+  balanceCollection: {
+    type: String,
+    enum: ['AT_PROPERTY', 'PREPAID'],
+    default: 'AT_PROPERTY',
+  },
+  payAtProperty: { type: Number, default: 0 },
+  refundable: { type: Boolean, default: true },
+  refundAs: {
+    type: String,
+    enum: ['original_payment', 'voucher', 'none'],
+    default: 'original_payment',
+  },
+  cancellationDeadlineHours: { type: Number, default: 48 },
+  cancellationPolicy: { type: String, default: '' },
 
   specialRequests: String,
   source: {

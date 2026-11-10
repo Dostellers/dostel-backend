@@ -5,10 +5,14 @@ import { SmartphoneIcon, CreditCardIcon, BankIcon } from "./Icons";
 
 type PaymentMethod = "upi" | "card" | "netbanking";
 
+// Callers: booking/[slug]/payment/page.tsx. Existing method picker; adds deposit amount labels.
+// User: Hostelworld payment methods architecture + design enhancements.
 interface PaymentMethodSelectorProps {
   selected: PaymentMethod;
   onChange: (method: PaymentMethod) => void;
   loading?: boolean;
+  amountDue?: number;
+  payAtProperty?: number;
 }
 
 const methods: { id: PaymentMethod; label: string; icon: React.ReactNode }[] = [
@@ -21,6 +25,8 @@ export default function PaymentMethodSelector({
   selected,
   onChange,
   loading = false,
+  amountDue,
+  payAtProperty = 0,
 }: PaymentMethodSelectorProps) {
   const [upiId, setUpiId] = useState("");
   const [upiError, setUpiError] = useState("");
@@ -91,18 +97,39 @@ export default function PaymentMethodSelector({
         </div>
       )}
 
+      {typeof amountDue === 'number' && (
+        <div className="rounded-lg border border-stone-200 bg-ink-50 px-3 py-2 text-xs text-stone-600">
+          <div className="flex justify-between">
+            <span>Charging now</span>
+            <span className="font-data font-semibold text-coral-700">₹{amountDue.toLocaleString('en-IN')}</span>
+          </div>
+          {payAtProperty > 0 && (
+            <div className="mt-1 flex justify-between">
+              <span>Remaining at property</span>
+              <span className="font-data">₹{payAtProperty.toLocaleString('en-IN')}</span>
+            </div>
+          )}
+        </div>
+      )}
+
       <button
         type="submit"
         disabled={loading || (selected === "upi" && !upiId)}
         className="flex h-12 w-full items-center justify-center rounded-lg bg-sunset text-sm font-semibold text-white transition-all duration-150 active:scale-[0.97] disabled:opacity-45 disabled:cursor-not-allowed hover:brightness-95 focus-visible:outline-2 focus-visible:outline-sky focus-visible:outline-offset-2"
       >
-        {loading ? "Processing..." : `Pay`}
+        {loading
+          ? "Processing..."
+          : typeof amountDue === 'number'
+            ? `Pay ₹${amountDue.toLocaleString('en-IN')}`
+            : 'Pay'}
       </button>
 
       <div className="flex flex-wrap justify-center gap-3 text-xs text-stone-400">
         <span className="inline-flex items-center gap-1">Secured by Razorpay</span>
-        <span className="inline-flex items-center gap-1">Free cancellation</span>
-        <span className="inline-flex items-center gap-1">No booking fees</span>
+        <span className="inline-flex items-center gap-1">Deposit secures your bed</span>
+        {payAtProperty > 0 && (
+          <span className="inline-flex items-center gap-1">Balance at property</span>
+        )}
       </div>
     </div>
   );

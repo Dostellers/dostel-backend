@@ -2,6 +2,12 @@ const logger = require('../config/logger');
 const mongoose = require('mongoose');
 const Booking = require('../models/booking');
 const { AuthenticationError, ForbiddenError } = require('apollo-server-errors');
+// Hostelworld rate schedules — used by createBooking + processBookingPayment below
+const {
+  resolvePaymentSchedule,
+  paymentStatusForAmount,
+  RATE_TYPES,
+} = require('../services/ratePlanService');
 
 const ADMIN_ROLES = new Set(['admin', 'manager', 'staff']);
 
@@ -110,21 +116,25 @@ const createBooking = async (_, { input }, context) => {
             }
         }
 
-        // Calculate deposits and balances
-        const isUPI = payment.method === 'UPI';
-        const depositPercentage = payment.depositPercentage || (isUPI ? 25 : 20); // Default 20% deposit
-        const depositRequired = ((totalAmount - appliedDiscount) * depositPercentage) / 100;
+        // Hostelworld-style schedule: deposit now, balance at property (unless Pay Now).
+        // Persist discounted net as totalAmount so deposit/balance stay on one base.
+        const netTotal = roundMoney(totalAmount - appliedDiscount);
+        const schedule = resolvePaymentSchedule(
+            input.rateType || RATE_TYPES.FREE_CANCELLATION,
+            netTotal,
+            payment.method || input.paymentMethod
+        );
         const amountPaid = payment.amount || 0;
-        const balanceDue = (totalAmount - appliedDiscount) - amountPaid;
+        const balanceDue = roundMoney(Math.max(netTotal - amountPaid, 0));
+        // Until deposit is captured, property balance is still the post-deposit remainder
+        const payAtProperty = amountPaid >= schedule.depositRequired
+          ? schedule.payAtProperty
+          : (schedule.balanceCollection === 'PREPAID' ? 0 : schedule.payAtProperty);
+        const payStatus = paymentStatusForAmount(amountPaid, schedule.depositRequired, netTotal);
 
-        // Determine status based on payment
-        let status = 'Draft'; // Default status
+        let status = 'Draft';
         const normalizedAmountPaid = Number(amountPaid);
-        const normalizedTotal = Number(totalAmount - appliedDiscount);
-
-        if (normalizedAmountPaid >= normalizedTotal) {
-            status = 'Confirmed';
-        } else if (depositRequired > 0 && normalizedAmountPaid >= depositRequired) {
+        if (normalizedAmountPaid >= netTotal || (schedule.depositRequired > 0 && normalizedAmountPaid >= schedule.depositRequired)) {
             status = 'Confirmed';
         }
 
@@ -136,14 +146,23 @@ const createBooking = async (_, { input }, context) => {
             checkInDate,
             checkOutDate,
             guests,
-            totalAmount,
-            depositPercentage,
-            depositRequired,
+            totalAmount: netTotal,
+            rateType: schedule.rateType,
+            depositPercentage: schedule.depositPercentage,
+            depositRequired: schedule.depositRequired,
             amountPaid,
             balanceDue,
+            payAtProperty,
+            balanceCollection: schedule.balanceCollection,
+            refundable: schedule.refundable,
+            refundAs: schedule.refundAs,
+            cancellationDeadlineHours: schedule.cancellationDeadlineHours,
+            cancellationPolicy: schedule.cancellationPolicy,
             discountApplied: appliedDiscount,
             payment: {
-                status: payment.status? payment.status.charAt(0).toUpperCase() + payment.status.slice(1).toLowerCase() : (amountPaid >= totalAmount - appliedDiscount? 'Completed' : 'Pending'),
+                status: payment.status
+                  ? payment.status.charAt(0).toUpperCase() + payment.status.slice(1).toLowerCase()
+                  : payStatus,
                 method: payment.method,
                 transactionId: payment.transactionId,
                 amount: payment.amount
@@ -233,7 +252,7 @@ const adminBookings = async (_, { hostelId, status, dateFrom, dateTo, search, li
 
 const processBookingPayment = async (_, { id, input }) => {
     try {
-        const { paymentMethod, transactionId, chargeId } = input;
+        const { paymentMethod, transactionId, chargeId, amount, method } = input;
         const Booking = getBookingModel();
 
         const booking = await Booking.findById(id);
@@ -241,23 +260,35 @@ const processBookingPayment = async (_, { id, input }) => {
             throw new Error(`Booking with ID ${id} not found`);
         }
 
-        const normalizedAmountPaid = Number(booking.amountPaid);
-        const normalizedTotal = Number(booking.totalAmount);
-
-        const newPaymentStatus = normalizedAmountPaid >= normalizedTotal ? 'Completed' : 'Pending';
+        const schedule = resolvePaymentSchedule(
+            booking.rateType || RATE_TYPES.FREE_CANCELLATION,
+            booking.totalAmount,
+            paymentMethod || method || booking.payment?.method
+        );
+        const chargeAmount = amount != null
+          ? roundMoney(amount)
+          : schedule.depositRequired;
+        const paidTotal = roundMoney(Number(booking.amountPaid || 0) + chargeAmount);
+        const normalizedTotal = roundMoney(booking.totalAmount);
+        const remaining = roundMoney(Math.max(normalizedTotal - paidTotal, 0));
+        const newPaymentStatus = paymentStatusForAmount(paidTotal, schedule.depositRequired, normalizedTotal);
+        const sequenceStatus = paidTotal >= schedule.depositRequired ? 'Confirmed' : booking.sequenceStatus;
 
         const updatedBooking = await Booking.findByIdAndUpdate(
             id,
             {
                 $set: {
                     'payment.status': newPaymentStatus,
-                    'payment.method': paymentMethod,
+                    'payment.method': paymentMethod || method,
                     'payment.transactionId': transactionId,
-                    'payment.amount': normalizedTotal,
+                    'payment.amount': paidTotal,
                     'payment.chargeId': chargeId,
-                    amountPaid: normalizedTotal,
-                    balanceDue: 0,
-                    sequenceStatus: 'Completed'
+                    amountPaid: paidTotal,
+                    balanceDue: remaining,
+                    payAtProperty: schedule.balanceCollection === 'AT_PROPERTY' ? remaining : 0,
+                    depositRequired: schedule.depositRequired,
+                    depositPercentage: schedule.depositPercentage,
+                    sequenceStatus
                 }
             },
             { new: true, runValidators: true }

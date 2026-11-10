@@ -110,6 +110,32 @@
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Legacy --ds-* aliases for PolicyPills/RoomCard/TierBadge (existing design tokens).
+   User asked for design enhancements; maps v1 vars onto coral/ink palette. */
+:root {
+  --ds-color-white: var(--color-ink-0);
+  --ds-color-snow: var(--color-paper);
+  --ds-color-stone-200: var(--color-ink-200);
+  --ds-color-stone-600: var(--color-ink-600);
+  --ds-color-forest-100: var(--color-coral-50);
+  --ds-color-forest-500: var(--color-coral-700);
+  --ds-color-forest-900: var(--color-ink-1000);
+  --ds-color-sky: var(--color-info);
+  --ds-color-bronze: var(--color-bronze);
+  --ds-color-silver: var(--color-silver);
+  --ds-color-gold: var(--color-gold);
+  --ds-radius-md: 0.75rem;
+  --ds-radius-lg: 1rem;
+  --ds-radius-full: 9999px;
+  --ds-motion-fast: 150ms;
+  --ds-motion-base: 220ms;
+  --ds-ease-out: var(--ease-out-soft);
+  --ds-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ds-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-shadow-sm: 0 1px 2px rgba(11, 11, 12, 0.06);
+  --ds-shadow-md: 0 8px 24px -12px rgba(11, 11, 12, 0.25);
+}
+
 @keyframes marquee {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-33.333%); }

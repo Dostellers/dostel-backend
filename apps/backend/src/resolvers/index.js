@@ -24,6 +24,8 @@ const crossingResolver = require('./crossingResolver.js');
 
 module.exports = {
     Query: {
+        _version: () => process.env.REFERRAL_VERSION || 'dev',
+        version: () => process.env.REFERRAL_VERSION || 'dev',
         ...amenityResolver.Query,
         ...authResolver.Query,
         ...badgeResolver.Query,

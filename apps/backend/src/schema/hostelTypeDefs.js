@@ -61,7 +61,13 @@ const hostelTypeDefs = gql`
     totalObservations: Int!
   }
 
-  type Hostel {
+  type Image {
+    id: ID!
+    url: String!
+    alt: String
+  }
+
+type Hostel {
     id: ID!
     slug: String!
     name: String
@@ -71,7 +77,7 @@ const hostelTypeDefs = gql`
     shortDesc: String
     description: HostelDescription
     inauguratedOn: Date
-    basePrice: Float
+    pricePerNight: Float
     totalRooms: Int
     totalBeds: Int
     contact: HostelContact
@@ -88,6 +94,7 @@ const hostelTypeDefs = gql`
     faqs: [FAQ]
     blogs: [Blog]
     rooms: [Room!]!
+    isActive: Boolean!
     """
     The measured reliability record (DOS-503). Computed from raw telemetry on
     request, so it is always current. Null when nothing has ever been reported
@@ -96,7 +103,7 @@ const hostelTypeDefs = gql`
     reliability: HostelReliability
     createdAt: Date!
     updatedAt: Date
-  }
+}
 
   type HostelDescription {
     heading: String
@@ -139,11 +146,21 @@ const hostelTypeDefs = gql`
     keywords: String
   }
 
-  type HostelImages {
+type HostelImages {
     hero: Image
     main: Image
     thumbnail: Image
     others: [Image]
+  }
+
+  type Room {
+    id: ID!
+    number: String!
+    roomType: RoomType!
+    price: Float!
+    description: String!
+    features: [String!]
+    capacity: Int!
   }
 
   type HostelOtherInfo {
@@ -152,7 +169,7 @@ const hostelTypeDefs = gql`
     iconUrl: String
   }
 
-  type HostelPolicies {
+type HostelPolicies {
     general: [String]
     pet: [String]
     covid: [String]
@@ -165,7 +182,7 @@ const hostelTypeDefs = gql`
     shortDesc: String
     description: HostelDescriptionInput
     inauguratedOn: Date
-    basePrice: Float
+    pricePerNight: Float
     totalRooms: Int
     totalBeds: Int
     contact: HostelContactInput

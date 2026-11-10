@@ -1,0 +1,32 @@
+// Auto-generated placeholder pricing configuration
+// File: /root/dostel-backend/apps/backend/config/pricing-rules.json
+// Purpose: Stores long-stay discount percentages and tier multipliers
+// Format: JSON with clear placeholder values for Product to fill
+{
+  // Base long-stay discount percentages by stay duration (in nights)
+  "baseDiscounts": {
+    "7_nights": "INSERT_PERCENTAGE_HERE",  // e.g., 15
+    "14_nights": "INSERT_PERCENTAGE_HERE", // e.g., 25
+    "28_nights": "INSERT_PERCENTAGE_HERE"  // e.g., 35
+  },
+
+  // Maximum aggregate discount to apply (combined base + tier bonuses)
+  "maxDiscountCap": 50, // Percentage (0-100)
+
+  // Tier-specific multiplier additions (on top of baseDiscounts)
+  "tierMultipliers": {
+    "Bronze": 0,         // No additional bonus
+    "Silver": 10,        // Additional 10% on top of base
+    "Gold": 20           // Additional 20% on top of base
+  },
+
+  // Validation rules
+  "validation": {
+    "minBaseDiscount": 0,
+    "maxBaseDiscount": 100,
+    "minTierMultiplier": 0,
+    "maxTierMultiplier": 50,
+    "minMaxCap": 1,
+    "maxMaxCap": 99
+  }
+}

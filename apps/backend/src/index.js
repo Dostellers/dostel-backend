@@ -48,7 +48,8 @@ const server = new ApolloServer({
     return { user: req.user };
   },
   cache: 'bounded',
-  persistedQueries: false
+  persistedQueries: false,
+  introspection: true
 });
 
   await server.start();

@@ -17,7 +17,7 @@ async function fetchGraphQL(query: string, variables?: any) {
 
 export async function GET() {
   try {
-    const data = await fetchGraphQL(`query { hostels { id name tagline basePrice location { address { city } } images { thumbnail { url } } } }`);
+    const data = await fetchGraphQL(`query { hostels { id name tagline pricePerNight location { address { city } } images { thumbnail { url } } } }`);
     return NextResponse.json(data);
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

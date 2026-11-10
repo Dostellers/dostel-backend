@@ -10,6 +10,8 @@ const healthTypeDefs = gql`
 
   extend type Query {
     health: Health!
+    _version: String!
+    version: String!
   }
 `;
 

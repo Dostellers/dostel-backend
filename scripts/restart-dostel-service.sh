@@ -11,9 +11,9 @@ if [ -z "$UNIT" ]; then
 fi
 
 case "$UNIT" in
-  dostel-admin.service) PORT=3002; APP_DIR=/root/dostel-backend/apps/admin ;;
-  dostel-frontend.service) PORT=3001; APP_DIR=/root/dostel-backend/apps/frontend ;;
-  dostel-backend.service) PORT=4000; APP_DIR="" ;;
+  dostel-admin.service) PORT=5302; APP_DIR=/root/dostel-backend/apps/admin ;;
+  dostel-frontend.service) PORT=5301; APP_DIR=/root/dostel-backend/apps/frontend ;;
+  dostel-backend.service) PORT=5400; APP_DIR="" ;;
   paperclip.service) PORT=3100; APP_DIR="" ;;
   *)
     echo "unit not allowed: $UNIT" >&2

@@ -1,6 +1,4 @@
-'use client';
-
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { gql, useQuery, useMutation } from '@apollo/client';
 import { useState } from 'react';
 
 const GET_BOOKINGS = gql`
@@ -8,170 +6,214 @@ const GET_BOOKINGS = gql`
     bookings {
       id
       reference
-      roomType
+      status
       checkInDate
       checkOutDate
-      guests
       totalAmount
-      amountPaid
-      balanceDue
-      status
+      guestCount
       customer {
+        id
         fullName
         email
+        phone
       }
       hostel {
+        id
+        name
+      }
+      roomType
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+const UPDATE_BOOKING_STATUS = gql`
+  mutation ChangeBookingStatus($id: ID!, $status: String!) {
+    changeBookingStatus(id: $id, status: $status) {
+      id
+      reference
+      status
+      checkInDate
+      checkOutDate
+      totalAmount
+      guestCount
+      customer {
+        id
+        fullName
+      }
+      hostel {
+        id
         name
       }
     }
   }
 `;
 
-const CHANGE_BOOKING_STATUS = gql`
-  mutation ChangeBookingStatus($id: ID!, $status: String!) {
-    changeBookingStatus(id: $id, status: $status) {
-      id
-      status
-    }
+const DELETE_BOOKING = gql`
+  mutation DeleteBooking($id: ID!) {
+    deleteBooking(id: $id)
   }
 `;
 
-type Booking = {
-  id: string;
-  reference: string;
-  roomType: string;
-  checkInDate: string;
-  checkOutDate: string;
-  guests: number;
-  totalAmount: number;
-  amountPaid: number;
-  balanceDue: number;
-  status: string;
-  customer: { fullName?: string; email?: string };
-  hostel: { name?: string };
-};
-
-const nextActions: Record<string, { label: string; status: string }[]> = {
-  Draft: [{ label: 'Confirm', status: 'Confirmed' }],
-  Confirmed: [{ label: 'Check in', status: 'CheckedIn' }],
-  CheckedIn: [{ label: 'Check out', status: 'CheckedOut' }],
-  CheckedOut: [{ label: 'Complete', status: 'Completed' }]
-};
-
-const formatMoney = (amount: number) => new Intl.NumberFormat('en-IN', {
-  style: 'currency',
-  currency: 'INR',
-  maximumFractionDigits: 0
-}).format(amount || 0);
+const STATUSES = ['Draft', 'Confirmed', 'CheckedIn', 'CheckedOut', 'Completed', 'Abandoned'];
 
 export default function BookingsPage() {
-  const { data, loading, error, refetch } = useQuery<{ bookings: Booking[] }>(GET_BOOKINGS);
-  const [changeStatus] = useMutation(CHANGE_BOOKING_STATUS);
-  const [updatingId, setUpdatingId] = useState<string | null>(null);
-  const [actionError, setActionError] = useState<string | null>(null);
+  const { data, loading, error, refetch } = useQuery(GET_BOOKINGS);
+  const [deleteBooking] = useMutation(DELETE_BOOKING);
+  const [changeStatus] = useMutation(UPDATE_BOOKING_STATUS);
+  const [filterStatus, setFilterStatus] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
 
-  const handleStatusChange = async (id: string, status: string) => {
-    setUpdatingId(id);
-    setActionError(null);
+  const bookings = data?.bookings || [];
 
-    try {
-      await changeStatus({ variables: { id, status } });
-      await refetch();
-    } catch (mutationError) {
-      setActionError(mutationError instanceof Error ? mutationError.message : 'Could not update booking');
-    } finally {
-      setUpdatingId(null);
+  const filtered = bookings.filter((b: any) => {
+    const matchesStatus = filterStatus ? b.status === filterStatus : true;
+    const matchesSearch = searchTerm
+      ? b.reference?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        b.customer?.fullName?.toLowerCase().includes(searchTerm.toLowerCase())
+      : true;
+    return matchesStatus && matchesSearch;
+  });
+
+  const handleDelete = async (id: string) => {
+    if (window.confirm('Delete this booking?')) {
+      try {
+        await deleteBooking({ variables: { id } });
+        refetch();
+      } catch (err) {
+        console.error('Delete failed:', err);
+      }
     }
   };
 
-  if (loading) return <div className="page-state">Loading bookings…</div>;
-  if (error) return <div className="page-state page-error">Could not load bookings: {error.message}</div>;
+  const handleStatusChange = async (id: string, status: string) => {
+    try {
+      await changeStatus({ variables: { id, status } });
+      refetch();
+    } catch (err) {
+      console.error('Status change failed:', err);
+    }
+  };
 
-  const bookings = data?.bookings ?? [];
+  const formatDate = (dateStr: string) =>
+    dateStr ? new Date(dateStr).toLocaleDateString() : '-';
+
+  const totalRevenue = filtered.reduce(
+    (sum: number, b: any) => sum + (b.totalAmount || 0),
+    0
+  );
+
+  if (loading) return <div className="p-6">Loading bookings...</div>;
+  if (error)
+    return (
+      <div className="p-6 text-red-500">
+        Error: {(error as any).message}
+      </div>
+    );
 
   return (
-    <main className="admin-page">
-      <div className="page-heading">
-        <div>
-          <p className="eyebrow">Operations</p>
-          <h1>Bookings</h1>
-          <p>Confirm arrivals and move guests through check-in and check-out.</p>
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6">Bookings Management</h1>
+
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-4">
+          <input
+            type="text"
+            placeholder="Search reference or guest…"
+            className="border px-3 py-1 rounded"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <select
+            className="border px-3 py-1 rounded"
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+          >
+            <option value="">All Statuses</option>
+            {STATUSES.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
         </div>
-        <div className="booking-count">{bookings.length} bookings</div>
+        <button
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+          onClick={() => (window.location.href = '/bookings/new')}
+        >
+          + New Booking
+        </button>
       </div>
 
-      {actionError && <div className="page-alert" role="alert">{actionError}</div>}
+      <div className="mb-4 text-sm text-muted-foreground">
+        Total Revenue: <strong>₹{totalRevenue.toFixed(2)}</strong> | Showing{' '}
+        <strong>{filtered.length}</strong> bookings
+      </div>
 
-      {bookings.length === 0 ? (
-        <div className="empty-state">No bookings found.</div>
+      {filtered.length === 0 ? (
+        <p className="text-center py-10">No bookings found.</p>
       ) : (
-        <div className="table-shell">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Booking</th>
-                <th>Guest</th>
-                <th>Stay</th>
-                <th>Guests</th>
-                <th>Payment</th>
-                <th>Status</th>
-                <th>Action</th>
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="bg-gray-100 text-left">
+              <th className="p-3">Reference</th>
+              <th className="p-3">Guest</th>
+              <th className="p-3">Dates</th>
+              <th className="p-3">Amount</th>
+              <th className="p-3">Status</th>
+              <th className="p-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map((b: any) => (
+              <tr key={b.id} className="border-t">
+                <td className="p-3">{b.reference}</td>
+                <td className="p-3">
+                  {b.customer ? (
+                    <>
+                      <strong>{b.customer.fullName}</strong>
+                      <br />
+                      {b.customer.email}
+                    </>
+                  ) : (
+                    '-'
+                  )}
+                </td>
+                <td className="p-3">
+                  {formatDate(b.checkInDate)} – {formatDate(b.checkOutDate)}
+                </td>
+                <td className="p-3">₹{(b.totalAmount || 0).toFixed(2)}</td>
+                <td className="p-3">
+                  <select
+                    className="border px-2 py-1 rounded"
+                    value={b.status || ''}
+                    onChange={(e) =>
+                      handleStatusChange(b.id, e.target.value)
+                    }
+                  >
+                    {STATUSES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                  </select>
+                </td>
+                <td className="p-3 text-right space-x-2">
+                  <button
+                    className="text-indigo-600 hover:text-indigo-900"
+                    onClick={() => (window.location.href = `/bookings/edit/${b.id}`)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="text-red-600 hover:text-red-900"
+                    onClick={() => handleDelete(b.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {bookings.map((booking) => (
-                <tr key={booking.id}>
-                  <td>
-                    <strong>{booking.reference}</strong>
-                    <span>{booking.hostel?.name || 'Hostel unavailable'}</span>
-                  </td>
-                  <td>
-                    <strong>{booking.customer?.fullName || 'Guest unavailable'}</strong>
-                    <span>{booking.customer?.email}</span>
-                  </td>
-                  <td>
-                    <strong>{booking.roomType}</strong>
-                    <span>
-                      {new Date(booking.checkInDate).toLocaleDateString('en-IN')} – {new Date(booking.checkOutDate).toLocaleDateString('en-IN')}
-                    </span>
-                  </td>
-                  <td>{booking.guests}</td>
-                  <td>
-                    <strong>{formatMoney(booking.amountPaid)} paid</strong>
-                    <span>{formatMoney(booking.balanceDue)} due</span>
-                  </td>
-                  <td><span className={`status-pill status-${booking.status.toLowerCase()}`}>{booking.status}</span></td>
-                  <td>
-                    <div className="booking-actions">
-                      {(nextActions[booking.status] ?? []).map((action) => (
-                        <button
-                          key={action.status}
-                          type="button"
-                          className="primary-action"
-                          disabled={updatingId === booking.id}
-                          onClick={() => handleStatusChange(booking.id, action.status)}
-                        >
-                          {updatingId === booking.id ? 'Updating…' : action.label}
-                        </button>
-                      ))}
-                      {!['Completed', 'Abandoned'].includes(booking.status) && (
-                        <button
-                          type="button"
-                          className="secondary-action"
-                          disabled={updatingId === booking.id}
-                          onClick={() => handleStatusChange(booking.id, 'Abandoned')}
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       )}
-    </main>
+    </div>
   );
 }

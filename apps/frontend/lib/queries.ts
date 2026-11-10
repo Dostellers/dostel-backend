@@ -55,17 +55,43 @@ export const GET_HOSTELS = gql`
 `;
 
 export const GET_HOSTEL_DETAILS = gql`
-  query GetHostelDetail($id: ID!) {
-    hostel(id: $id) {
+   query GetHostelDetail($id: ID!) {
+     hostel(id: $id) {
+       id
+       name
+       description
+       rooms {
+         id
+         type
+         price
+       }
+       images { url }
+     }
+   }
+`;
+
+export const ROOM_AVAILABILITY = gql`
+  query RoomAvailability($hostelId: ID!, $checkIn: Date!, $checkOut: Date!) {
+    roomAvailability(hostelId: $hostelId, checkIn: $checkIn, checkOut: $checkOut) {
+      roomType
+      totalRooms
+      availableRooms
+      pricePerNight
+    }
+  }
+`;
+
+export const CREATE_BOOKING = gql`
+  mutation CreateBooking($input: BookingInput!) {
+    createBooking(input: $input) {
       id
-      name
-      description
-      rooms {
-        id
-        type
-        price
-      }
-      images { url }
+      reference
+      status
+      totalAmount
+      depositPercentage
+      depositRequired
+      amountPaid
+      balanceDue
     }
   }
 `;

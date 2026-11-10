@@ -31,9 +31,11 @@ check_graphql() {
 }
 
 check_http "Paperclip" "http://127.0.0.1:3100/" "2xx"
-check_http "Guest frontend" "http://127.0.0.1:3001/" "2xx"
-check_http "Admin PMS" "http://127.0.0.1:3002/" "2xx"
-check_graphql "GraphQL" "http://127.0.0.1:4000/graphql"
+check_http "Guest frontend" "http://127.0.0.1:5301/" "2xx"
+check_http "Admin PMS" "http://127.0.0.1:5302/" "2xx"
+check_graphql "GraphQL" "http://127.0.0.1:5400/graphql"
+check_http "Guest ingress" "http://dostel.65.109.113.80.nip.io/" "2xx"
+check_http "Admin ingress" "http://admin.dostel.65.109.113.80.nip.io/" "2xx"
 check_http "OmniRoute" "http://127.0.0.1:20128/v1/models" "2xx"
 
 printf "%b" "$REPORT"

@@ -13,9 +13,10 @@ const typeDefs = gql`
     referrer: User!
     referredBy: [User!]!
     customField: String
-`
+  }
 
   type Query {
+    _version: String!
     getReferral(code: String!): Referral
     searchReferrals(redeemed: Boolean, activeOnly: Boolean): [Referral!]!
   }
@@ -27,4 +28,4 @@ const typeDefs = gql`
   }
 `;
 
-module.exports = { typeDefs };;
+module.exports = { typeDefs };

@@ -1,5 +1,7 @@
 const Hostel = require('../models/hostel');
+const Room = require('../models/room');
 const reliability = require('../services/reliabilityService');
+const { resolveRoomAvailability } = require('./roomAvailability');
 
 const hostelResolvers = {
     Hostel: {
@@ -42,17 +44,29 @@ const hostelResolvers = {
                     .populate('faqs')
                     .populate('blogs')
                     .populate('rooms')
-                    .select('id slug name city tagline description createdAt updatedAt rooms');
+                    .populate('rooms.roomType')
+                    .select('id slug name city tagline description pricePerNight isActive createdAt updatedAt rooms');
 
                 return populated.map(hostel => {
                     const obj = hostel.toObject();
                     obj.id = obj._id.toString();
                     if (obj.rooms && obj.rooms.length > 0) {
-                        obj.rooms = obj.rooms.map(room => ({
-                            ...room.toObject(),
-                            id: room._id.toString(),
-                            roomType: room.roomType?.id?.toString() || room.roomType
-                        }));
+                        obj.rooms = obj.rooms.map(room => {
+                            const roomObj = room.toObject();
+                            const roomTypeObj = room.roomType?.toObject?.() || {};
+                            const roomType = {
+                                id: roomTypeObj._id?.toString(),
+                                name: roomTypeObj.name || null,
+                                category: roomTypeObj.category || null,
+                                capacity: roomTypeObj.capacity || 0,
+                                basePrice: roomTypeObj.basePrice || 0.0
+                            };
+                            delete roomObj._id;
+                            return {
+                                ...roomObj,
+                                roomType
+                            };
+                        });
                     }
                     return obj;
                 });
@@ -75,11 +89,22 @@ const hostelResolvers = {
             const obj = hostel.toObject();
             obj.id = obj._id.toString();
             if (obj.rooms && obj.rooms.length > 0) {
-                obj.rooms = obj.rooms.map(room => ({
-                    ...room.toObject(),
-                    id: room._id.toString(),
-                    roomType: room.roomType?.id?.toString() || room.roomType
-                }));
+                obj.rooms = obj.rooms.map(room => {
+                    const roomObj = room.toObject();
+                    const roomTypeObj = room.roomType?.toObject?.() || {};
+                    const roomType = {
+                        id: roomTypeObj._id?.toString(),
+                        name: roomTypeObj.name || null,
+                        category: roomTypeObj.category || null,
+                        capacity: roomTypeObj.capacity || 0,
+                        basePrice: roomTypeObj.basePrice || 0.0
+                    };
+                    delete roomObj._id;
+                    return {
+                        ...roomObj,
+                        roomType
+                    };
+                });
             }
             return obj;
         },
@@ -112,7 +137,8 @@ const hostelResolvers = {
                 obj.id = obj._id.toString();
                 return obj;
             });
-        }
+        },
+        roomAvailability: resolveRoomAvailability,
     },
     Mutation: {
         createHostel: async (_, { input }) => {

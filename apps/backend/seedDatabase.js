@@ -11,13 +11,14 @@ async function seedDatabase() {
   await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
   
   try {
-    // Clear existing data
-    await Booking.deleteMany({});
-    await Customer.deleteMany({});
-    await Room.deleteMany({});
-    await RoomType.deleteMany({});
-    await Hostel.deleteMany({});
-    await User.deleteMany({ email: "admin@dostel.test" });
+// Clear existing data
+     await Booking.deleteMany({});
+     await Customer.deleteMany({});
+     await Room.deleteMany({});
+     await RoomType.deleteMany({});
+     await Hostel.deleteMany({});
+-    await User.deleteMany({ email: "admin@dostel.test" });
++    await User.deleteMany({ username: "admin" });
     
     // Create User (required as Hostel owner)
     const user = new User({

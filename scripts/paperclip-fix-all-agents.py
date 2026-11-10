@@ -9,7 +9,7 @@ API = 'http://127.0.0.1:3100'
 AUTH_ORIGIN = 'https://office.witylogix.com'
 MUTATION_ORIGIN = 'http://127.0.0.1:3100'
 CID = '2741f8bc-95ff-40c7-81a4-c8f59131c250'
-CODING_MODEL = 'omniroute/coding-stable'
+CODING_MODEL = 'opencode-omniroute/auto/best-coding'
 GENERAL_MODEL = 'opencode-omniroute/auto/best-free'
 PLAIN_ENV = {
     'OMNIROUTE_API_KEY': 'local-dev',

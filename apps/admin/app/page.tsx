@@ -1,78 +1,63 @@
 'use client';
-import { useEffect, useState } from 'react';
 
-export default function Page() {
-  const [stats, setStats] = useState({
-    totalHostels: 0,
-    hostelsWithRooms: 0,
-    averageRoomsPerHostel: 0,
-    loading: true,
-  });
+import { useEffect, useState } from 'react';
+import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
+import Link from 'next/link';
+
+const client = new ApolloClient({
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://65.109.113.80:4000/graphql',
+  cache: new InMemoryCache(),
+});
+
+const GET_ALL_HOSTELS = gql`
+  query GetAllHostels {
+    hostels {
+      id
+      name
+      pricePerNight
+    }
+  }
+`;
+
+export default function AdminDashboard() {
+  const [hostels, setHostels] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const query = `
-      {
-        hostels {
-          id
-          name
-          rooms {
-            id
-            type
-            price
-          }
-        }
+    const fetchHostels = async () => {
+      try {
+        const { data } = await client.query({ query: GET_ALL_HOSTELS });
+        setHostels(data?.hostels || []);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
       }
-    `;
+    };
 
-    fetch('/api/graphql', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ query }),
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Network response was not ok');
-        return res.json();
-      })
-      .then((result) => {
-        const hostels = result.data?.hostels || [];
-        const totalHostels = hostels.length;
-        const hostelsWithRooms = hostels.filter(h => h.rooms?.length > 0).length;
-        const averageRoomsPerHostel = totalHostels > 0
-          ? hostels.reduce((sum, h) => sum + (h.rooms?.length ?? 0), 0) / totalHostels
-          : 0;
-
-        setStats({
-          ...stats,
-          totalHostels,
-          hostelsWithRooms,
-          averageRoomsPerHostel: Number(averageRoomsPerHostel.toFixed(1)),
-          loading: false,
-        });
-      })
-      .catch(err => {
-        console.error('Error fetching stats:', err);
-        setStats({ ...stats, loading: false });
-      });
+    fetchHostels();
   }, []);
 
-  if (stats.loading) return <div className="p-8 text-center">Loading...</div>;
+  if (loading) return <div className="p-6 text-gray-600">Loading hostels...</div>;
+  if (error) return <div className="p-6 rounded-lg bg-red-50 text-red-800">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <h2 className="text-lg font-semibold">Total Hostels</h2>
-          <p className="text-3xl font-bold">{stats.totalHostels}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <h2 className="text-lg font-semibold">With Rooms</h2>
-          <p className="text-3xl font-bold">{stats.hostelsWithRooms}</p>
-        </div>
-        <div className="bg-white rounded-lg shadow p-4 text-center">
-          <h2 className="text-lg font-semibold">Avg Rooms/Hostel</h2>
-          <p className="text-3xl font-semibold">{stats.averageRoomsPerHostel}</p>
-        </div>
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-3xl font-bold text-stone-900">Admin Dashboard</h1>
+      <div className="mt-4">
+        <h2 className="text-xl font-semibold">Hostels</h2>
+        <ul className="space-y-2">
+          {hostels.map((hostel) => (
+            <li key={hostel.id} className="border-b border-stone-200 pb-2">
+              <Link href={`/admin/hostels/${hostel.id}`}>
+                <span className="font-medium">{hostel.name}</span> - ₹{hostel.pricePerNight}/night
+              </Link>
+            </li>
+          ))}
+        </ul>
       </div>
+      {error && <div className="mt-4 text-red-600">{error}</div>}
     </div>
   );
 }

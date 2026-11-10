@@ -25,4 +25,12 @@ PY
 fi
 
 cd "$APP_DIR"
+
+if ss -ltnH "sport = :$PORT" | grep -q .; then
+  echo "Port $PORT is already in use" >&2
+  exit 1
+fi
+
+echo "$PORT" > "$APP_DIR/.next/dev/port"
+
 exec npx next dev -p "$PORT" -H 0.0.0.0

@@ -29,7 +29,7 @@ export default function NewHostel() {
     shortDesc: '',
     description: '',
     inauguratedOn: '',
-    basePrice: '',
+    pricePerNight: '',
     totalRooms: '',
     totalBeds: '',
     contact: { phone: '', email: '' },
@@ -133,7 +133,7 @@ export default function NewHostel() {
         <button type="submit" disabled={loading}>
           {loading ? 'Creating...' : 'Create Hostel'}
         </button>
-        <Link href="/admin/hostels">Cancel</Link>
+        <Link href="/hostels">Cancel</Link>
       </form>
     </div>
   );

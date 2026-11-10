@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useCallback, useEffect, useState, Suspense } from "react";
+import { createContext, useContext, useCallback, useEffect, useState, useMemo, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 interface RoomSelection {
@@ -24,6 +24,11 @@ export interface BookingState {
   serviceFee: number;
   total: number;
   nights: number;
+  workweekDiscount?: number;
+  originalSubtotal?: number;
+  paymentMethod?: string;
+  paymentIntentId?: string;
+  paymentStatus?: 'pending' | 'processing' | 'succeeded' | 'failed';
 }
 
 export interface BookingActions {
@@ -34,6 +39,10 @@ export interface BookingActions {
   updateGuestInfo: (info: BookingState["guestInfo"]) => void;
   confirmBooking: () => void;
   resetBooking: () => void;
+  setPaymentMethod: (method: string) => void;
+  setPaymentIntent: (intentId: string) => void;
+  updatePaymentStatus: (status: BookingState["paymentStatus"]) => void;
+  processPayment: (paymentData: { method: string; transactionId: string; chargeId: string }) => Promise<void>;
 }
 
 const initialState: BookingState = {
@@ -48,9 +57,18 @@ function computeNights(checkIn: string, checkOut: string): number {
   return Math.max(0, Math.round((new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000));
 }
 
-function computeFinancials(rooms: RoomSelection[], nights: number) {
+function computeFinancials(rooms: RoomSelection[], nights: number, isWorkweek = false) {
   const subtotal = rooms.reduce((sum, r) => sum + r.total, 0);
-  return { subtotal, taxes: Math.round(subtotal * 0.12), serviceFee: subtotal > 0 ? 49 : 0, total: subtotal + Math.round(subtotal * 0.12) + (subtotal > 0 ? 49 : 0) };
+  const workweekDiscount = isWorkweek ? Math.round(subtotal * 0.2) : 0;
+  const discountedSubtotal = subtotal - workweekDiscount;
+  return { 
+    subtotal: discountedSubtotal, 
+    taxes: Math.round(discountedSubtotal * 0.12), 
+    serviceFee: discountedSubtotal > 0 ? 49 : 0, 
+    total: discountedSubtotal + Math.round(discountedSubtotal * 0.12) + (discountedSubtotal > 0 ? 49 : 0),
+    workweekDiscount,
+    originalSubtotal: subtotal
+  };
 }
 
 const STORAGE_KEY = "dostel-booking";
@@ -112,32 +130,57 @@ export function BookingProvider({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer);
   }, [state]);
 
-  const actions: BookingActions = {
-    updateSearch: useCallback((params) => setState((prev) => {
-      const next = { ...prev, ...params };
-      const n = computeNights(next.checkIn, next.checkOut);
-      return { ...next, nights: n, ...computeFinancials(next.selectedRooms, n) };
-    }), []),
-    setHostel: useCallback((hostel) => setState((prev) => ({ ...prev, hostel })), []),
-    selectRoom: useCallback((room) => setState((prev) => {
-      const exists = prev.selectedRooms.find((r) => r.roomId === room.roomId);
-      const selectedRooms = exists ? prev.selectedRooms.map((r) => r.roomId === room.roomId ? room : r) : [...prev.selectedRooms, room];
-      return { ...prev, selectedRooms, ...computeFinancials(selectedRooms, prev.nights) };
-    }), []),
-    removeRoom: useCallback((roomId) => setState((prev) => {
-      const selectedRooms = prev.selectedRooms.filter((r) => r.roomId !== roomId);
-      return { ...prev, selectedRooms, ...computeFinancials(selectedRooms, prev.nights) };
-    }), []),
-    updateGuestInfo: useCallback((info) => setState((prev) => ({ ...prev, guestInfo: info })), []),
-    confirmBooking: useCallback(() => {
-      setState((prev) => {
-        localStorage.setItem(CONFIRMATION_KEY, JSON.stringify(prev));
-        localStorage.removeItem(STORAGE_KEY);
-        return initialState;
-      });
-    }, []),
-    resetBooking: useCallback(() => { localStorage.removeItem(STORAGE_KEY); setState(initialState); }, []),
-  };
+  const updateSearch = useCallback((params) => setState((prev) => {
+    const next = { ...prev, ...params };
+    const n = computeNights(next.checkIn, next.checkOut);
+    const isWorkweek = Boolean(next.checkIn && next.checkOut && n >= 5);
+    return { ...next, nights: n, ...computeFinancials(next.selectedRooms, n, isWorkweek) };
+  }), []);
+  const setHostel = useCallback((hostel) => setState((prev) => ({ ...prev, hostel })), []);
+  const selectRoom = useCallback((room) => setState((prev) => {
+    const exists = prev.selectedRooms.find((r) => r.roomId === room.roomId);
+    const selectedRooms = exists ? prev.selectedRooms.map((r) => r.roomId === room.roomId ? room : r) : [...prev.selectedRooms, room];
+    const n = computeNights(prev.checkIn, prev.checkOut);
+    const isWorkweek = Boolean(prev.checkIn && prev.checkOut && n >= 5);
+    return { ...prev, selectedRooms, ...computeFinancials(selectedRooms, prev.nights, isWorkweek) };
+  }), []);
+  const removeRoom = useCallback((roomId) => setState((prev) => {
+    const selectedRooms = prev.selectedRooms.filter((r) => r.roomId !== roomId);
+    const n = computeNights(prev.checkIn, prev.checkOut);
+    const isWorkweek = Boolean(prev.checkIn && prev.checkOut && n >= 5);
+    return { ...prev, selectedRooms, ...computeFinancials(selectedRooms, prev.nights, isWorkweek) };
+  }), []);
+  const updateGuestInfo = useCallback((info) => setState((prev) => ({ ...prev, guestInfo: info })), []);
+  const confirmBooking = useCallback(() => {
+    setState((prev) => {
+      localStorage.setItem(CONFIRMATION_KEY, JSON.stringify(prev));
+      localStorage.removeItem(STORAGE_KEY);
+      return initialState;
+    });
+  }, []);
+  const resetBooking = useCallback(() => { localStorage.removeItem(STORAGE_KEY); setState(initialState); }, []);
+  const setPaymentMethod = useCallback((method) => setState((prev) => ({ ...prev, paymentMethod: method })), []);
+  const setPaymentIntent = useCallback((intentId) => setState((prev) => ({ ...prev, paymentIntentId: intentId })), []);
+  const updatePaymentStatus = useCallback((status) => setState((prev) => ({ ...prev, paymentStatus: status })), []);
+  const processPayment = useCallback(async (paymentData) => {
+    if (typeof window === "undefined") return;
+
+    const paymentState = {
+      ...state,
+      paymentMethod: paymentData.method,
+      transactionId: paymentData.transactionId,
+      chargeId: paymentData.chargeId,
+      paymentStatus: 'processing' as BookingState['paymentStatus']
+    };
+
+    localStorage.setItem(CONFIRMATION_KEY, JSON.stringify(paymentState));
+    localStorage.removeItem(STORAGE_KEY);
+    setState(prev=>({...prev,paymentStatus:'succeeded'}));
+  }, [state]);
+  const actions: BookingActions = useMemo(() => ({
+    updateSearch, setHostel, selectRoom, removeRoom, updateGuestInfo, confirmBooking,
+    resetBooking, setPaymentMethod, setPaymentIntent, updatePaymentStatus, processPayment
+  }), [updateSearch, setHostel, selectRoom, removeRoom, updateGuestInfo, confirmBooking, resetBooking, setPaymentMethod, setPaymentIntent, updatePaymentStatus, processPayment]);
 
   return (
     <BookingContext.Provider value={{ state, actions }}>

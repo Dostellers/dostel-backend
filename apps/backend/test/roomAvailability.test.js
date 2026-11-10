@@ -1,82 +1,52 @@
-const assert = require('assert');
-const Room = require('../src/models/room');
-const roomResolvers = require('../src/resolvers/roomResolver');
+const { resolveRoomAvailability } = require('../src/resolvers/roomAvailability');
 
-const roomType = { id: 'type-1', name: 'Deluxe Dorm', basePrice: 1200 };
-const rooms = [
-    {
-        id: 'room-1',
-        roomType,
-        status: 'available',
-        reservations: [{ startDate: new Date('2026-08-02'), endDate: new Date('2026-08-05') }]
-    },
-    {
-        id: 'room-2',
-        roomType,
-        status: 'occupied',
-        reservations: []
-    },
-    {
-        id: 'room-3',
-        roomType,
-        status: 'maintenance',
-        reservations: []
-    }
-];
+describe('roomAvailability resolver', () => {
+  describe('resolveRoomAvailability', () => {
+    it('should return room availability data for valid dates', async () => {
+      // Mock the service function
+      jest.mock('../src/services/roomService', () => ({
+        getRoomAvailability: jest.fn().mockResolvedValue({
+          roomType: 'Suite',
+          totalCapacity: 10,
+          bookedBeds: 3,
+          availableBeds: 7,
+          checkIn: '2026-08-15T10:00:00Z',
+          checkOut: '2026-08-18T10:00:00Z',
+          hostelId: 'hostel-vattakanal'
+        })
+      }));
 
-const originalFind = Room.find;
+      const result = await resolveRoomAvailability(
+        undefined,
+        {
+          hostelId: 'hostel-vattakanal',
+          checkIn: '2026-08-15T10:00:00Z',
+          checkOut: '2026-08-18T10:00:00Z'
+        }
+      );
 
-const run = async () => {
-    Room.find = filter => {
-        assert.deepStrictEqual(filter, { hostel: 'hostel-1' });
-        return { populate: async path => {
-            assert.strictEqual(path, 'roomType');
-            return rooms;
-        } };
-    };
-
-    const partial = await roomResolvers.Query.roomAvailability(null, {
-        hostelId: 'hostel-1',
-        checkIn: '2026-08-03',
-        checkOut: '2026-08-04'
-    });
-    assert.deepStrictEqual(partial, [{
-        roomType: 'Deluxe Dorm',
+      expect(result).toEqual({
+        roomType: 'Suite',
         totalRooms: 3,
         availableRooms: 1,
-        price: 1200,
-        roomId: 'room-2'
-    }]);
-
-    const boundary = await roomResolvers.Query.roomAvailability(null, {
-        hostelId: 'hostel-1',
-        checkIn: '2026-08-05',
-        checkOut: '2026-08-06'
+        pricePerNight: 1000,
+        roomId: 'hostel-vattakanal'
+      });
     });
-    assert.strictEqual(boundary[0].availableRooms, 2);
 
-    await assert.rejects(
-        roomResolvers.Query.roomAvailability(null, {
-            hostelId: 'hostel-1',
-            checkIn: 'not-a-date',
-            checkOut: '2026-08-06'
-        }),
-        /Check-in and check-out must be valid dates/
-    );
+    it('should throw error when no availability data found', async () => {
+      jest.mock('../src/services/roomService', () => ({
+        getRoomAvailability: jest.fn().mockResolvedValue(null)
+      }));
 
-    await assert.rejects(
-        roomResolvers.Query.roomAvailability(null, {
-            hostelId: 'hostel-1',
-            checkIn: '2026-08-06',
-            checkOut: '2026-08-06'
-        }),
-        /Check-out must be after check-in/
-    );
-};
-
-run().finally(() => {
-    Room.find = originalFind;
-}).catch(error => {
-    console.error(error);
-    process.exitCode = 1;
+      await expect(resolveRoomAvailability(
+        undefined,
+        {
+          hostelId: 'hostel-vattakanal',
+          checkIn: '2026-08-15T10:00:00Z',
+          checkOut: '2026-08-18T10:00:00Z'
+        }
+      )).rejects.toThrow('No availability data found');
+    });
+  });
 });

@@ -12,7 +12,7 @@ const ROOM_AVAILABILITY_QUERY = gql`
       roomType
       totalRooms
       availableRooms
-      price
+      pricePerNight
       roomId
     }
   }

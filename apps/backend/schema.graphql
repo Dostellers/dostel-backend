@@ -1,0 +1,42 @@
+type Hostel {
+  _id: ID!
+  name: String!
+  location: String!
+  rooms: [Room]
+}
+
+type Room {
+  _id: ID!
+  hostelId: ID!
+  name: String!
+  capacity: Int!
+  price: Float!
+}
+
+type Booking {
+  _id: ID!
+  hostelId: ID!
+  roomId: ID!
+  customer: Customer!
+  startDate: Date!
+  endDate: Date!
+  status: BookingStatus!
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CHECKED_IN
+  CANCELLED
+}
+
+type Customer {
+  _id: ID!
+  name: String!
+  email: String!
+  phone: String
+}
+
+type Mutation {
+  cancelBooking(roomId: ID!, bookingId: ID!): Booking!
+}

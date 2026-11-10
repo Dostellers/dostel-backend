@@ -1,5 +1,5 @@
 import './globals.css';
-import AuthGate from '@/components/AuthGate';
+import AuthGate from '../components/AuthGate.tsx';
 
 export const metadata = {
   title: 'Dostel Admin Panel',

@@ -1,0 +1,13 @@
+mutation processBookingPayment($bookingId: ID!, $paymentInput: PaymentInput!) {
+  processBookingPayment(id: $bookingId, input: $paymentInput) {
+    id
+    status
+    payment {
+      status
+      method
+      transactionId
+      amount
+      chargeId
+    }
+  }
+}

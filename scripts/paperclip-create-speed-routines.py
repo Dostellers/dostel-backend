@@ -111,6 +111,18 @@ NEW_ROUTINES = [
             'Write deep-dive in .paperclip/research/competitive/. Summarize USPs for CMO Friday board.'
         ),
     },
+    {
+        'title': 'Close Open Tickets Sweep',
+        'assignee': 'PM',
+        'priority': 'high',
+        'cron': '0 16 * * 1-5',
+        'label': 'Weekdays 16:00 IST',
+        'description': (
+            'Burn down the existing backlog. Do NOT create new issues. '
+            'Close done work, cancel duplicates/stale ops noise, finish closable in_progress items. '
+            'Net open ticket count must go down every run. Comment a tally (done/cancelled/remaining).'
+        ),
+    },
 ]
 
 

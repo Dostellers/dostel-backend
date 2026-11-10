@@ -154,6 +154,29 @@ Draft copy in `.paperclip/marketing/` or file frontend copy issues. One shippabl
     'Friday Status / Board Update': """## Enterprise board update (CEO)
 
 Weekly scorecard: ships, incidents, research highlights, next-week bets.""",
+
+    'Close Open Tickets Sweep': """## Enterprise backlog hygiene — Close Open Tickets Sweep
+
+**Role:** PM · **Accountable:** CTO · **Cadence:** Weekdays 16:00 IST
+
+### Hard rule
+This run exists to **close tickets**. Do **not** create new issues. Do **not** start new workstreams. If you cannot close something, leave it and move on.
+
+### Why this exists
+Routines and agents keep minting tickets (`todo`/`blocked`/`backlog`) without finishing them. Open count must fall every run.
+
+### Execution
+1. List company issues in `todo`, `in_progress`, `blocked`, `backlog`, `in_review`.
+2. Close as `done` when the work is already shipped, verified, or superseded by a later comment/commit.
+3. Close as `cancelled` when the ticket is a duplicate, stale platform-health/ops noise, abandoned, or no longer relevant. Link the surviving ticket when merging dupes.
+4. Finish any `in_progress` item you can complete in this heartbeat, then mark `done`.
+5. Skip `blocked` tickets that already have your last comment and no new context (do not pile on another blocked comment).
+6. Target **at least 8 closures** (done + cancelled) per run. Prefer 10–15.
+7. Comment a tally: `done N · cancelled M · remaining open X`. Name the identifiers you closed.
+
+### Definition of done
+- Net open ticket count is lower than when you started.
+- Zero new issues created by this run.""",
 }
 
 

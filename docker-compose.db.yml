@@ -1,3 +1,6 @@
+# Shared Mongo for GraphQL API + Better Auth admin RBAC.
+# Admin uses MONGO_URI=mongodb://127.0.0.1:27017/dostel
+# Seed: cd apps/admin && npm run auth:seed
 services:
   mongo:
     image: mongo:6

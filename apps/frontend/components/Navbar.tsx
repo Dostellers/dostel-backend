@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/BrandLogo";
 
 /* The listing reads ?category= and ?filter= — these hrefs are a contract with
    app/hostels/page.tsx, not decoration. The old menu sent ?cat= (read by
@@ -61,6 +62,9 @@ export default function Navbar() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const pathname = usePathname() ?? "/";
 
+  // Auth pages render full-bleed AuthExperience — hide marketing chrome.
+  if (pathname.startsWith("/auth")) return null;
+
   const linkBase =
     "rounded-sm px-3 py-2 text-sm font-medium text-ink-700 transition-colors duration-150 hover:bg-ink-100 hover:text-ink-1000";
 
@@ -69,20 +73,7 @@ export default function Navbar() {
       <header className="sticky top-0 z-50 border-b border-ink-200 bg-paper/90 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="flex shrink-0 items-center gap-2.5">
-              <span className="flex h-9 w-9 items-center justify-center rounded-sm bg-coral-600 text-lg font-extrabold text-white">
-                D
-              </span>
-              <span className="hidden leading-none sm:block">
-                <span className="block text-xl font-extrabold tracking-[-0.03em] text-ink-1000">dostel</span>
-                <span
-                  className="block text-[0.6875rem] text-ink-500"
-                  style={{ fontFamily: "var(--font-deva)" }}
-                >
-                  दोस्त + hostel
-                </span>
-              </span>
-            </Link>
+            <BrandLogo size={40} showWordmark wordmark="dostellers" />
 
             <nav className="hidden items-center gap-1 lg:flex">
               {navItems.map((item) =>
@@ -105,7 +96,7 @@ export default function Navbar() {
                           <Link
                             key={sub.href}
                             href={sub.href}
-                            className="block px-4 py-2 text-sm text-ink-700 transition-colors duration-150 hover:bg-coral-50 hover:text-coral-800"
+                            className="block px-4 py-2 text-sm text-ink-700 transition-colors duration-150 hover:bg-ink-50 hover:text-ink-1000"
                           >
                             {sub.label}
                           </Link>
@@ -118,7 +109,7 @@ export default function Navbar() {
                     key={item.label}
                     href={item.href!}
                     aria-current={pathname === item.href ? "page" : undefined}
-                    className={`${linkBase} ${pathname === item.href ? "bg-coral-50 text-coral-800" : ""}`}
+                    className={`${linkBase} ${pathname === item.href ? "bg-ink-100 text-ink-1000" : ""}`}
                   >
                     {item.label}
                   </Link>
@@ -132,13 +123,13 @@ export default function Navbar() {
                 <Link href="/dashboard" className={linkBase}>Dashboard</Link>
                 <Link
                   href="/auth/login"
-                  className="rounded-sm px-3 py-2 text-sm font-semibold text-coral-700 transition-colors duration-150 hover:bg-coral-50"
+                  className="rounded-sm px-3 py-2 text-sm font-semibold text-ink-800 transition-colors duration-150 hover:bg-ink-100"
                 >
                   Log in
                 </Link>
                 <Link
                   href="/auth/signup"
-                  className="rounded-sm bg-coral-600 px-4 py-2 text-sm font-semibold text-white transition-all duration-150 hover:bg-coral-700 active:scale-[0.97]"
+                  className="btn-press rounded-sm bg-ink-1000 px-4 py-2 text-sm font-semibold text-white transition-colors duration-150 hover:bg-coral-700"
                 >
                   Sign up
                 </Link>
@@ -205,7 +196,7 @@ export default function Navbar() {
                 <Link href="/dashboard" onClick={() => setMenuOpen(false)} className="block min-h-11 rounded-sm px-4 py-3 text-sm font-medium text-ink-700 hover:bg-ink-100">Dashboard</Link>
                 <div className="flex gap-3 pt-2">
                   <Link href="/auth/login" onClick={() => setMenuOpen(false)} className="flex-1 rounded-sm border border-ink-200 px-4 py-3 text-center text-sm font-semibold text-ink-700 hover:bg-ink-100">Log in</Link>
-                  <Link href="/auth/signup" onClick={() => setMenuOpen(false)} className="flex-1 rounded-sm bg-coral-600 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-coral-700">Sign up</Link>
+                  <Link href="/auth/signup" onClick={() => setMenuOpen(false)} className="btn-press flex-1 rounded-sm bg-ink-1000 px-4 py-3 text-center text-sm font-semibold text-white hover:bg-coral-700">Sign up</Link>
                 </div>
               </div>
             </div>
@@ -223,7 +214,7 @@ export default function Navbar() {
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={`flex flex-col items-center justify-center gap-1 transition-colors duration-150 ${
-                  active ? "text-coral-700" : "text-ink-500 hover:text-coral-700"
+                  active ? "text-ink-1000" : "text-ink-500 hover:text-ink-800"
                 }`}
               >
                 <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">

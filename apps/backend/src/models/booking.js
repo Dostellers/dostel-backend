@@ -19,7 +19,7 @@ const bookingSchema = new mongoose.Schema({
   },
 
   sequenceStatus: { type: String, enum: ['Draft', 'Confirmed', 'CheckedIn', 'CheckedOut', 'Completed', 'Abandoned'], default: 'Draft' },
-  depositPercentage: { type: Number, default: 20 },
+  depositPercentage: { type: Number, default: 10 },
   depositRequired: { type: Number, default: 0 },
   amountPaid: { type: Number, default: 0 },
   balanceDue: { type: Number, default: 0 },

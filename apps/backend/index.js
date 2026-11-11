@@ -46,7 +46,10 @@ const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers,
   context: ({ req }) => {
-    return { user: req.user };
+    return {
+      user: req.user,
+      editKey: req.headers['x-dostel-edit-key'] || null,
+    };
   },
   cache: 'bounded',
   persistedQueries: false,

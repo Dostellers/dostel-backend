@@ -1,13 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ApolloClient, InMemoryCache, gql, useQuery, useMutation } from '@apollo/client';
-import Link from 'next/link';
+/* Callers: Next.js /customers; Sidebar Guests nav. Existing file had orphan
+   ApolloClient; UI now uses PageHeader/Button/Input — add those imports.
+   Schema: customers CRUD via GraphQLProvider.
+   User: "review and build admin dashboard end to end in dostellers colors" */
 
-const client = new ApolloClient({
-  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || 'http://65.109.113.80:4000/graphql',
-  cache: new InMemoryCache(),
-});
+import { useState, useEffect } from 'react';
+import { gql } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client/react';
+import Link from 'next/link';
+import { PageHeader } from '@/components/PageHeader';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 const GET_CUSTOMERS = gql`
   query GetCustomers {
@@ -133,66 +137,78 @@ export default function CustomersPage() {
     (c.phone?.toLowerCase() || '').includes(searchTerm.toLowerCase())
   );
 
-  if (loading) return <div className="p-6 text-gray-600">Loading customers...</div>;
+  if (loading) {
+    return (
+      <main className="min-h-dvh px-5 py-7">
+        <div className="mx-auto max-w-6xl space-y-3" aria-busy>
+          <div className="skeleton h-10 w-48" />
+          <div className="skeleton h-40 w-full" />
+        </div>
+      </main>
+    )
+  }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold text-stone-900">Customers</h1>
-        <Link href="/admin" className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">
-          ← Back to Dashboard
-        </Link>
-      </div>
+    <main className="min-h-dvh px-5 py-7 sm:px-8 lg:px-10">
+    <div className="max-w-6xl mx-auto">
+      <PageHeader
+        title="Guests"
+        description="Customer profiles, loyalty, and booking history."
+        actions={
+          <Link href="/dashboard">
+            <Button type="button" variant="outline">Dashboard</Button>
+          </Link>
+        }
+      />
 
-      {/* Search Bar */}
       <div className="mb-4">
-        <input
-          type="text"
-          placeholder="Search customers by name, email, or phone..."
+        <label htmlFor="guest-search" className="sr-only">Search guests</label>
+        <Input
+          id="guest-search"
+          type="search"
+          placeholder="Search by name, email, or phone…"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full border rounded px-4 py-2 text-sm"
         />
       </div>
 
-      {/* Status Messages */}
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-200 text-red-800 rounded">
+        <div className="mb-4 rounded-lg border border-error/30 bg-coral-50 p-3 text-sm text-error" role="alert">
           {error}
         </div>
       )}
 
-      {/* Add/Edit Form */}
-      <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 mb-6">
-        <h2 className="text-lg font-semibold mb-4">
-          {editingId ? 'Edit Customer' : 'Add New Customer'}
+      <form onSubmit={handleSubmit} className="mb-6 rounded-xl border border-ink-200 bg-white p-6 shadow-sm">
+        <h2 className="mb-4 font-[family-name:var(--font-display)] text-lg font-bold text-ink-1000">
+          {editingId ? 'Edit guest' : 'Add guest'}
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-ink-700" htmlFor="guest-name">Full name</label>
+            <Input
+              id="guest-name"
               type="text"
               name="fullName"
               value={form.fullName}
               onChange={handleChange}
               required
-              className="w-full border rounded px-3 py-2"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-ink-700" htmlFor="guest-email">Email</label>
+            <Input
+              id="guest-email"
               type="email"
               name="email"
               value={form.email}
               onChange={handleChange}
               required
-              className="w-full border rounded px-3 py-2"
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-            <input
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-ink-700" htmlFor="guest-phone">Phone</label>
+            <Input
+              id="guest-phone"
               type="tel"
               name="phone"
               value={form.phone}
@@ -202,77 +218,68 @@ export default function CustomersPage() {
           </div>
         </div>
         <div className="mt-4 flex gap-3">
-          <button
-            type="submit"
-            disabled={creating || updating}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-          >
-            {creating || updating ? 'Saving...' : editingId ? 'Update Customer' : 'Add Customer'}
-          </button>
+          <Button type="submit" disabled={creating || updating}>
+            {creating || updating ? 'Saving…' : editingId ? 'Update guest' : 'Add guest'}
+          </Button>
           {editingId && (
-            <button
+            <Button
               type="button"
+              variant="secondary"
               onClick={() => {
                 setEditingId(null);
                 setForm({ fullName: '', email: '', phone: '' });
               }}
-              className="px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
             >
-              Cancel Edit
-            </button>
+              Cancel
+            </Button>
           )}
         </div>
       </form>
 
-      {/* Customers Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Phone</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tier</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Loyalty Points</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Bookings</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+      <div className="overflow-x-auto rounded-xl border border-ink-200 bg-white">
+        <table className="min-w-full text-left text-sm">
+          <thead>
+            <tr className="border-b border-ink-200 bg-ink-50 text-[0.7rem] uppercase tracking-[0.12em] text-ink-500">
+              <th className="px-4 py-3 font-semibold">Name</th>
+              <th className="px-4 py-3 font-semibold">Email</th>
+              <th className="px-4 py-3 font-semibold">Phone</th>
+              <th className="px-4 py-3 font-semibold">Tier</th>
+              <th className="px-4 py-3 font-semibold">Points</th>
+              <th className="px-4 py-3 font-semibold">Bookings</th>
+              <th className="px-4 py-3 text-right font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-200">
+          <tbody>
             {filteredCustomers.length === 0 ? (
               <tr>
-                <td colSpan={8} className="p-6 text-center text-gray-500">
-                  No customers found
+                <td colSpan={7} className="p-8 text-center text-ink-500">
+                  No guests found
                 </td>
               </tr>
             ) : (
               filteredCustomers.map((customer: any) => (
-                <tr key={customer.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.id}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">{customer.fullName}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.email}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.phone || 'N/A'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.tier || 'Explorer'}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{customer.loyaltyPoints || 0}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {customer.bookings?.length || 0}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleEdit(customer)}
-                        className="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                      >
+                <tr key={customer.id} className="border-t border-ink-100 hover:bg-ink-50/80">
+                  <td className="px-4 py-3 font-medium text-ink-900">{customer.fullName}</td>
+                  <td className="px-4 py-3 text-ink-600">{customer.email}</td>
+                  <td className="px-4 py-3 font-data text-ink-600">{customer.phone || '—'}</td>
+                  <td className="px-4 py-3"><span className="stamp text-coral-700 border-coral-300">{customer.tier || 'Explorer'}</span></td>
+                  <td className="px-4 py-3 font-data text-ink-700">{customer.loyaltyPoints || 0}</td>
+                  <td className="px-4 py-3 font-data text-ink-700">{customer.bookings?.length || 0}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="inline-flex gap-2">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => handleEdit(customer)}>
                         Edit
-                      </button>
-                      <button
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-error"
                         onClick={() => handleDelete(customer.id)}
                         disabled={deleting}
-                        className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50"
                       >
                         Delete
-                      </button>
+                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -282,5 +289,6 @@ export default function CustomersPage() {
         </table>
       </div>
     </div>
+    </main>
   );
 }

@@ -156,7 +156,8 @@ export default function SplitFlapBoard({
           {rows.map((row, r) => (
             <div
               key={row.what}
-              className="grid grid-cols-[9.25rem_11.75rem_4.25rem_1fr] items-center gap-3 border-t border-white/10 py-2.5"
+              tabIndex={0}
+              className={`board-row grid grid-cols-[9.25rem_11.75rem_4.25rem_1fr] items-center gap-3 border-t border-white/10 py-2.5 ${row.live ? 'is-live' : ''}`}
             >
               <Word text={row.what} width={11} offset={r * 3} run={run} />
               <Word text={row.where} width={14} offset={r * 3 + 5} run={run} />

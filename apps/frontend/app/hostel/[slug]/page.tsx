@@ -115,12 +115,13 @@ export default function HostelDetailPage() {
       )}
 
       <div className="mt-10">
-        <button 
+        <button
+          type="button"
           onClick={() => setShowWorkweekModal(true)}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 transition-colors inline-block"
+          className="inline-block rounded-sm bg-coral-600 px-4 py-2 text-white transition-colors hover:bg-coral-700"
         >
           Book Now
-        </a>
+        </button>
       </div>
       
       <WorkweekModal

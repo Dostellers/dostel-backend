@@ -6,16 +6,20 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "auth:seed": "node scripts/seed-auth.mjs",
+    "auth:e2e": "node scripts/e2e-rbac.mjs"
   },
   "dependencies": {
     "@apollo/client": "^4.2.9",
+    "@better-auth/mongo-adapter": "^1.4.0",
     "autoprefixer": "^10.5.4",
+    "better-auth": "^1.4.0",
     "graphql-request": "^7.4.0",
+    "mongodb": "^6.16.0",
     "next": "^16.3.1",
     "postcss": "^8.4.31",
     "react": "19.1.1",
-    "type": "module", 
     "react-dom": "19.1.1",
     "rxjs": "^7.8.1",
     "tailwindcss": "^4.3.3"

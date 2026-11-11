@@ -43,6 +43,10 @@ export const metadata: Metadata = {
   title: "Dostel — arrive a stranger",
   description:
     "दोस्त + hostel. Hostel stays in the Indian hills where the staff remember your name, the Wi-Fi speed is measured not claimed, and you can see who's in the room before you book.",
+  icons: {
+    icon: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({

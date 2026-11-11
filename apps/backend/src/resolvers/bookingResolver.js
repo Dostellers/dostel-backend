@@ -272,12 +272,55 @@ const processBookingPayment = async (_, { id, input }) => {
     }
 };
 
+const dashboardStats = async (_, { hostelId, dayStart, nextDayStart }) => {
+    const start = new Date(dayStart);
+    const end = new Date(nextDayStart);
+    if (!(start < end)) {
+        throw new Error('dayStart/nextDayStart must be valid ascending boundaries');
+    }
+
+    const Room = mongoose.model('Room');
+    const hostelFilter = hostelId ? { hostel: hostelId } : {};
+    const bookingHostel = hostelId ? { hostel: hostelId } : {};
+
+    const [roomsAvailable, roomsOccupied, checkInsToday, checkOutsToday, openBookings] = await Promise.all([
+        Room.countDocuments({ ...hostelFilter, status: 'available' }),
+        Room.countDocuments({ ...hostelFilter, status: 'occupied' }),
+        Booking.countDocuments({
+            ...bookingHostel,
+            sequenceStatus: { $nin: ['Draft', 'Abandoned'] },
+            checkInDate: { $gte: start, $lt: end },
+        }),
+        Booking.countDocuments({
+            ...bookingHostel,
+            sequenceStatus: { $nin: ['Draft', 'Abandoned'] },
+            checkOutDate: { $gte: start, $lt: end },
+        }),
+        Booking.countDocuments({
+            ...bookingHostel,
+            sequenceStatus: { $in: ['Draft', 'Confirmed', 'CheckedIn'] },
+        }),
+    ]);
+
+    const denom = roomsAvailable + roomsOccupied;
+    const occupancyPercent = denom === 0 ? 0 : Math.round((roomsOccupied / denom) * 100);
+
+    return {
+        occupancyPercent,
+        roomsAvailable,
+        checkInsToday,
+        checkOutsToday,
+        openBookings,
+    };
+};
+
 const resolvers = {
     Query: {
         booking: getBookingById,
         bookings: () => Booking.find({}).populate('customer').populate('hostel').sort({ createdAt: -1 }),
         bookingsByCustomer: getBookingsByCustomer,
-        adminBookings
+        adminBookings,
+        dashboardStats,
     },
     Booking: {
         status: (booking) => booking.sequenceStatus || 'Draft'

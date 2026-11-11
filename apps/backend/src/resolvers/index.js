@@ -21,6 +21,7 @@ const departmentResolver = require('./departmentResolver.js');
 const healthResolver = require('./healthResolver.js');
 const membershipResolver = require('./membershipResolver.js');
 const crossingResolver = require('./crossingResolver.js');
+const landingResolver = require('./landingResolver.js');
 
 module.exports = {
     Query: {
@@ -48,7 +49,8 @@ module.exports = {
         ...departmentResolver.Query,
         ...healthResolver.Query,
         ...membershipResolver.Query,
-        ...crossingResolver.Query
+        ...crossingResolver.Query,
+        ...landingResolver.Query
     },
     Booking: {
         ...bookingResolver.Booking
@@ -75,6 +77,7 @@ module.exports = {
         ...roleResolver.Mutation,
         ...departmentResolver.Mutation,
         ...membershipResolver.Mutation,
-        ...crossingResolver.Mutation
+        ...crossingResolver.Mutation,
+        ...landingResolver.Mutation
     }
 };

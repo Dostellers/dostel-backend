@@ -1,7 +1,11 @@
-'use client';
-import { gql, useQuery, useMutation } from '@apollo/client';
-import Link from 'next/link';
-import { useState, useEffect } from 'react';
+/* Callers: Next App Router /token-receipts; Sidebar nav. Existing page —
+   fixing Apollo Client v4 hook imports so admin compile/auth stop 500ing.
+   Schema: tokenReceiptsAll / receiptLogs GraphQL. User: "keep building in /loop and run end to end" */
+'use client'
+import { gql } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client/react'
+import Link from 'next/link'
+import { useState, useEffect } from 'react'
 
 const GET_TOKEN_RECEIPTS = gql`
   query GetTokenReceipts($page: Int, $limit: Int) {

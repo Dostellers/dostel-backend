@@ -1,41 +1,60 @@
-'use client';
+/* Callers: apps/admin/app/layout.tsx wraps all routes with AuthGate.
+   Effect: Better Auth useSession gate + shell; login/accept-invite bypass.
+   Replaces admin-auth cookie / localStorage token soft-check.
+   User: "go back to rbac work" */
 
-import { useEffect, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import Sidebar from './Sidebar';
+'use client'
 
-export default function AuthGate({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const [authenticated, setAuthenticated] = useState(false);
-  const isLogin = pathname === '/login';
+import { useEffect } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import Sidebar from './Sidebar'
+import { ToastProvider } from './ui/use-toast'
+import { useSession } from '@/lib/auth-client'
+
+export default function AuthGate ({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const router = useRouter()
+  const { data: session, isPending } = useSession()
+  const isPublic = pathname === '/login' || pathname === '/accept-invite'
 
   useEffect(() => {
-    const hasToken = Boolean(localStorage.getItem('token'));
-
-    if (isLogin) {
-      if (hasToken) router.replace('/dashboard');
-      return;
+    if (isPending) return
+    if (isPublic) {
+      if (session) router.replace('/dashboard')
+      return
     }
+    if (!session) router.replace('/login')
+  }, [isPending, isPublic, session, router])
 
-    if (!hasToken) {
-      router.replace('/login');
-      return;
-    }
+  if (isPublic) {
+    return <ToastProvider>{children}</ToastProvider>
+  }
 
-    setAuthenticated(true);
-  }, [isLogin, router]);
-
-  if (isLogin) return <>{children}</>;
-
-  if (!authenticated) {
-    return <div className="flex min-h-screen items-center justify-center bg-gray-50 text-gray-600">Checking authentication...</div>;
+  if (isPending || !session) {
+    return (
+      <div className="flex min-h-dvh items-center justify-center bg-paper text-ink-600">
+        <div className="flex items-center gap-3 rounded-xl border border-ink-200 bg-white px-5 py-4 shadow-sm">
+          <span className="board-pulse" aria-hidden />
+          <span className="text-sm font-medium">Checking authentication…</span>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar />
-      <div className="min-w-0 flex-1">{children}</div>
-    </div>
-  );
+    <ToastProvider>
+      <div className="flex min-h-dvh bg-paper">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[1100] focus:rounded-lg focus:bg-coral-600 focus:px-3 focus:py-2 focus:text-white"
+        >
+          Skip to main content
+        </a>
+        <Sidebar />
+        <div id="main" className="min-w-0 flex-1 overflow-x-hidden">
+          {children}
+        </div>
+      </div>
+    </ToastProvider>
+  )
 }

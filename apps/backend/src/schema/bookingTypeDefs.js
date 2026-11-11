@@ -52,6 +52,14 @@ const bookingTypeDefs = gql`
     total: Int!
     page: Int!
   }
+
+  type DashboardStats {
+    occupancyPercent: Float!
+    roomsAvailable: Int!
+    checkInsToday: Int!
+    checkOutsToday: Int!
+    openBookings: Int!
+  }
    
   type PaymentInfo {
     status: String!
@@ -124,6 +132,11 @@ input BookingInput {
       limit: Int
       offset: Int
     ): AdminBookingsResult!
+    dashboardStats(
+      hostelId: ID
+      dayStart: Date!
+      nextDayStart: Date!
+    ): DashboardStats!
   }
    
 extend type Mutation {

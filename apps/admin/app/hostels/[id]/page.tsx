@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { gql, useQuery, useMutation } from '@apollo/client';
+import { gql } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client/react'
 
 // GraphQL client is already set up in the provider, but we can create a new one or use the same.
 // Since we are in a client component, we can use the same Apollo Client instance as in the dashboard.

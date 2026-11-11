@@ -1,5 +1,6 @@
 const Hostel = require('../models/hostel');
 const Room = require('../models/room');
+const RoomType = require('../models/RoomType');
 const reliability = require('../services/reliabilityService');
 const { resolveRoomAvailability } = require('./roomAvailability');
 
@@ -35,43 +36,50 @@ const hostelResolvers = {
     Query: {
         hostels: async () => {
             try {
-                const populated = await Hostel.find()
-                    .populate('images.hero')
-                    .populate('images.main')
-                    .populate('images.thumbnail')
-                    .populate('images.others')
-                    .populate('amenities')
-                    .populate('faqs')
-                    .populate('blogs')
-                    .populate('rooms')
-                    .populate('rooms.roomType')
-                    .select('id slug name city tagline description pricePerNight isActive createdAt updatedAt rooms');
+                require('../models/RoomType');
+                const populated = await Hostel.find({ isActive: { $ne: false } })
+                    .populate({
+                        path: 'rooms',
+                        populate: { path: 'roomType' },
+                    })
+                    .select('slug name city tagline knownFor featuredOnLanding boardPriority coverImageUrl mapX mapY description pricePerNight isActive inauguratedOn createdAt updatedAt rooms');
 
                 return populated.map(hostel => {
                     const obj = hostel.toObject();
                     obj.id = obj._id.toString();
                     if (obj.rooms && obj.rooms.length > 0) {
                         obj.rooms = obj.rooms.map(room => {
-                            const roomObj = room.toObject();
-                            const roomTypeObj = room.roomType?.toObject?.() || {};
+                            const roomObj = room.toObject ? room.toObject() : { ...room };
+                            const roomTypeObj = room.roomType?.toObject?.() || room.roomType || {};
                             const roomType = {
-                                id: roomTypeObj._id?.toString(),
+                                id: roomTypeObj._id?.toString?.() || roomTypeObj.id || null,
                                 name: roomTypeObj.name || null,
                                 category: roomTypeObj.category || null,
                                 capacity: roomTypeObj.capacity || 0,
                                 basePrice: roomTypeObj.basePrice || 0.0
                             };
-                            delete roomObj._id;
                             return {
                                 ...roomObj,
+                                id: roomObj._id?.toString?.() || roomObj.id,
                                 roomType
                             };
                         });
+                    } else {
+                        obj.rooms = [];
                     }
                     return obj;
                 });
             } catch (error) {
-                return [];
+                console.error('[hostels query]', error && error.message ? error.message : error);
+                // Fail soft for listings, but keep enough shape for the guest grid.
+                const fallback = await Hostel.find({ isActive: { $ne: false } })
+                    .select('slug name city tagline knownFor featuredOnLanding boardPriority coverImageUrl mapX mapY pricePerNight isActive inauguratedOn createdAt updatedAt')
+                    .lean();
+                return fallback.map((h) => ({
+                    ...h,
+                    id: String(h._id),
+                    rooms: [],
+                }));
             }
         },
         hostel: async (_, { id }) => {

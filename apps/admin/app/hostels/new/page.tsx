@@ -1,6 +1,7 @@
 'use client';
 
-import { gql, useMutation } from '@apollo/client';
+import { gql } from '@apollo/client'
+import { useMutation } from '@apollo/client/react'
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -84,13 +85,28 @@ export default function NewHostel() {
     });
   };
 
+  // Called by form submit; syncs Better Auth org metadata.hostelId after create.
+  // Loop: "bind hostel create → org metadata.hostelId"
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
     try {
       const { data } = await createHostel({ variables: { input: formData } });
-      router.push(`/hostels/${data.createHostel.id}`);
+      const created = data?.createHostel;
+      if (created?.id) {
+        try {
+          const { syncHostelOrganization } = await import('@/lib/auth/sync-hostel-org');
+          await syncHostelOrganization({
+            hostelId: created.id,
+            name: created.name || formData.name,
+            slug: formData.slug,
+          });
+        } catch (orgErr: any) {
+          console.warn('staff org sync failed', orgErr?.message || orgErr);
+        }
+        router.push(`/hostels/${created.id}`);
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

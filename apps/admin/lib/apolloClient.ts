@@ -1,8 +1,10 @@
 import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 
+// Shared admin Apollo client (also used by GraphQLProvider). Point at live API.
+// User: fix dashboard Apollo provider invariant.
 const httpLink = new HttpLink({
-  uri: 'http://65.109.113.80:4000/graphql',
+  uri: process.env.NEXT_PUBLIC_GRAPHQL_URL || '/graphql',
 });
 
 const authLink = setContext((_, { headers }) => {

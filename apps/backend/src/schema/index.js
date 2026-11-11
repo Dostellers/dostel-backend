@@ -23,6 +23,7 @@ const couponTypeDefs = require('./couponTypeDefs.js');
 const healthTypeDefs = require('./healthTypeDefs.js');
 const membershipTypeDefs = require('./membershipTypeDefs.js');
 const crossingTypeDefs = require('./crossingTypeDefs.js');
+const landingTypeDefs = require('./landingTypeDefs.js');
 
 const mergedTypeDefs = mergeTypeDefs([
     amenityTypeDefs,
@@ -47,7 +48,8 @@ const mergedTypeDefs = mergeTypeDefs([
     couponTypeDefs,
     healthTypeDefs,
     membershipTypeDefs,
-    crossingTypeDefs
+    crossingTypeDefs,
+    landingTypeDefs
 ]);
 
 module.exports = mergedTypeDefs;

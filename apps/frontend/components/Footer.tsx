@@ -1,4 +1,8 @@
+'use client'
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { BrandLogo } from "@/components/BrandLogo";
 
 const footerLinks = {
   Accommodations: [
@@ -8,8 +12,12 @@ const footerLinks = {
     { label: "Colive", href: "/colive" },
   ],
   "Important links": [
+    /* Callers: Footer render maps these links. Adding Design system → /design
+       for the new living Brand Platform page. Same footerLinks object, not a new file.
+       User: "Build a design system for dostel at dosteller.com/design" */
     { label: "Career", href: "https://linkedin.com" },
     { label: "Developers & owners", href: "/list-property" },
+    { label: "Design system", href: "/design" },
     { label: "Influencer", href: "/influencer" },
     { label: "Volunteer", href: "/volunteer" },
     { label: "Media", href: "/press" },
@@ -36,21 +44,14 @@ const socialLinks = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname() ?? '/'
+  if (pathname.startsWith('/auth')) return null
+
   return (
     <footer className="bg-ink-1000 text-white">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
         <div className="mb-12 flex flex-col items-start gap-8 sm:flex-row sm:items-center sm:justify-between">
-          <Link href="/" className="flex items-center gap-3">
-            <span className="flex h-10 w-10 items-center justify-center rounded-sm bg-coral-600 text-lg font-extrabold text-white">
-              D
-            </span>
-            <span className="leading-none">
-              <span className="block text-2xl font-extrabold tracking-[-0.03em]">dostel</span>
-              <span className="block text-xs text-white/45" style={{ fontFamily: "var(--font-deva)" }}>
-                दोस्त + hostel
-              </span>
-            </span>
-          </Link>
+          <BrandLogo size={48} inverted />
 
           <div className="flex flex-wrap gap-2">
             {socialLinks.map((s) => (

@@ -73,6 +73,12 @@ type Hostel {
     name: String
     city: String
     tagline: String
+    knownFor: String
+    featuredOnLanding: Boolean
+    boardPriority: Int
+    coverImageUrl: String
+    mapX: Float
+    mapY: Float
     metaDesc: String
     shortDesc: String
     description: HostelDescription
@@ -178,6 +184,12 @@ type HostelPolicies {
   input HostelInput {
     name: String
     tagline: String
+    knownFor: String
+    featuredOnLanding: Boolean
+    boardPriority: Int
+    coverImageUrl: String
+    mapX: Float
+    mapY: Float
     metaDesc: String
     shortDesc: String
     description: HostelDescriptionInput

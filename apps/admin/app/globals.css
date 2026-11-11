@@ -1,41 +1,149 @@
 @import "tailwindcss";
 
+/* Caller: apps/admin/app/layout.tsx imports this. Fonts load via next/font in
+   layout (Google @import after Tailwind expansion breaks CSS parse).
+   User: "review and build admin dashboard end to end in dostellers colors.
+   Also use skills /frontend-design /ui-ux-pro-max" */
+
 @theme inline {
-  --color-forest-900: #0f1a14;
-  --color-forest-700: #1a3328;
-  --color-forest-500: #2d6a4f;
-  --color-forest-100: #d8f3dc;
-  --color-sunset: #e07a2f;
-  --color-sky: #2b6cb0;
-  --color-earth: #d4a373;
-  --color-snow: #fefcf5;
-  --color-white: #ffffff;
-  --color-stone-200: #e6e0d8;
-  --color-stone-400: #a89f94;
-  --color-stone-600: #6b6258;
-  --color-error: #dc2626;
-  --color-success: #16a34a;
+  --color-coral-50: #FFDBD3;
+  --color-coral-100: #FFCBC2;
+  --color-coral-200: #FFB1A8;
+  --color-coral-300: #FF8D85;
+  --color-coral-400: #FF615E;
+  --color-coral-500: #F14A4A;
+  --color-coral-600: #D42A32;
+  --color-coral-700: #AD1120;
+  --color-coral-800: #860A16;
+  --color-coral-900: #60050D;
 
-  --font-heading: var(--font-heading);
-  --font-body: var(--font-body);
+  --color-yellow-300: #F6D678;
+  --color-yellow-400: #EFCD65;
+  --color-yellow-logo: #FCCC00;
+
+  --color-ink-0: #FFFFFF;
+  --color-ink-50: #FEF8F8;
+  --color-ink-100: #F5F0EF;
+  --color-ink-200: #E6E0E0;
+  --color-ink-300: #D1CCCB;
+  --color-ink-400: #AEA9A9;
+  --color-ink-500: #908B8A;
+  --color-ink-600: #726D6D;
+  --color-ink-700: #555050;
+  --color-ink-800: #383434;
+  --color-ink-900: #1F1B1B;
+  --color-ink-1000: #0B0B0C;
+
+  --color-paper: #FFFDF9;
+  --color-error: #A02B18;
+  --color-success: #0F7A4A;
+  --color-warning: #835900;
+  --color-info: #1F5FA8;
+
+  --color-forest-900: #0B0B0C;
+  --color-forest-700: #383434;
+  --color-forest-500: #AD1120;
+  --color-forest-100: #FFDBD3;
+  --color-sunset: #D42A32;
+  --color-sky: #1F5FA8;
+  --color-earth: #FFE391;
+  --color-snow: #FFFDF9;
+  --color-white: #FFFFFF;
+  --color-stone-200: #E6E0E0;
+  --color-stone-400: #908B8A;
+  --color-stone-600: #555050;
+
+  --font-display: var(--font-bricolage), system-ui, sans-serif;
+  --font-body: var(--font-plex), system-ui, sans-serif;
+  --font-data: var(--font-mono), ui-monospace, monospace;
+  --font-heading: var(--font-display);
+  --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink-700);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    color: var(--color-ink-1000);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
 }
 
-body {
-  background: var(--color-snow);
-  color: var(--color-stone-600);
-  font-family: var(--font-body), system-ui, -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+:is(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-coral-600);
+  outline-offset: 2px;
 }
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-heading), serif;
-  color: var(--color-forest-900);
-  line-height: 1.2;
+.font-data {
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.2rem 0.55rem;
+  border: 1.5px solid currentColor;
+  border-radius: 9999px;
+  font-family: var(--font-data);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.15rem 0.5rem 0.15rem 0.45rem;
+  background: var(--color-yellow-300);
+  color: var(--color-ink-1000);
+  font-weight: 600;
+  font-size: 0.7rem;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 5px) 50%, 100% 100%, 0 100%);
+  padding-right: 0.75rem;
+}
+
+.board-pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: var(--color-success);
+  animation: board-pulse 2.4s ease-out infinite;
+}
+
+@keyframes board-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0.55); }
+  70% { box-shadow: 0 0 0 7px rgba(15, 122, 74, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(15, 122, 74, 0); }
+}
+
+@keyframes reveal-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+
+.reveal-card { animation: reveal-in 420ms var(--ease-out-soft) both; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--color-ink-100) 25%, var(--color-ink-50) 50%, var(--color-ink-100) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 0.5rem;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -44,4 +152,5 @@ h1, h2, h3, h4, h5, h6 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
   }
+  .board-pulse, .reveal-card { animation: none; }
 }

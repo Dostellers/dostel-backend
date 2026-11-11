@@ -110,6 +110,56 @@
   --ease-out-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
+/* Semantic aliases — Astryx principle: purpose names, not hex in app code.
+   Maps onto Dostel coral/ink/paper. Callers: ui/Button, Fields, /design gallery. */
+:root {
+  --color-surface: var(--color-paper);
+  --color-surface-raised: var(--color-ink-0);
+  --color-surface-inverse: var(--color-ink-1000);
+  --color-text-primary: var(--color-ink-1000);
+  --color-text-secondary: var(--color-ink-600);
+  --color-text-muted: var(--color-ink-500);
+  --color-text-inverse: var(--color-ink-0);
+  --color-border-default: var(--color-ink-200);
+  --color-border-strong: var(--color-ink-400);
+  --color-accent: var(--color-coral-600);
+  --color-accent-hover: var(--color-coral-700);
+  --color-accent-muted: var(--color-coral-50);
+  --color-on-accent: var(--color-ink-0);
+  --color-tag-fill: var(--color-yellow-300);
+  --color-negative: var(--color-error);
+  --color-positive: var(--color-success);
+  --radius-element: 2px;
+  --radius-control: 4px;
+  --radius-container: 6px;
+  --size-control-md: 2.75rem;
+  --transition-fast: 150ms;
+  --transition-base: 220ms;
+
+  /* Legacy --ds-* aliases for PolicyPills/RoomCard/TierBadge */
+  --ds-color-white: var(--color-ink-0);
+  --ds-color-snow: var(--color-paper);
+  --ds-color-stone-200: var(--color-ink-200);
+  --ds-color-stone-600: var(--color-ink-600);
+  --ds-color-forest-100: var(--color-coral-50);
+  --ds-color-forest-500: var(--color-coral-700);
+  --ds-color-forest-900: var(--color-ink-1000);
+  --ds-color-sky: var(--color-info);
+  --ds-color-bronze: var(--color-bronze);
+  --ds-color-silver: var(--color-silver);
+  --ds-color-gold: var(--color-gold);
+  --ds-radius-md: 0.75rem;
+  --ds-radius-lg: 1rem;
+  --ds-radius-full: 9999px;
+  --ds-motion-fast: var(--transition-fast);
+  --ds-motion-base: var(--transition-base);
+  --ds-ease-out: var(--ease-out-soft);
+  --ds-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ds-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ds-shadow-sm: 0 1px 2px rgba(11, 11, 12, 0.06);
+  --ds-shadow-md: 0 8px 24px -12px rgba(11, 11, 12, 0.25);
+}
+
 @keyframes marquee {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-33.333%); }
@@ -295,6 +345,229 @@
 .line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .line-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
+/* ---- Product patterns (Hostelworld jobs → Noticeboard execution) ----
+   Callers: DesignSystemClient search/property/social specimens; guest listing cards.
+   User: "keep building the design system... learn from hostelworld.com" */
+
+.search-field {
+  transition: border-color 160ms var(--ease-out-soft), box-shadow 160ms var(--ease-out-soft);
+}
+.search-field:hover {
+  border-color: var(--color-ink-400);
+}
+.search-field:focus {
+  border-color: var(--color-coral-600);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-coral-600) 22%, transparent);
+  outline: none;
+}
+
+.property-card {
+  transition: transform 200ms var(--ease-out-soft), box-shadow 200ms var(--ease-out-soft);
+}
+.property-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 40px -24px rgba(11, 11, 12, 0.45);
+}
+
+.avatar-stack {
+  display: inline-flex;
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+}
+.avatar-stack .avatar-chip {
+  margin-left: -0.45rem;
+}
+.avatar-stack .avatar-chip:last-child {
+  margin-left: 0;
+}
+
+.avatar-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  border: 2px solid var(--color-paper);
+  background: var(--color-coral-100);
+  color: var(--color-coral-800);
+  font-family: var(--font-data), ui-monospace, monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.avatar-chip--dark {
+  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.guestbook-card {
+  background-image: linear-gradient(180deg, transparent 0%, transparent calc(100% - 1px), var(--color-ink-100) calc(100% - 1px));
+}
+
+/* Auth experience entrance — content stays visible without JS. */
+@keyframes auth-rise {
+  from { opacity: 0.01; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.auth-rise {
+  animation: auth-rise 700ms ease-out both;
+}
+
+/* ---- Landing hero: atmosphere photo, ink type, no coral wash ----
+   Callers: components/LandingHero.tsx + app/page.tsx
+   User: "too much red… non ai slop… motion and interactiveness" */
+
+.landing-hero__veil {
+  /* Keep video readable — soft bottom fade only for type */
+  background:
+    linear-gradient(180deg, rgba(11, 11, 12, 0.12) 0%, rgba(11, 11, 12, 0.18) 45%, rgba(11, 11, 12, 0.62) 100%),
+    linear-gradient(90deg, rgba(11, 11, 12, 0.28) 0%, transparent 60%);
+}
+
+.landing-hero__video {
+  opacity: 1;
+  z-index: 1;
+}
+.landing-hero__photo {
+  z-index: 0;
+}
+.landing-hero__veil,
+.landing-hero__grain {
+  z-index: 2;
+}
+
+.landing-hero__grain {
+  opacity: 0.22;
+  mix-blend-mode: overlay;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.14) 0 1px, transparent 2px),
+    radial-gradient(circle at 72% 48%, rgba(255, 255, 255, 0.1) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 40% 78%, rgba(255, 255, 255, 0.08) 0 1px, transparent 2px);
+  background-size: 36px 36px, 54px 54px, 28px 28px;
+}
+
+.landing-hero__photo,
+.landing-hero__video {
+  transform: scale(1.06);
+  transform-origin: 40% 45%;
+  transition: transform 1.4s var(--ease-out-soft), opacity 480ms var(--ease-out-soft);
+}
+
+.landing-hero__video {
+  /* Slight zoom so crop edges stay hidden while clips crossfade by remount */
+  will-change: transform;
+}
+
+.landing-hero__media.is-ready .landing-hero__photo,
+.landing-hero__media.is-ready .landing-hero__video {
+  animation: hero-drift 22s ease-in-out alternate infinite;
+}
+
+@keyframes hero-drift {
+  from { transform: scale(1.06) translate3d(0, 0, 0); }
+  to   { transform: scale(1.12) translate3d(-1.4%, -0.8%, 0); }
+}
+
+/* Fail-open: content is visible without JS. Motion only runs after .is-ready. */
+.landing-hero__copy.is-ready .landing-hero__word {
+  animation: hero-word 720ms var(--ease-out-soft) both;
+  animation-delay: calc(80ms + (var(--word-i, 0) * 70ms));
+}
+
+.landing-hero__copy.is-ready .stamp {
+  animation: hero-fade 640ms var(--ease-out-soft) both;
+  animation-delay: 40ms;
+}
+
+.landing-hero__copy.is-ready .landing-hero__sub {
+  animation: hero-fade 700ms var(--ease-out-soft) both;
+  animation-delay: 320ms;
+}
+
+/* Transform-only — opacity on this wrapper washed out DateRange/Guest popovers over the photo. */
+.landing-hero__search.is-ready {
+  animation: hero-rise 760ms var(--ease-out-soft) both;
+  animation-delay: 420ms;
+}
+
+@keyframes hero-rise {
+  from { transform: translateY(14px); }
+  to   { transform: none; }
+}
+
+@keyframes hero-word {
+  from { opacity: 0.01; transform: translateY(0.45em); }
+  to   { opacity: 1; transform: none; }
+}
+
+@keyframes hero-fade {
+  from { opacity: 0.01; transform: translateY(14px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.btn-press {
+  transition: transform 150ms var(--ease-out-soft), background-color 150ms var(--ease-out-soft), border-color 150ms var(--ease-out-soft);
+}
+.btn-press:active {
+  transform: scale(0.97);
+}
+
+.board-row {
+  transition: background-color 180ms var(--ease-out-soft), padding-left 180ms var(--ease-out-soft);
+  border-radius: 2px;
+  margin-inline: -0.35rem;
+  padding-inline: 0.35rem;
+}
+.board-row:hover,
+.board-row:focus-within {
+  background: rgba(255, 255, 255, 0.045);
+}
+.board-row.is-live:hover,
+.board-row.is-live:focus-within {
+  background: rgba(252, 204, 0, 0.06);
+}
+
+.search-hero {
+  transition: transform 220ms var(--ease-out-soft), box-shadow 220ms var(--ease-out-soft);
+}
+.search-hero:focus-within {
+  transform: translateY(-2px);
+  box-shadow: 0 22px 48px -24px rgba(11, 11, 12, 0.55);
+}
+
+/* Field + popover primitives (Astryx DateRangeInput / Selector interaction model) */
+.ds-popover {
+  background-color: var(--color-surface-raised, #fffdf9);
+  color: var(--color-text-primary, #0b0b0c);
+  isolation: isolate;
+  animation: ds-popover-in 180ms var(--ease-out-soft) both;
+}
+@keyframes ds-popover-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
+}
+.ds-field__trigger:focus-visible {
+  outline: 2px solid var(--color-coral-600);
+  outline-offset: -2px;
+}
+
+/* Combobox Where: kill harsh input outline; soft field wash instead */
+.ds-field--combo .ds-field__input:focus,
+.ds-field--combo .ds-field__input:focus-visible {
+  outline: none;
+}
+.ds-field--combo:focus-within .ds-field__shell,
+.ds-field--combo[data-open='true'] .ds-field__shell {
+  background: var(--color-ink-50, #f4f4f5);
+}
+.ds-cal-day:focus-visible {
+  outline: 2px solid var(--color-coral-600);
+  outline-offset: 1px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -303,6 +576,26 @@
   }
   .board-card { animation: none; transform: none; }
   .board-pulse { animation: none; }
+  .property-card { transition: none; }
+  .property-card:hover { transform: none; }
   .reveal[data-reveal] { opacity: 1 !important; transform: none !important; animation: none !important; }
+  .auth-rise { animation: none; opacity: 1; transform: none; }
+  .landing-hero__word,
+  .landing-hero__sub,
+  .landing-hero__copy .stamp,
+  .landing-hero__search {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .ds-popover {
+    opacity: 1 !important;
+    transform: none !important;
+    animation: none !important;
+  }
+  .landing-hero__photo,
+  .landing-hero__video { transform: none !important; animation: none !important; }
+  .search-hero:focus-within { transform: none; }
+  .btn-press:active { transform: none; }
   html { scroll-behavior: auto; }
 }

@@ -1,5 +1,6 @@
 'use client';
-import { gql, useMutation } from '@apollo/client';
+import { gql } from '@apollo/client'
+import { useMutation } from '@apollo/client/react'
 import { useRouter } from 'next/navigation';
 
 const CREATE_CUSTOMER = gql`

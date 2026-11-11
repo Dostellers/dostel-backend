@@ -1,5 +1,6 @@
 'use client';
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { gql } from '@apollo/client'
+import { useQuery, useMutation } from '@apollo/client/react'
 import { useRouter, useParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Protected from '@/app/protected';

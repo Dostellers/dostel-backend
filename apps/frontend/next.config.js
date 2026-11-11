@@ -1,10 +1,16 @@
 import path from "node:path";
 
 const nextConfig = {
-  // The team reviews the dev server over the box's public IP. Without this,
-  // Next blocks cross-origin asset/HMR requests, hydration never runs, and
-  // any client-gated UI silently stays in its server-rendered state.
-  allowedDevOrigins: ["65.109.113.80"],
+  // Called by Next.js itself at boot (apps/frontend/next.config.js) — sole
+  // Next config for the guest app; no second config serves this purpose.
+  // Without nip.io here, DestinationField/DateRangeField client handlers never
+  // hydrate over Host: dostel.65.109.113.80.nip.io (chunks blocked).
+  // User: "the property selector ui is not good"
+  allowedDevOrigins: [
+    "65.109.113.80",
+    "dostel.65.109.113.80.nip.io",
+    "admin.dostel.65.109.113.80.nip.io",
+  ],
   // Multiple agents run auto-respawning dev servers in this directory under
   // different users (the platform keeps a paperclip one on :3001; other
   // agents have launched root ones). Two servers sharing one .next corrupt

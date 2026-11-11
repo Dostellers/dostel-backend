@@ -17,30 +17,36 @@ Visual identity: `.paperclip/design/visual-identity.md` · Tokens: `.paperclip/d
 
 ## Design principles
 
-1. **Coral-led brand** — Coral (`#F54E4E`) as primary brand, yellow as accent only — not generic SaaS purple or Hosteller yellow-on-black
-2. **Noticeboard concept** — Structural logic of stamp, tag, board, guestbook executed with modern precision
-3. **Community soul** — Bricolage Grotesque (headings) + Inter (body), warm paper background (`#FFFDF9`), social proof as trust signal
-4. **Mobile-first, thumb-friendly** — sticky bottom bars (72px), 44px touch targets, single-column <768px, native inputs
-5. **Accessible by default** — WCAG AA verified per token, focus rings (2px solid coral-600), semantic forms, `prefers-reduced-motion`
-6. **Motion with purpose** — 4 prescribed animations: card lift, page fade, button press, pin settle — plus reveal and split-flap for content
-7. **Warm not trendy** — no purple gradients, no dashboard-in-hero, no cream+terracotta brochure defaults, yellow as accent only
+Learned from Meta **Astryx** + Hostelworld patterns; Noticeboard DNA kept.
+
+1. **Ink primary, coral accent** — Primary actions are ink; coral is hover/focus/brand mark — never a hero wash. Yellow is a tag fill only.
+2. **Noticeboard concept** — Stamp, tag, board, guestbook — structural, not cork/tape textures
+3. **Semantic tokens** — Prefer `--color-surface`, `--color-text-primary`, `--color-accent` over scattered hex (Astryx rule)
+4. **Components over raw HTML** — Prefer `components/ui/*` (Button, DateRangeField, GuestSelect) before inventing controls
+5. **Controlled fields** — value + onChange; DateRange = one trigger + popover; Select = listbox, not OS chrome
+6. **Community soul** — Bricolage Grotesque + Inter + JetBrains Mono (data), warm paper (`#FFFDF9`)
+7. **Mobile-first** — sticky bottom bars (72px), ≥44px targets, single-column <768px
+8. **Accessible by default** — WCAG AA, focus on `--color-accent`, `prefers-reduced-motion`
+9. **Motion with purpose** — card lift, page fade, button press, pin settle, reveal, split-flap, hero word-rise
+10. **Warm not trendy** — no purple gradients, no dashboard-in-hero, no cream+terracotta brochure defaults
 
 ---
 
+
 ## Design tokens
 
-All tokens spec: `.paperclip/design/system/design-tokens.md`
+Living specimens: `apps/frontend/app/design` · CSS: `apps/frontend/app/globals.css`
 
 | Token family | Covered |
 |---|---|
-| Color (14 tokens) | Forest-900→100, Sunset, Sunset-700, Sky, Earth, Snow, Stone scale, Error, Success |
-| Typography | Playfair Display (headings) + Inter (body) + JetBrains Mono (code) |
+| Brand scales | Coral, Yellow, Ink, Paper + semantic aliases (`surface`, `text-primary`, `accent`, `tag-fill`, `negative`) |
+| Typography | Bricolage Grotesque (display) + Inter (body) + JetBrains Mono (data) + Noto Devanagari |
 | Spacing | 8px grid (4–64px) |
-| Border radius | 4px–9999px |
-| Shadows | 4 levels, Forest-900 rgba |
-| Motion | 3 durations, 3 easings, 3 prescribed animations |
+| Radius | `--radius-element` 2px · `--radius-control` 4px · `--radius-container` 6px |
+| Shadows | flat / raised / float / board |
+| Motion | `--transition-fast` 150ms · `--transition-base` 220ms · `--ease-out-soft` |
+| UI kit | `Button`, `DateRangeField`, `GuestSelect` under `apps/frontend/components/ui/` |
 | States | hover/active/focus/disabled/loading/empty/error |
-| Admin extensions | separate density track |
 
 ---
 

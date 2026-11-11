@@ -45,11 +45,17 @@ export const GET_HOSTELS = gql`
   query GetHostels {
     hostels {
       id
+      slug
       name
+      city
       tagline
-      basePrice
-      location { address { city } }
-      images { thumbnail { url } }
+      knownFor
+      pricePerNight
+      coverImageUrl
+      featuredOnLanding
+      boardPriority
+      isActive
+      inauguratedOn
     }
   }
 `;

@@ -72,7 +72,9 @@ export default function RoomSelector({
     const currentQty = selectedRooms.find((r) => r.roomId === room.id)?.quantity || 0;
     const newQty = currentQty >= room.capacity ? 0 : currentQty + 1;
     
-    const roomPrice = isDosteller && room.originalPrice ? room.originalPrice : room.price;
+    const roomPrice = isDosteller && room.dostellerPrice
+      ? room.dostellerPrice
+      : room.price;
     
     actions.selectRoom({
       roomId: room.id,
@@ -100,16 +102,16 @@ export default function RoomSelector({
         return (
           <div
             key={room.id}
-            className={`rounded-xl border-2 bg-white transition-all duration-150 ${
+            className={`property-card rounded-sm border bg-white ${
               isSelected
-                ? "border-forest-500 ring-1 ring-forest-100"
+                ? "border-coral-600 ring-1 ring-coral-200"
                 : room.available
-                ? "border-stone-200 hover:border-stone-400"
-                : "border-stone-200 opacity-60 cursor-not-allowed"
+                ? "border-ink-200 hover:border-ink-400"
+                : "cursor-not-allowed border-ink-200 opacity-60"
             }`}
           >
             <div className="flex gap-4 p-4">
-              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-lg sm:h-28 sm:w-28">
+              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-sm sm:h-28 sm:w-28">
                 <Image
                   src={room.image}
                   alt={room.name}
@@ -118,8 +120,8 @@ export default function RoomSelector({
                   sizes="112px"
                 />
                 {!room.available && (
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/40">
-                    <span className="text-xs font-semibold text-white">Sold out</span>
+                  <div className="absolute inset-0 flex items-center justify-center bg-ink-1000/45">
+                    <span className="stamp border-white/40 bg-white/95 text-ink-700">Sold out</span>
                   </div>
                 )}
               </div>
@@ -128,26 +130,26 @@ export default function RoomSelector({
                 <div>
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-semibold text-forest-900">{room.name}</p>
+                      <p className="text-sm font-semibold text-ink-1000">{room.name}</p>
                       <p className="text-xs text-ink-600">Up to {room.capacity} guests</p>
                     </div>
-{room.available && (
-                       <div
-                         className={`flex h-8 min-w-[80px] cursor-pointer items-center justify-center rounded-md text-xs font-semibold transition-all duration-150 ${
-                           isSelected
-                             ? "bg-sunset text-white"
-                             : "bg-forest-500 text-white hover:brightness-95"
-                         }`}
-                         onClick={() => handleSelect(room)}
-                         role="button"
-                         tabIndex={0}
-                         onKeyDown={(e) => {
-                           if (e.key === "Enter" || e.key === " ") {
-                             e.preventDefault();
-                             handleSelect(room);
-                           }
-                         }}
-                         aria-label={`${isSelected ? "Deselect" : "Select"} ${room.name}`}
+                    {room.available && (
+                      <div
+                        className={`flex h-9 min-w-[88px] cursor-pointer items-center justify-center rounded-sm px-3 text-xs font-semibold transition-all duration-150 ${
+                          isSelected
+                            ? "bg-ink-1000 text-white"
+                            : "bg-coral-600 text-white hover:bg-coral-700"
+                        }`}
+                        onClick={() => handleSelect(room)}
+                        role="button"
+                        tabIndex={0}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") {
+                            e.preventDefault();
+                            handleSelect(room);
+                          }
+                        }}
+                        aria-label={`${isSelected ? "Deselect" : "Select"} ${room.name}`}
                       >
                         {isSelected ? (
                           <span className="flex items-center gap-1">
@@ -182,25 +184,25 @@ export default function RoomSelector({
                   </div>
                 </div>
 
-                <div className="flex items-end justify-between">
+                <div className="flex items-end justify-between gap-2">
                   <div>
-                    <div className="flex items-baseline gap-1.5">
-                      <span className="text-base font-bold text-forest-900">₹{room.price}</span>
-                      <span className="text-xs text-ink-600">/night</span>
+                    <p className="data text-[0.65rem] uppercase tracking-[0.14em] text-ink-400">From</p>
+                    <div className="mt-0.5 flex flex-wrap items-baseline gap-1.5">
+                      <span className="tag">₹{room.price} / night</span>
                       {dostellerPrice && isDosteller && (
-                        <span className="text-xs font-medium text-forest-500">
+                        <span className="text-xs font-medium text-coral-700">
                           Dosteller ₹{dostellerPrice}
                         </span>
                       )}
                       {room.originalPrice && room.originalPrice > room.price && (
-                        <span className="text-xs text-ink-600 line-through">
+                        <span className="text-xs text-ink-500 line-through">
                           ₹{room.originalPrice}
                         </span>
                       )}
                     </div>
-                    {room.bookedThisWeek && (
-                      <SocialProof count={room.bookedThisWeek} label="booked this week" />
-                    )}
+                    {room.bookedThisWeek ? (
+                      <SocialProof count={room.bookedThisWeek} label="booked this week" variant="card" />
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -210,10 +212,10 @@ export default function RoomSelector({
       })}
 
       {hasSelection && (
-        <div className="border-t border-stone-200 pt-4">
-          <div className="flex justify-between items-center">
-            <span className="text-stone-600">Total for {nights} nights</span>
-            <span className="text-xl font-bold text-forest-900">₹{state.total}</span>
+        <div className="border-t border-ink-200 pt-4">
+          <div className="flex items-center justify-between">
+            <span className="text-ink-600">Total for {nights} nights</span>
+            <span className="data text-xl font-semibold text-ink-1000">₹{state.total}</span>
           </div>
         </div>
       )}

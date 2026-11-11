@@ -14,6 +14,8 @@ function generateRef(): string {
   return `DOS-${y}-${m}-${random}`;
 }
 
+// Existing confirmation page (from payment). Passes deposit split into ConfirmationCard.
+// User: "learn architecture and payment methods and architeuse from hostel world and build it."
 function buildConfirmation(
   data: BookingState,
 ): {
@@ -25,6 +27,9 @@ function buildConfirmation(
   nights: number;
   roomName: string;
   total: number;
+  depositPaid: number;
+  payAtProperty: number;
+  rateLabel: string;
 } {
   return {
     ref: generateRef(),
@@ -35,6 +40,9 @@ function buildConfirmation(
     nights: data.nights || 0,
     roomName: data.selectedRooms.map((r) => `${r.name} x${r.quantity}`).join(", ") || "Selected room",
     total: data.total || 0,
+    depositPaid: data.depositDue || data.total || 0,
+    payAtProperty: data.payAtProperty || 0,
+    rateLabel: data.rateLabel || "Free Cancellation",
   };
 }
 

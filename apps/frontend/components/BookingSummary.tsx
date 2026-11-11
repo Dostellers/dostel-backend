@@ -51,7 +51,11 @@ export default function BookingSummary({ booking, compact = false }: BookingSumm
 }
 
 function SummaryContent({ booking }: { booking: BookingState }) {
-  const { hostel, checkIn, checkOut, nights, selectedRooms, total: totalPrice, guestInfo } = booking;
+  // Used by review + payment pages; reads BookingState deposit fields.
+  const {
+    hostel, checkIn, checkOut, nights, selectedRooms, total: totalPrice, guestInfo,
+    depositDue, payAtProperty, rateLabel,
+  } = booking;
 
   const formatDate = (d: string) => {
     if (!d) return "";
@@ -114,9 +118,26 @@ function SummaryContent({ booking }: { booking: BookingState }) {
       )}
 
       {totalPrice > 0 && (
-        <div className="border-t border-stone-200 pt-2 flex justify-between font-semibold">
-          <span className="text-forest-900">Total</span>
-          <span className="text-forest-900">₹{totalPrice.toLocaleString()}</span>
+        <div className="border-t border-stone-200 pt-2 space-y-1">
+          {rateLabel && (
+            <p className="text-xs text-stone-400">{rateLabel}</p>
+          )}
+          <div className="flex justify-between font-semibold">
+            <span className="text-forest-900">Stay total</span>
+            <span className="text-forest-900">₹{totalPrice.toLocaleString()}</span>
+          </div>
+          {typeof depositDue === 'number' && (
+            <div className="flex justify-between text-xs">
+              <span className="text-coral-700 font-medium">Pay now</span>
+              <span className="font-data font-semibold text-coral-700">₹{depositDue.toLocaleString()}</span>
+            </div>
+          )}
+          {typeof payAtProperty === 'number' && payAtProperty > 0 && (
+            <div className="flex justify-between text-xs text-stone-600">
+              <span>Due at property</span>
+              <span className="font-data">₹{payAtProperty.toLocaleString()}</span>
+            </div>
+          )}
         </div>
       )}
     </div>

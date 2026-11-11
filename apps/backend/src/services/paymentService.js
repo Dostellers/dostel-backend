@@ -3,6 +3,14 @@ const Customer = require('../models/customer');
 const Hostel = require('../models/hostel');
 const { v4: uuidv4 } = require('uuid');
 const logger = require('../config/logger');
+// Existing paymentService (called by booking/checkout helpers). Extends deposit math
+// with Hostelworld rate schedules from ratePlanService — schema: Booking deposit/rate fields.
+// User: "learn architecture and payment methods and architeuse from hostel world and build it."
+const {
+  resolvePaymentSchedule,
+  paymentStatusForAmount,
+  RATE_TYPES,
+} = require('./ratePlanService');
 
 /**
  * Create a booking with guest details and payment info
@@ -47,21 +55,22 @@ const createBookingWithPayment = async (bookingData) => {
       });
     }
 
-    // Calculate deposit and balance
-    const depositPercentage = paymentMethod === 'UPI' ? 25 : 20;
-    const depositRequired = (totalAmount * depositPercentage) / 100;
-    const amountPaid = paymentTransactionId ? totalAmount : 0; // For now, assume full payment if transaction ID exists
-    const balanceDue = totalAmount - amountPaid;
+    const schedule = resolvePaymentSchedule(
+      bookingData.rateType || RATE_TYPES.FREE_CANCELLATION,
+      totalAmount,
+      paymentMethod
+    );
+    // Deposit capture by default; full amount only for Pay Now / explicit full pay
+    const amountPaid = paymentTransactionId
+      ? (schedule.balanceCollection === 'PREPAID' ? totalAmount : schedule.depositRequired)
+      : 0;
+    const balanceDue = Math.max(totalAmount - amountPaid, 0);
 
-    // Determine booking status based on payment
     let sequenceStatus = 'Draft';
-    if (paymentStatus === 'Completed' || amountPaid >= totalAmount) {
-      sequenceStatus = 'Confirmed';
-    } else if (amountPaid >= depositRequired) {
+    if (paymentStatus === 'Completed' || amountPaid >= totalAmount || amountPaid >= schedule.depositRequired) {
       sequenceStatus = 'Confirmed';
     }
 
-    // Create booking
     const bookingDataObj = {
       reference: reference || `DOS-${Date.now()}-${uuidv4().substring(0, 8)}`,
       customer: customer._id,
@@ -71,12 +80,21 @@ const createBookingWithPayment = async (bookingData) => {
       checkOutDate: new Date(checkOutDate),
       guests,
       totalAmount,
-      depositPercentage,
-      depositRequired,
+      rateType: schedule.rateType,
+      depositPercentage: schedule.depositPercentage,
+      depositRequired: schedule.depositRequired,
       amountPaid,
       balanceDue,
+      payAtProperty: schedule.payAtProperty,
+      balanceCollection: schedule.balanceCollection,
+      refundable: schedule.refundable,
+      refundAs: schedule.refundAs,
+      cancellationDeadlineHours: schedule.cancellationDeadlineHours,
+      cancellationPolicy: schedule.cancellationPolicy,
       payment: {
-        status: paymentStatus,
+        status: paymentStatus === 'Completed'
+          ? paymentStatusForAmount(amountPaid, schedule.depositRequired, totalAmount)
+          : paymentStatus,
         method: paymentMethod,
         transactionId: paymentTransactionId,
         amount: amountPaid,
@@ -111,24 +129,43 @@ const createBookingWithPayment = async (bookingData) => {
 const updateBookingPayment = async (bookingId, paymentData) => {
   try {
     const { status, method, transactionId, amount } = paymentData;
-    
+
     const booking = await Booking.findById(bookingId);
     if (!booking) {
       throw new Error(`Booking with ID ${bookingId} not found`);
     }
 
-    // Update payment details
-    booking.payment.status = status;
+    const schedule = resolvePaymentSchedule(
+      booking.rateType || RATE_TYPES.FREE_CANCELLATION,
+      booking.totalAmount,
+      method || booking.payment?.method
+    );
+
     if (method) booking.payment.method = method;
     if (transactionId) booking.payment.transactionId = transactionId;
-    if (amount) booking.payment.amount = amount;
-    booking.amountPaid = amount || booking.amountPaid;
-    booking.balanceDue = booking.totalAmount - (amount || booking.amountPaid);
+    if (amount != null) {
+      booking.payment.amount = amount;
+      booking.amountPaid = amount;
+    }
 
-    // Update sequence status based on payment
-    if (status === 'Completed' || (amount || booking.amountPaid) >= booking.totalAmount) {
-      booking.sequenceStatus = 'Confirmed';
-    } else if ((amount || booking.amountPaid) >= booking.depositRequired) {
+    booking.depositRequired = schedule.depositRequired;
+    booking.depositPercentage = schedule.depositPercentage;
+    booking.balanceDue = Math.max(booking.totalAmount - (booking.amountPaid || 0), 0);
+    booking.payAtProperty = schedule.balanceCollection === 'PREPAID'
+      ? 0
+      : Math.max(booking.totalAmount - Math.max(booking.amountPaid || 0, schedule.depositRequired), 0);
+    booking.balanceCollection = schedule.balanceCollection;
+    booking.payment.status = status || paymentStatusForAmount(
+      booking.amountPaid,
+      schedule.depositRequired,
+      booking.totalAmount
+    );
+
+    if (
+      booking.payment.status === 'Completed' ||
+      (booking.amountPaid || 0) >= booking.totalAmount ||
+      (booking.amountPaid || 0) >= schedule.depositRequired
+    ) {
       booking.sequenceStatus = 'Confirmed';
     } else {
       booking.sequenceStatus = 'Draft';

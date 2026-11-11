@@ -1,5 +1,7 @@
 import { CalendarIcon, DownloadIcon, MapPinIcon, CheckIcon } from "./Icons";
 
+// Callers: booking/[slug]/confirmation/page.tsx. Existing confirmation UI.
+// Schema: booking depositPaid/payAtProperty/rateLabel. User asked for Hostelworld payment + design.
 interface ConfirmationCardProps {
   booking: {
     ref: string;
@@ -10,6 +12,9 @@ interface ConfirmationCardProps {
     nights: number;
     roomName: string;
     total: number;
+    depositPaid?: number;
+    payAtProperty?: number;
+    rateLabel?: string;
   };
   contactEmail: string;
   contactPhone: string;
@@ -76,11 +81,30 @@ export default function ConfirmationCard({ booking, contactEmail, contactPhone }
           </div>
         </div>
 
-        <div className="border-t border-stone-200 pt-3 text-sm">
+        <div className="border-t border-stone-200 pt-3 text-sm space-y-2">
           <div className="flex justify-between">
             <span className="text-stone-600">{booking.roomName}</span>
             <span className="font-semibold text-forest-900">₹{booking.total.toLocaleString()}</span>
           </div>
+          {booking.rateLabel && (
+            <p className="stamp text-forest-700 border-forest-500/30 w-fit">{booking.rateLabel}</p>
+          )}
+          {typeof booking.depositPaid === 'number' && (
+            <div className="rounded-lg bg-coral-50 px-3 py-2 space-y-1">
+              <div className="flex justify-between">
+                <span className="text-coral-700">Deposit paid</span>
+                <span className="font-data font-semibold text-coral-700">₹{booking.depositPaid.toLocaleString('en-IN')}</span>
+              </div>
+              {(booking.payAtProperty || 0) > 0 ? (
+                <div className="flex justify-between text-stone-600">
+                  <span>Pay at property</span>
+                  <span className="font-data">₹{(booking.payAtProperty || 0).toLocaleString('en-IN')}</span>
+                </div>
+              ) : (
+                <p className="text-xs text-success">Fully prepaid — nothing due on arrival</p>
+              )}
+            </div>
+          )}
         </div>
       </div>
 

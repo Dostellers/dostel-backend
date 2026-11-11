@@ -1,19 +1,29 @@
 "use client";
 
-import { useState } from "react";
+// Guest review step — Hostelworld-style rate picker + deposit breakdown.
+// Routed from booking/[slug]/details. User: build Hostelworld payment architecture + design.
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import StepIndicator from "@/components/StepIndicator";
 import BookingSummary from "@/components/BookingSummary";
 import PriceBreakdown from "@/components/PriceBreakdown";
+import RatePlanSelector from "@/components/RatePlanSelector";
 import StickyBottomBar from "@/components/StickyBottomBar";
 import { useBooking } from "@/components/BookingProvider";
+import { buildRateOffers, formatCancelDeadline } from "@/lib/rate-plans";
 
 export default function BookingReviewPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
-  const { state } = useBooking();
+  const { state, actions } = useBooking();
   const [agreed, setAgreed] = useState(false);
   const [agreedPolicy, setAgreedPolicy] = useState(false);
 
+  const offers = useMemo(() => {
+    const base = state.subtotal + state.taxes + state.serviceFee;
+    return buildRateOffers(base || state.total);
+  }, [state.subtotal, state.taxes, state.serviceFee, state.total]);
+
+  const cancelBy = formatCancelDeadline(state.checkIn, state.cancellationDeadlineHours);
   const canProceed = agreed && agreedPolicy && state.selectedRooms.length > 0 && state.guestInfo;
 
   return (
@@ -80,11 +90,23 @@ export default function BookingReviewPage({ params }: { params: { slug: string }
           )}
 
           <div className="rounded-xl border border-stone-200 bg-white p-4">
+            <RatePlanSelector
+              offers={offers}
+              selected={state.rateType}
+              onSelect={actions.selectRate}
+            />
+          </div>
+
+          <div className="rounded-xl border border-stone-200 bg-white p-4">
             <PriceBreakdown
               subtotal={state.subtotal}
               taxes={state.taxes}
               serviceFee={state.serviceFee}
               total={state.total}
+              depositDue={state.depositDue}
+              payAtProperty={state.payAtProperty}
+              rateLabel={state.rateLabel}
+              refundable={state.refundable}
             />
           </div>
 
@@ -108,7 +130,8 @@ export default function BookingReviewPage({ params }: { params: { slug: string }
                 className="mt-0.5 h-4 w-4 rounded border-stone-200 text-forest-500 accent-forest-500"
               />
               <span className="text-sm text-stone-600">
-                I agree to the cancellation policy
+                I agree to the {state.rateLabel.toLowerCase()} policy
+                {cancelBy ? ` (cancel by ${cancelBy})` : state.refundable ? '' : ' — non-refundable'}
               </span>
             </label>
           </div>
@@ -128,7 +151,7 @@ export default function BookingReviewPage({ params }: { params: { slug: string }
         <StickyBottomBar
           price={state.selectedRooms[0]?.pricePerNight || 0}
           total={state.total}
-          ctaLabel={canProceed ? `Confirm & pay ₹${state.total}` : "Accept terms to continue"}
+          ctaLabel={canProceed ? `Continue · pay ₹${state.depositDue.toLocaleString('en-IN')} now` : "Accept terms to continue"}
           onCtaClick={() => canProceed && router.push(`/booking/${params.slug}/payment`)}
           disabled={!canProceed}
           show
@@ -142,9 +165,13 @@ export default function BookingReviewPage({ params }: { params: { slug: string }
           disabled={!canProceed}
           className="flex h-12 w-full items-center justify-center rounded-lg bg-sunset text-sm font-semibold text-white transition-all duration-150 active:scale-[0.97] disabled:opacity-45 disabled:cursor-not-allowed hover:brightness-95 focus-visible:outline-2 focus-visible:outline-sky"
         >
-          {canProceed ? `Confirm & pay ₹${state.total}` : "Accept terms to continue"}
+          {canProceed ? `Continue · pay ₹${state.depositDue.toLocaleString('en-IN')} now` : "Accept terms to continue"}
         </button>
-        <p className="mt-2 text-center text-xs text-stone-400">Secured by Razorpay</p>
+        <p className="mt-2 text-center text-xs text-stone-400">
+          {state.payAtProperty > 0
+            ? `₹${state.payAtProperty.toLocaleString('en-IN')} due at the property`
+            : 'Fully prepaid — nothing due at property'}
+        </p>
       </div>
     </div>
   );
